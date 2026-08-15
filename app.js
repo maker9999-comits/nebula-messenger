@@ -775,6 +775,7 @@ function kickUser(username) {
     }
   } catch (e) {}
   if (kicked && currentUser && currentUser.username === username) {
+    markOffline(username);
     currentUser = null;
     state = buildInitialState();
     clearInterval(onlineTimer);
@@ -2232,12 +2233,33 @@ let onlineTimer = null;
 const ONLINE_WINDOW = 5 * 60 * 1000;
 function isOnline(u) {
   const a = accountByUsername(u);
-  return !!a && !!a.lastSeen && Date.now() - a.lastSeen < ONLINE_WINDOW;
+  if (!a || !a.lastSeen) return false;
+  if (a.status && (a.status.t === 'offline' || a.status.t === 'invisible')) return false;
+  return Date.now() - a.lastSeen < ONLINE_WINDOW;
+}
+function markOffline(username) {
+  const acc = accountByUsername(username);
+  if (!acc) return;
+  acc.lastSeen = Date.now();
+  acc.status = Object.assign({}, acc.status || {}, { t: 'offline', auto: true });
+  persistOther(acc);
 }
 function statusOf(acc) {
   if (!acc) return { cls: '', label: '', online: false, text: '' };
   const st = acc.status || {};
-  if (st.t === 'offline' || st.t === 'invisible') return { cls: 'off', label: 'не в сети', online: false, text: st.s || '' };
+  if (st.t === 'offline' || st.t === 'invisible') {
+    let label = 'не в сети';
+    if (st.auto && st.t === 'offline') {
+      const last = acc.lastSeen || 0;
+      const diff = Date.now() - last;
+      if (last) {
+        if (diff < 24 * 60 * 60 * 1000) label = 'был(а) в ' + fmtHM(last);
+        else if (diff < 7 * 24 * 60 * 60 * 1000) label = 'был(а) в течение недели';
+        else label = 'был(а) давно';
+      }
+    }
+    return { cls: 'off', label, online: false, text: st.s || '' };
+  }
   if (st.t === 'busy') return { cls: 'busy', label: 'занят', online: true, text: st.s || '' };
   if (st.t === 'away') return { cls: 'away', label: 'отошёл', online: true, text: st.s || '' };
   if (isOnline(acc.username)) return { cls: 'on', label: 'онлайн', online: true, text: st.s || '' };
@@ -2280,6 +2302,7 @@ function startOnlineTimer() {
   }, 10000);
 }
 let incomingGuardTimer = null;
+window.addEventListener('pagehide', () => { if (currentUser) markOffline(currentUser.username); });
 function startIncomingGuard() {
   if (incomingGuardTimer) clearInterval(incomingGuardTimer);
   incomingGuardTimer = setInterval(() => {
@@ -2897,6 +2920,10 @@ function startApp(user) {
   }
   currentUser = user;
   currentUser.lastSeen = Date.now();
+  if (user.status && user.status.auto) {
+    user.status = {};
+    persistOther(user);
+  }
   safeSet(SESSION_KEY, JSON.stringify(user.username));
   ME.id = 'me';
   ME.name = user.name;
@@ -2929,6 +2956,7 @@ function logout() {
   closeBanNotices();
   endCallIfActive();
   closeIncoming();
+  if (currentUser) markOffline(currentUser.username);
   localStorage.removeItem(SESSION_KEY);
   currentUser = null;
   state = buildInitialState();
@@ -3686,7 +3714,13 @@ function bindChatEvents(chat) {
   const doSend = () => {
     const val = text.value.trim();
     if (!val && !pendingMedia.length) return;
+    const now = Date.now();
+    if (now - lastSendAt < 1000) {
+      toast('Слишком быстро', 'Подождите секунду перед следующим сообщением');
+      return;
+    }
     sendMessage(chat.id, val);
+    lastSendAt = now;
     text.value = '';
     clearPendingMedia();
     autosize();
@@ -4487,8 +4521,24 @@ function minimizeCall() {
   pip._t = setInterval(tick, 1000);
 }
 
+let lastSendAt = 0;
+function fmtDurShort(sec) {
+  if (sec < 60) return sec + ' сек';
+  if (sec < 3600) return Math.floor(sec / 60) + ' мин';
+  return Math.floor(sec / 3600) + ' ч';
+}
 function sendMessage(chatId, text) {
   const chat = state.chats.find(c => c.id === chatId);
+  if (chat.type === 'group' && chat.slowMode > 0 && editTarget.chatId !== chatId) {
+    const sml = chat.slowLast || (chat.slowLast = {});
+    const last = sml[currentUser.username] || 0;
+    const wait = chat.slowMode * 1000 - (Date.now() - last);
+    if (wait > 0) {
+      toast('Медленный режим', 'Подождите ' + fmtDurShort(Math.ceil(wait / 1000)));
+      return;
+    }
+    sml[currentUser.username] = Date.now();
+  }
   if (chat.type === 'private' && editTarget.chatId !== chatId) {
     const other = accountByUsername(chat.userId);
     if (other && !canWriteTo(currentUser.username, other)) {
@@ -5856,6 +5906,21 @@ function renderManageBody(chat) {
   const isAdmin = isOwner || (chat.admins || []).includes('me');
   const acc = accFromChat(chat);
   const frame = isPrivate ? selectedFrameClass(acc) : '';
+  const SLOW_MODE_OPTIONS = [
+    [0, 'Выключен'],
+    [1, '1 сек'],
+    [5, '5 сек'],
+    [10, '10 сек'],
+    [30, '30 сек'],
+    [60, '1 минута'],
+    [600, '10 минут'],
+    [1800, '30 минут'],
+    [3600, '1 час'],
+    [7200, '2 часа'],
+    [10800, '3 часа'],
+    [18000, '5 часов'],
+    [86400, '24 часа (сутки)'],
+  ];
   let html = `
     <div class="manage-avatar" style="${avatarStyle(acc)}">${avatarInnerHtml(acc)}</div>
     <div class="manage-name">${chat.type === 'private' ? displayName(acc) : escapeHtml(chatTitle(chat))}</div>
@@ -5943,6 +6008,16 @@ function renderManageBody(chat) {
       </div>
     </div>`;
     const label = chat.type === 'group' ? 'Участники' : 'Подписчики';
+    if (chat.type === 'group') {
+      const cur = chat.slowMode || 0;
+      html += `<div class="manage-section">
+        <h4>Медленный режим</h4>
+        <div class="admin-hint">Ограничивает, как часто участники могут отправлять сообщения в группу</div>
+        <select class="rename-input" id="smSelect" style="margin-top:8px">
+          ${SLOW_MODE_OPTIONS.map(o => `<option value="${o[0]}" ${cur === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}
+        </select>
+      </div>`;
+    }
     html += `<div class="manage-section"><h4>${label} — ${chat.members.length}</h4>`;
     chat.members.forEach(mid => {
       const u = userById(mid);
@@ -6062,6 +6137,17 @@ function bindManageEvents(chat) {
       mrWhoInvite.style.opacity = .5;
       mrWhoInvite.style.pointerEvents = 'none';
     }
+  }
+
+  const smSelect = body.querySelector('#smSelect');
+  if (smSelect) {
+    smSelect.addEventListener('change', () => {
+      chat.slowMode = parseInt(smSelect.value, 10) || 0;
+      if (chat.slowMode === 0) delete chat.slowLast;
+      saveState();
+      pushChatMeta(chat);
+      toast('Медленный режим', chat.slowMode === 0 ? 'Выключен' : 'Включён: ' + (SLOW_MODE_OPTIONS.find(o => o[0] === chat.slowMode) || ['', ''])[1]);
+    });
   }
 
   body.querySelectorAll('[data-action="remove-member"]').forEach(btn => btn.addEventListener('click', () => {
@@ -8191,12 +8277,14 @@ function openSwitchMenu() {
   body.querySelectorAll('.switch-item').forEach(it => it.addEventListener('click', () => {
     const acc = accountByUsername(it.dataset.u);
     if (acc) {
+      if (currentUser && currentUser.username !== acc.username) markOffline(currentUser.username);
       closeSwitchMenu();
       startApp(acc);
     }
   }));
   $('#switchAdd').addEventListener('click', () => {
     closeSwitchMenu();
+    if (currentUser) markOffline(currentUser.username);
     localStorage.removeItem(SESSION_KEY);
     currentUser = null;
     clearInterval(onlineTimer);
