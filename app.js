@@ -186,6 +186,47 @@ function scheduleCloudBackup() {
   if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
   cloudBackupTimer = setTimeout(() => { cloudBackupTimer = null; runCloudBackup(); }, 3000);
 }
+/* Слияние аккаунтов при отправке в облако: чужие пользователи из облака
+   не теряются, даже если локальная копия старше (устройство с другого
+   компьютера не перезаписывает облачную базу) */
+function mergeAccountsWithCloud(raw) {
+  if (!MAIL_RELAY_URL) return Promise.resolve(raw);
+  return cloudLoad(ACCOUNTS_KEY).then(cur => {
+    if (!cur || !cur.d) return raw;
+    try {
+      const cl = JSON.parse(cur.d), lc = JSON.parse(raw);
+      let changed = false;
+      Object.keys(cl.users || {}).forEach(u => {
+        if (!lc.users[u]) { lc.users[u] = cl.users[u]; changed = true; }
+      });
+      return changed ? JSON.stringify(lc) : raw;
+    } catch (e) { return raw; }
+  }).catch(() => raw);
+}
+/* Свежая загрузка аккаунтов из облака + слияние с локальными.
+   Используется при входе и регистрации, чтобы на любом устройстве
+   было видно всех уже зарегистрированных пользователей */
+function refreshAccountsFromCloud() {
+  if (!MAIL_RELAY_URL) return Promise.resolve(loadAccounts());
+  return cloudLoad(ACCOUNTS_KEY).then(r => {
+    if (!r || !r.d) return loadAccounts();
+    try {
+      const cl = JSON.parse(r.d);
+      const local = loadAccounts();
+      let changed = false;
+      Object.keys(cl.users || {}).forEach(u => {
+        if (!local.users[u]) { local.users[u] = cl.users[u]; changed = true; }
+      });
+      if (changed) {
+        saveAccounts(local);
+        const meta = loadCloudMeta();
+        meta[ACCOUNTS_KEY] = Math.max(meta[ACCOUNTS_KEY] || 0, r.v);
+        saveCloudMeta(meta);
+      }
+      return local;
+    } catch (e) { return loadAccounts(); }
+  }).catch(() => loadAccounts());
+}
 function forceCloudBackup() {
   if (cloudBackupTimer) { clearTimeout(cloudBackupTimer); cloudBackupTimer = null; }
   runCloudBackup();
@@ -198,7 +239,7 @@ function runCloudBackup() {
       const tasks = [];
       try {
         const raw = localStorage.getItem(ACCOUNTS_KEY);
-        if (raw) tasks.push(cloudSave(ACCOUNTS_KEY, raw));
+        if (raw) tasks.push(mergeAccountsWithCloud(raw).then(m => cloudSave(ACCOUNTS_KEY, m)));
       } catch (e) {}
       const accounts = loadAccounts();
       Object.keys(accounts.users || {}).forEach(u => {
@@ -2525,14 +2566,14 @@ function showAuth(mode) {
   moveTabIndicator();
 }
 
-function handleAuthSubmit() {
+async function handleAuthSubmit() {
   const form = $('#authForm');
   const mode = form.dataset.mode;
   const name = $('#authName').value.trim();
   const username = $('#authUsername').value.trim().toLowerCase();
   const email = $('#authEmail').value.trim().toLowerCase();
   const password = $('#authPassword').value;
-  const accounts = loadAccounts();
+  const accounts = await refreshAccountsFromCloud();
 
   if (mode === 'register') {
     if (!name) return showAuthError($('#authError'), 'Введите никнейм');
