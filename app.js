@@ -2155,6 +2155,12 @@ let authCaptchaCode = '';
 let authColorIndex = 0;
 let authPending = null;   // { email, finalize }
 let authCode = null, authCodeAt = 0, authTimerInt = null;
+let demoMode = false;
+try { demoMode = localStorage.getItem('nebula_demo_mode') === '1'; } catch (e) {}
+function setDemoMode(v) {
+  demoMode = v;
+  try { localStorage.setItem('nebula_demo_mode', v ? '1' : '0'); } catch (e) {}
+}
 
 function showAuthError(el, text) {
   el.textContent = text;
@@ -2318,6 +2324,11 @@ function sendAuthCode(email) {
   authCodeAt = Date.now();
   const box = $('#authDemoCode');
   box.classList.add('hidden');
+  if (demoMode) {
+    box.innerHTML = demoCodeHtml(authCode, 'Демо-режим: ваш код:');
+    box.classList.remove('hidden');
+    bindDemoCopy(box);
+  }
   clearAuthError($('#authCodeError'));
   clearCode($('#authCodeInputs'));
   startCodeTimer($('#authCodeTimer'), authCodeAt, () => {
@@ -2622,6 +2633,22 @@ function initAuth() {
   bindAuthWaves();
   bindCodeInputs($('#authCodeInputs'));
   renderCaptcha();
+  const demoToggle = $('#authDemoToggle');
+  if (demoToggle) {
+    demoToggle.checked = demoMode;
+    demoToggle.addEventListener('change', () => {
+      setDemoMode(demoToggle.checked);
+      const box = $('#authDemoCode');
+      if (!box) return;
+      if (demoToggle.checked && authCode) {
+        box.innerHTML = demoCodeHtml(authCode, 'Демо-режим: ваш код:');
+        box.classList.remove('hidden');
+        bindDemoCopy(box);
+      } else if (!demoToggle.checked) {
+        box.classList.add('hidden');
+      }
+    });
+  }
 
   const refreshCaptcha = () => {
     renderCaptcha();
@@ -8019,6 +8046,11 @@ function sendModalCode() {
   modalVerify.sentAt = Date.now();
   const box = $('#verifyDemoCode');
   box.classList.add('hidden');
+  if (demoMode) {
+    box.innerHTML = demoCodeHtml(modalVerify.code, 'Демо-режим: ваш код подтверждения:');
+    box.classList.remove('hidden');
+    bindDemoCopy(box);
+  }
   clearAuthError($('#verifyError'));
   clearCode($('#verifyCodeInputs'));
   startCodeTimer($('#verifyTimer'), modalVerify.sentAt, () => {
@@ -8051,6 +8083,22 @@ function sendModalCode() {
 function bindVerifyModal() {
   $('#verifyClose').addEventListener('click', closeVerifyModal);
   $('#verifyModal').addEventListener('click', (e) => { if (e.target === $('#verifyModal')) closeVerifyModal(); });
+  const demoToggle = $('#verifyDemoToggle');
+  if (demoToggle) {
+    demoToggle.checked = demoMode;
+    demoToggle.addEventListener('change', () => {
+      setDemoMode(demoToggle.checked);
+      const box = $('#verifyDemoCode');
+      if (!box) return;
+      if (demoToggle.checked && modalVerify && modalVerify.code) {
+        box.innerHTML = demoCodeHtml(modalVerify.code, 'Демо-режим: ваш код подтверждения:');
+        box.classList.remove('hidden');
+        bindDemoCopy(box);
+      } else if (!demoToggle.checked) {
+        box.classList.add('hidden');
+      }
+    });
+  }
   $('#verifyResend').addEventListener('click', () => {
     if (!modalVerify) return;
     $('#verifySubmit').disabled = false;
