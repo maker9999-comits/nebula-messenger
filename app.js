@@ -1135,8 +1135,8 @@ const TICKET_TOPIC_ICONS = { 'Проблема с аккаунтом': '👤', '
 const TICKET_STATUS = { open: 'Открыт', work: 'В работе', done: 'Решён', closed: 'Закрыт' };
 const MAX_ACTIVE_TICKETS = 5;
 const TRACKS_MAX = 20;
-const TRACK_MAX_BYTES = 600000;
-const TRACK_TOTAL_MAX = 4000000;
+const TRACK_MAX_BYTES = 3670016;
+const TRACK_TOTAL_MAX = 12000000;
 let ticketsPushTimer = null;
 let tracksPushTimer = null;
 let supportView = 'list';
@@ -1521,7 +1521,7 @@ function renderTracksModal(ov) {
       </div>
       <div class="manage-section">
         <h4>Добавить трек</h4>
-        <div class="admin-hint">Файл до ${Math.round(TRACK_MAX_BYTES / 1024)} КБ · максимум ${TRACKS_MAX} треков · всего до ${Math.round(TRACK_TOTAL_MAX / 1024 / 1024 * 10) / 10} МБ</div>
+        <div class="admin-hint">Файл до ${fmtMb(TRACK_MAX_BYTES)} (песня до ~15 минут) · максимум ${TRACKS_MAX} треков · всего до ${fmtMb(TRACK_TOTAL_MAX)}</div>
         <label class="track-upload">
           <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
           <span>Выбрать MP3-файл</span>
@@ -1545,14 +1545,14 @@ function renderTracksModal(ov) {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     if (!/\.mp3$/i.test(f.name) && f.type !== 'audio/mpeg') return toast('Ошибка', 'Нужен файл MP3');
-    if (f.size > TRACK_MAX_BYTES) return toast('Лимит', 'Файл больше ' + Math.round(TRACK_MAX_BYTES / 1024) + ' КБ');
+    if (f.size > TRACK_MAX_BYTES) return toast('Лимит', 'Файл больше ' + fmtMb(TRACK_MAX_BYTES) + ' (примерно ' + Math.round(f.size / 1024 / 1024 * 10) / 10 + ' МБ)');
     const list = loadTracks(currentUser.username);
     if (list.length >= TRACKS_MAX) return toast('Лимит', 'Максимум ' + TRACKS_MAX + ' треков');
     const total = list.reduce((n, x) => n + x.data.length, 0);
     const rd = new FileReader();
     rd.onload = () => {
       const data = String(rd.result);
-      if (total + data.length > TRACK_TOTAL_MAX) return toast('Лимит', 'Суммарный объём треков больше ' + Math.round(TRACK_TOTAL_MAX / 1024 / 1024 * 10) / 10 + ' МБ');
+      if (total + data.length > TRACK_TOTAL_MAX) return toast('Лимит', 'Суммарный объём треков больше ' + fmtMb(TRACK_TOTAL_MAX) + ' — удалите старые треки');
       list.push({ name: f.name.replace(/\.mp3$/i, ''), size: f.size, data, added: Date.now() });
       saveTracks(currentUser.username, list);
       renderTracksModal(ov);
@@ -2939,6 +2939,7 @@ function startApp(user) {
   applyCursorGlow(user.settings && user.settings.cursorGlow);
   applyCursorColors(user.settings && user.settings.cursorColor, user.settings && user.settings.glowColor);
   updateProfileHeader();
+  ensureDefaultAdmin();
   updateAdminBtn();
   $('#authOverlay').classList.remove('open');
   renderChatList();
@@ -4527,6 +4528,9 @@ function fmtDurShort(sec) {
   if (sec < 3600) return Math.floor(sec / 60) + ' мин';
   return Math.floor(sec / 3600) + ' ч';
 }
+function fmtMb(b) {
+  return b >= 1048576 ? (b / 1048576).toFixed(1).replace(/\.0$/, '') + ' МБ' : Math.round(b / 1024) + ' КБ';
+}
 function sendMessage(chatId, text) {
   const chat = state.chats.find(c => c.id === chatId);
   if (chat.type === 'group' && chat.slowMode > 0 && editTarget.chatId !== chatId) {
@@ -5133,10 +5137,17 @@ function toggleStickPanel(btn) {
     sp.dataset.bound = '1';
     sp.querySelectorAll('.stick-tab').forEach(t => t.addEventListener('click', () => renderStickPanel(t.dataset.stab)));
   }
-  renderStickPanel('fav');
+  const body = $('#stickBody');
+  const tab = sp.dataset.lastTab || 'fav';
+  if (body && body.innerHTML.trim()) {
+    sp.dataset.lastTab = tab;
+    return;
+  }
+  renderStickPanel(tab);
 }
 function renderStickPanel(tab) {
   const sp = $('#stickPanel');
+  sp.dataset.lastTab = tab;
   const body = $('#stickBody');
   if (!body) return;
   sp.querySelectorAll('.stick-tab').forEach(t => t.classList.toggle('sel', t.dataset.stab === tab));
