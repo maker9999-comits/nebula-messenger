@@ -660,7 +660,13 @@ function adminList() {
   try { return JSON.parse(localStorage.getItem(ADMIN_KEY)) || []; } catch (e) { return []; }
 }
 function saveAdminList(a) { if (safeSet(ADMIN_KEY, JSON.stringify(a))) scheduleCloudBackup(); }
-function isAdmin(u) { return !!u && adminList().includes(u); }
+function isAdmin(u) {
+  if (!u) return false;
+  const uname = typeof u === 'string' ? u : u.username;
+  if (adminList().includes(uname)) return true;
+  const acc = typeof u === 'string' ? accountByUsername(uname) : u;
+  return !!(acc && acc.badges && (acc.badges.owner || acc.badges.admin));
+}
 function isSupport(u) { return !!(u && u.support); }
 function ensureDefaultAdmin() {
   const accs = accountsList();
@@ -1157,15 +1163,12 @@ function createdTodayCount(tickets) {
   const st = startOfToday();
   return Object.values(tickets).filter(x => x.author === currentUser.username && (x.createdAt || new Date(x.time).getTime()) >= st).length;
 }
-function supportTicketListHtml() {
+function supportCreateFormHtml() {
   const t = loadTickets();
-  const mine = Object.values(t).filter(x => x.author === currentUser.username)
-    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   const createdToday = createdTodayCount(t);
   const remaining = Math.max(0, MAX_ACTIVE_TICKETS - createdToday);
-  const cnt = s => mine.filter(x => x.status === s).length;
   const locked = remaining === 0;
-  const form = `
+  return `
     <div class="manage-section">
       <h4>Создать тикет <span class="ticket-limit ${locked ? 'ticket-limit-full' : ''}">${locked ? 'Лимит на сегодня исчерпан' : 'Сегодня осталось: ' + remaining + ' из ' + MAX_ACTIVE_TICKETS}</span></h4>
       <div class="admin-hint">Можно создать не больше ${MAX_ACTIVE_TICKETS} тикетов в день — счётчик сбрасывается каждый день в полночь</div>
@@ -1173,6 +1176,14 @@ function supportTicketListHtml() {
       <textarea class="support-text" rows="3" maxlength="500" placeholder="Опишите вашу проблему..." ${locked ? 'disabled' : ''}></textarea>
       <button type="button" class="btn btn-primary support-create" ${locked ? 'disabled style="opacity:.5"' : ''}>${locked ? 'Лимит тикетов достигнут' : 'Отправить тикет'}</button>
     </div>`;
+}
+function supportTicketListHtml() {
+  const t = loadTickets();
+  const mine = Object.values(t).filter(x => x.author === currentUser.username)
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  const createdToday = createdTodayCount(t);
+  const cnt = s => mine.filter(x => x.status === s).length;
+  const form = supportCreateFormHtml();
   const chips = `
     <div class="st-chips">
       <span class="st-chip">Открыт: ${cnt('open')}</span>
@@ -1207,8 +1218,9 @@ function supportStaffHtml() {
   const counts = s => all.filter(x => x.status === s).length;
   const tabs = ['all', 'open', 'work', 'done', 'closed'].map(s => `
     <button type="button" class="sf-tab ${supportFilter === s ? 'on' : ''}" data-f="${s}">${s === 'all' ? 'Все' : TICKET_STATUS[s]} ${s === 'all' ? all.length : counts(s)}</button>`).join('');
+  const form = supportCreateFormHtml();
   const tabsHtml = `<div class="sf-tabs">${tabs}</div>`;
-  if (!all.length) return tabsHtml + '<div class="empty-list">Пока нет ни одного тикета</div>';
+  if (!all.length) return form + tabsHtml + '<div class="empty-list">Пока нет ни одного тикета</div>';
   const list = all.filter(x => supportFilter === 'all' || x.status === supportFilter).map(x => {
     const author = accountByUsername(x.author);
     return `
@@ -1232,7 +1244,7 @@ function supportStaffHtml() {
         </div>
       </div>`;
   }).join('');
-  return tabsHtml + (list || '<div class="empty-list">Нет тикетов с таким статусом</div>');
+  return form + tabsHtml + (list || '<div class="empty-list">Нет тикетов с таким статусом</div>');
 }
 function supportStatsHtml() {
   const t = Object.values(loadTickets()).filter(x => x.status === 'done' && x.doneBy && x.doneAt);
@@ -3057,6 +3069,8 @@ function renderChatList() {
 
   const hrow = $('#hiddenToggle');
   if (hrow) hrow.addEventListener('click', () => { showHidden = !showHidden; renderChatList(); });
+
+  if (isMobileView() && state.currentChatId) mobileShowChat();
 }
 
 /* ============================================================
