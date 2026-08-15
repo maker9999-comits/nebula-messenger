@@ -2698,6 +2698,16 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   margin-bottom: 10px;
   animation: fadeIn .3s ease;
 }
+.demo-toggle {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 4px; padding: 8px 11px;
+  background: var(--bg-hover); border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  font-size: 12.5px; color: var(--text-muted);
+  user-select: none; transition: border-color .15s, color .15s, background .15s;
+}
+.demo-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+.demo-toggle:has(input:checked) { border-color: var(--accent); color: var(--text); background: var(--accent-glow); }
 .demo-code .dc-label { margin-bottom: 6px; }
 .demo-code .dc-code-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .demo-code .dc-code { font-weight: 800; letter-spacing: 4px; font-size: 19px; color: #4dffd8; font-variant-numeric: tabular-nums; }
