@@ -9,6 +9,39 @@ let currentUser = null;
 const ACCOUNTS_KEY = 'nebula_accounts_v2';
 const SESSION_KEY = 'nebula_session_v2';
 const STATE_PREFIX = 'nebula_state_v2_';
+const DELETED_USERS_KEY = 'nebula_deleted_users_v1';
+function deletedUsers() {
+  try { return JSON.parse(localStorage.getItem(DELETED_USERS_KEY)) || []; } catch (e) { return []; }
+}
+function markUserDeleted(username) {
+  const list = deletedUsers();
+  if (!list.includes(username)) { list.push(username); safeSet(DELETED_USERS_KEY, JSON.stringify(list)); }
+}
+/* Можно ли добавить облачного пользователя в локальную базу:
+   не совпадает ли юзернейм, не удалён ли он, и нет ли уже аккаунта с такой почтой */
+function cloudMergeUserOk(local, u, uname) {
+  if (local.users[uname]) return false;
+  if (deletedUsers().includes(uname)) return false;
+  if (u && u.email && Object.values(local.users).some(x => x && x.email && String(x.email).toLowerCase() === String(u.email).toLowerCase())) return false;
+  return true;
+}
+/* Синхронизация списка удалённых аккаунтов: другие устройства тоже
+   перестают видеть удалённого пользователя */
+function applyDeletedFromCloud(delList) {
+  if (!Array.isArray(delList) || !delList.length) return false;
+  const localDel = deletedUsers();
+  let changed = false;
+  delList.forEach(u => { if (!localDel.includes(u)) { localDel.push(u); changed = true; } });
+  if (changed) safeSet(DELETED_USERS_KEY, JSON.stringify(localDel));
+  const d = loadAccounts();
+  let removed = false;
+  localDel.forEach(u => {
+    if (d.users[u]) { delete d.users[u]; removed = true; }
+    try { localStorage.removeItem(stateKey(u)); } catch (e) {}
+  });
+  if (removed) saveAccounts(d);
+  return changed || removed;
+}
 const ADMIN_KEY = 'nebula_admins_v2';
 const LOG_KEY = 'nebula_log_v2';
 const ANN_KEY = 'nebula_announce_v2';
@@ -197,7 +230,7 @@ function mergeAccountsWithCloud(raw) {
       const cl = JSON.parse(cur.d), lc = JSON.parse(raw);
       let changed = false;
       Object.keys(cl.users || {}).forEach(u => {
-        if (!lc.users[u]) { lc.users[u] = cl.users[u]; changed = true; }
+        if (cloudMergeUserOk(lc, cl.users[u], u)) { lc.users[u] = cl.users[u]; changed = true; }
       });
       return changed ? JSON.stringify(lc) : raw;
     } catch (e) { return raw; }
@@ -215,7 +248,7 @@ function refreshAccountsFromCloud() {
       const local = loadAccounts();
       let changed = false;
       Object.keys(cl.users || {}).forEach(u => {
-        if (!local.users[u]) { local.users[u] = cl.users[u]; changed = true; }
+        if (cloudMergeUserOk(local, cl.users[u], u)) { local.users[u] = cl.users[u]; changed = true; }
       });
       if (changed) {
         saveAccounts(local);
@@ -238,9 +271,22 @@ function runCloudBackup() {
     try {
       const tasks = [];
       try {
-        const raw = localStorage.getItem(ACCOUNTS_KEY);
-        if (raw) tasks.push(mergeAccountsWithCloud(raw).then(m => cloudSave(ACCOUNTS_KEY, m)));
+        let raw = localStorage.getItem(ACCOUNTS_KEY);
+        if (raw) {
+          const del = deletedUsers();
+          if (del.length) {
+            try {
+              const lc = JSON.parse(raw);
+              let changed = false;
+              del.forEach(u => { if (lc.users && lc.users[u]) { delete lc.users[u]; changed = true; } });
+              if (changed) raw = JSON.stringify(lc);
+            } catch (e) {}
+          }
+          tasks.push(mergeAccountsWithCloud(raw).then(m => cloudSave(ACCOUNTS_KEY, m)));
+        }
       } catch (e) {}
+      const delList = deletedUsers();
+      if (delList.length) tasks.push(cloudSave(DELETED_USERS_KEY, JSON.stringify(delList)));
       const accounts = loadAccounts();
       Object.keys(accounts.users || {}).forEach(u => {
         const raw = localStorage.getItem(stateKey(u));
@@ -283,7 +329,7 @@ function tryRestoreFromCloud() {
             const lc = JSON.parse(localRaw), cc = JSON.parse(accountsRaw.d);
             let changed = false;
             Object.keys(cc.users || {}).forEach(u => {
-              if (!lc.users[u]) { lc.users[u] = cc.users[u]; changed = true; }
+              if (cloudMergeUserOk(lc, cc.users[u], u)) { lc.users[u] = cc.users[u]; changed = true; }
             });
             if (changed) nextRaw = JSON.stringify(lc);
           } catch (e) {}
@@ -297,6 +343,10 @@ function tryRestoreFromCloud() {
         }
       }
       const accs = loadAccounts();
+      const delRaw = await cloudLoad(DELETED_USERS_KEY);
+      if (delRaw && delRaw.d) {
+        try { applyDeletedFromCloud(JSON.parse(delRaw.d)); } catch (e) {}
+      }
       await Promise.all(Object.keys(accs.users || {}).map(async u => {
         const k = stateKey(u);
         const r = await cloudLoad(k);
@@ -531,7 +581,10 @@ function syncCloudChats() {
 }
 function syncCloudUsers() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve();
-  return cloudLoad(ACCOUNTS_KEY).then(r => {
+  return Promise.all([cloudLoad(ACCOUNTS_KEY), cloudLoad(DELETED_USERS_KEY)]).then(([r, delR]) => {
+    if (delR && delR.d) {
+      try { applyDeletedFromCloud(JSON.parse(delR.d)); } catch (e) {}
+    }
     if (!r) return;
     const meta = loadCloudMeta();
     if ((meta[ACCOUNTS_KEY] || 0) >= r.v) return;
@@ -541,7 +594,7 @@ function syncCloudUsers() {
     const local = loadAccounts();
     let changed = false;
     Object.keys(cloud.users).forEach(u => {
-      if (!local.users[u]) { local.users[u] = cloud.users[u]; changed = true; }
+      if (cloudMergeUserOk(local, cloud.users[u], u)) { local.users[u] = cloud.users[u]; changed = true; }
     });
     if (!changed) { meta[ACCOUNTS_KEY] = r.v; saveCloudMeta(meta); return; }
     saveAccounts(local);
@@ -727,10 +780,15 @@ function uniqueChatsAcrossUsers() {
   return Object.values(map);
 }
 function deleteAccountEverywhere(username) {
+  markUserDeleted(username);
   const d = loadAccounts();
   delete d.users[username];
   saveAccounts(d);
   try { localStorage.removeItem(stateKey(username)); } catch (e) {}
+  if (MAIL_RELAY_URL) {
+    try { cloudDelete(stateKey(username)); } catch (e) {}
+    try { cloudDelete('tracks:' + username); } catch (e) {}
+  }
   accountsList().forEach(u => {
     const s = getStateFor(u.username);
     if (!s || !s.chats) return;
@@ -2617,6 +2675,11 @@ async function handleAuthSubmit() {
         accounts.nextId++;
         accounts.users[username] = acc;
         saveAccounts(accounts);
+        const delL = deletedUsers();
+        if (delL.includes(username)) {
+          safeSet(DELETED_USERS_KEY, JSON.stringify(delL.filter(x => x !== username)));
+          scheduleCloudBackup();
+        }
         ensureDefaultAdmin();
         addLog(username, 'Зарегистрировался (ID ' + acc.id + ')');
         startApp(acc);
@@ -6279,11 +6342,8 @@ function renderSettingsProfile(body) {
       desc: `Для подтверждения мы отправили код на <b>${escapeHtml(u.email)}</b>. Это действие нельзя отменить — все чаты будут удалены.`,
       email: u.email,
       onSuccess: () => {
-        const d = loadAccounts();
-        delete d.users[u.username];
-        saveAccounts(d);
-        localStorage.removeItem(stateKey(u.username));
-        localStorage.removeItem(SESSION_KEY);
+        deleteAccountEverywhere(u.username);
+        try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
         logout();
         toast('Аккаунт удалён');
       }
