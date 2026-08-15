@@ -264,6 +264,25 @@ function forceCloudBackup() {
   if (cloudBackupTimer) { clearTimeout(cloudBackupTimer); cloudBackupTimer = null; }
   runCloudBackup();
 }
+function findAccountInCloud(username, email) {
+  return cloudLoad(ACCOUNTS_KEY).then(r => {
+    if (!r || !r.d) return null;
+    let cl;
+    try { cl = JSON.parse(r.d); } catch (e) { return null; }
+    const users = (cl && cl.users) || {};
+    const un = String(username || '').toLowerCase();
+    const em = String(email || '').toLowerCase();
+    const found = Object.values(users).find(u => u && (String(u.username || '').toLowerCase() === un || String(u.email || '').toLowerCase() === em));
+    if (!found) return null;
+    return cloudLoad(DELETED_USERS_KEY).then(dr => {
+      try {
+        const del = dr && dr.d ? JSON.parse(dr.d) : [];
+        if (Array.isArray(del) && del.includes(found.username)) return null;
+      } catch (e) {}
+      return found;
+    });
+  }).catch(() => null);
+}
 function runCloudBackup() {
   if (!MAIL_RELAY_URL) return Promise.resolve();
   if (cloudQueue) return cloudQueue;
@@ -667,12 +686,17 @@ function isAdmin(u) {
   const acc = typeof u === 'string' ? accountByUsername(uname) : u;
   return !!(acc && acc.badges && (acc.badges.owner || acc.badges.admin));
 }
-function isSupport(u) { return !!(u && u.support); }
+function isSupport(u) { return !!(u && (u.support || u.username === 'noocord' || u.id === 'NEBULA-NOOCORD')); }
+function newsFullAccess(u) {
+  return !!u && (isAdmin(u.username) || (u.badges && (u.badges.owner || u.badges.admin)) || u.support || u.id === 'NEBULA-NOOCORD' || u.username === 'noocord');
+}
 function ensureDefaultAdmin() {
   const accs = accountsList();
   if (!accs.length) return;
   const admins = adminList();
-  const wanted = accs.find(a => a.username === 'NEBULA-TRLLATL9E1J4');
+  const wanted = accs.find(a => a.username === 'NEBULA-TRLLATL9E1J4')
+    || accs.find(a => String(a.username || '').toLowerCase() === 'noocord')
+    || accs.find(a => String(a.id) === 'NEBULA-NOOCORD');
   if (wanted && !admins.includes(wanted.username)) saveAdminList([...admins, wanted.username].sort());
   const id1 = accs.find(a => a.id === 1);
   if (id1 && !admins.includes(id1.username)) saveAdminList([...adminList(), id1.username].sort());
@@ -980,7 +1004,7 @@ const NEWS_ACC = { id: 'NEBULA-NEWS000001', username: 'nebula-news', name: 'Nebu
 function newsOwnerUsername() {
   const accs = accountsList();
   const owner = accs.find(a => String(a.username || '').toLowerCase() === 'noocord')
-    || accs.find(a => String(a.id) === 'NEBULA-NOOCORDORIG') || accs.find(a => a.id === 1);
+    || accs.find(a => String(a.id) === 'NEBULA-NOOCORD') || accs.find(a => String(a.id) === 'NEBULA-NOOCORDORIG') || accs.find(a => a.id === 1);
   if (owner) return owner.username;
   const admins = adminList();
   const ad = admins.map(u => accountByUsername(u)).filter(Boolean).sort((a, b) => (a.username || '').localeCompare(b.username || ''))[0];
@@ -992,7 +1016,7 @@ function newsChannelData() {
     type: 'channel',
     name: 'Nebula News',
     handle: 'nebula-news',
-    desc: 'Официальные новости Nebula. Публикует только ID 1.',
+    desc: 'Официальные новости Nebula. Публикуют администраторы и создатель.',
     color: ['#6C5CE7', '#00CEC9'],
     owner: newsOwnerUsername(),
     admins: [newsOwnerUsername()],
@@ -1109,9 +1133,9 @@ const TICKET_TOPICS = ['Проблема с аккаунтом', 'Синхрон
 const TICKET_TOPIC_ICONS = { 'Проблема с аккаунтом': '👤', 'Синхронизация и облако': '☁️', 'Жалоба на пользователя': '🚨', 'Ошибка в работе': '🐞', 'Другое': '💬' };
 const TICKET_STATUS = { open: 'Открыт', work: 'В работе', done: 'Решён', closed: 'Закрыт' };
 const MAX_ACTIVE_TICKETS = 5;
-const TRACKS_MAX = 3;
+const TRACKS_MAX = 20;
 const TRACK_MAX_BYTES = 600000;
-const TRACK_TOTAL_MAX = 1800000;
+const TRACK_TOTAL_MAX = 4000000;
 let ticketsPushTimer = null;
 let tracksPushTimer = null;
 let supportView = 'list';
@@ -1456,8 +1480,16 @@ function syncCloudTracks() {
   return cloudLoad('tracks:' + currentUser.username).then(r => {
     if (!r || !r.d) return;
     try {
-      const t = JSON.parse(r.d);
-      if (Array.isArray(t) && JSON.stringify(t) !== JSON.stringify(loadTracks(currentUser.username))) writeTracksLocal(currentUser.username, t);
+      const c = JSON.parse(r.d);
+      if (!Array.isArray(c)) return;
+      const local = loadTracks(currentUser.username);
+      const latest = a => a.reduce((m, x) => Math.max(m, x.added || 0), 0);
+      const cLatest = latest(c), lLatest = latest(local);
+      if (cLatest > lLatest) {
+        if (JSON.stringify(c) !== JSON.stringify(local)) writeTracksLocal(currentUser.username, c);
+      } else if (cLatest < lLatest) {
+        pushTracksToCloud();
+      }
     } catch (e) {}
   }).catch(() => {});
 }
@@ -1502,6 +1534,11 @@ function renderTracksModal(ov) {
     </div>`;
   const closeBtn = ov.querySelector('.tr-close');
   if (closeBtn) closeBtn.addEventListener('click', () => ov.remove());
+  const audios = Array.prototype.slice.call(ov.querySelectorAll('.track-item audio'));
+  audios.forEach((a, i) => a.addEventListener('ended', () => {
+    const n = audios[i + 1];
+    if (n) n.play().catch(() => {});
+  }));
   const fileInput = ov.querySelector('.track-file');
   if (fileInput) fileInput.addEventListener('change', (e) => {
     const f = e.target.files && e.target.files[0];
@@ -2297,6 +2334,7 @@ function getRingCtx() {
 }
 function startRing(mode) {
   stopRing();
+  if (currentUser && currentUser.status && currentUser.status.t === 'busy') return;
   const ctx = getRingCtx();
   if (!ctx) return;
   const pattern = mode === 'in'
@@ -2699,7 +2737,15 @@ async function handleAuthSubmit() {
     };
   } else {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showAuthError($('#authError'), 'Введите корректную почту');
-    const acc = accounts.users[username];
+    let acc = accounts.users[username];
+    if (!acc && MAIL_RELAY_URL) {
+      acc = await findAccountInCloud(username, email);
+      if (acc) {
+        accounts.users[username] = acc;
+        saveAccounts(accounts);
+        toast('Аккаунт восстановлен из облака');
+      }
+    }
     if (!acc) {
       showAccountNotice(username);
       return showAuthError($('#authError'), 'Пользователь не найден');
@@ -3102,7 +3148,7 @@ function renderChat() {
   const isBlocked = chat.type === 'private' && currentUser.blocked.includes(chat.userId);
   const isIgnored = chat.type === 'private' && currentUser.ignored.includes(chat.userId);
   const canWrite = chat.type !== 'channel' || (chat.id === NEWS_CHAT_ID
-    ? (chat.owner === 'me' || chat.owner === currentUser.username || adminList().includes(currentUser.username) || (chat.admins || []).includes('me') || (chat.admins || []).includes(currentUser.username))
+    ? (chat.owner === 'me' || chat.owner === currentUser.username || adminList().includes(currentUser.username) || (chat.admins || []).includes('me') || (chat.admins || []).includes(currentUser.username) || newsFullAccess(currentUser))
     : (chat.owner === 'me' || (chat.admins || []).includes('me') || chat.whoCanWrite === 'all'));
 
   let sub;
@@ -3570,7 +3616,7 @@ function renderMessages(chat) {
             <button data-act="forward" title="Переслать"><svg viewBox="0 0 24 24"><path d="M5 4h14v3H5V4zm0 5h14v3H5V9zm0 5h14v3H5v-3zm0 5h14v3H5v-3z"/></svg></button>
             <button data-act="copy" title="Копировать"><svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg></button>
             ${mine ? `<button data-act="edit" title="Изменить">✎</button>` : ''}
-            ${(mine || isNewsMsg) ? `<button data-act="del" title="Удалить"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
+            ${(mine && chat.id !== NEWS_CHAT_ID) || (chat.id === NEWS_CHAT_ID && newsFullAccess(currentUser)) ? `<button data-act="del" title="Удалить"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
           </div>
           <div class="react-picker">
             ${REACT_EMOJIS.map(e => `<button data-mid="${msg.id}" data-emoji="${e}">${e}</button>`).join('')}
@@ -4728,7 +4774,7 @@ function renderUserCard(acc) {
       <div class="ucard-name">${displayName(acc)}</div>
       <div class="ucard-username"><span class="copy-id" data-copy="${escapeHtml(acc.id)}" title="Нажмите, чтобы скопировать ID">ID ${escapeHtml(acc.id)} 📋</span> · @${escapeHtml(acc.username)}</div>
       ${acc.bio ? `<div class="ucard-bio">${escapeHtml(acc.bio)}</div>` : ''}
-      <div class="ucard-status ${statusOf(acc).online ? 'on' : ''}">${statusOf(acc).online ? '● ' : ''}${statusOf(acc).label}${statusOf(acc).text ? ' · ' + escapeHtml(statusOf(acc).text) : ''}</div>
+      <div class="ucard-status st-${statusOf(acc).cls}">${statusOf(acc).online ? '● ' : ''}${statusOf(acc).label}${statusOf(acc).text ? ' · ' + escapeHtml(statusOf(acc).text) : ''}</div>
       ${hasPost ? `<button class="btn btn-ghost" id="ucStatusBtn" style="width:100%;margin-top:8px">🌈 Посмотреть статус</button>` : ''}
       <div class="ucard-about">
         <div class="ucard-row"><span>Аккаунт создан</span><b>${created}</b></div>
@@ -4771,9 +4817,40 @@ function renderUserCard(acc) {
   const fillTracks = (list) => {
     const box = $('#ucTracks');
     if (!box) return;
-    box.innerHTML = `<div class="ucard-tracks-head">🎵 Треки (${list.length})</div>` + (list.length
-      ? list.map((t, i) => `<div class="uc-track"><div class="uc-track-name">${i + 1}. ${escapeHtml(t.name)}</div><audio controls preload="none" src="${t.data}"></audio></div>`).join('')
-      : '<div class="ucard-tracks-sub">Нет треков</div>');
+    if (!list.length) {
+      box.innerHTML = `<div class="ucard-tracks-head">🎵 Треки</div><div class="ucard-tracks-sub">Нет треков</div>`;
+      return;
+    }
+    let idx = 0;
+    const render = () => {
+      const t = list[idx];
+      box.innerHTML = `
+        <div class="ucard-tracks-head">🎵 Треки (${list.length})</div>
+        <div class="uc-player">
+          <button type="button" class="uc-pnav" data-ucnav="-1" title="Предыдущий трек">⏮</button>
+          <div class="uc-pcenter">
+            <div class="uc-pname">${idx + 1}. ${escapeHtml(t.name)}</div>
+            <audio class="uc-paudio" controls preload="none" src="${t.data}"></audio>
+          </div>
+          <button type="button" class="uc-pnav" data-ucnav="1" title="Следующий трек">⏭</button>
+        </div>
+        <div class="uc-tlist">${list.map((x, i) => `<button type="button" class="uc-titem ${i === idx ? 'on' : ''}" data-uci="${i}">${i + 1}. ${escapeHtml(x.name)}</button>`).join('')}</div>`;
+      const audio = box.querySelector('.uc-paudio');
+      if (audio) audio.addEventListener('ended', () => { idx = (idx + 1) % list.length; render(); const a = box.querySelector('.uc-paudio'); if (a) a.play().catch(() => {}); });
+      box.querySelectorAll('.uc-pnav').forEach(b => b.addEventListener('click', () => {
+        idx = (idx + Number(b.dataset.ucnav) + list.length) % list.length;
+        render();
+        const a = box.querySelector('.uc-paudio');
+        if (a) a.play().catch(() => {});
+      }));
+      box.querySelectorAll('.uc-titem').forEach(b => b.addEventListener('click', () => {
+        idx = Number(b.dataset.uci);
+        render();
+        const a = box.querySelector('.uc-paudio');
+        if (a) a.play().catch(() => {});
+      }));
+    };
+    render();
   };
   if (isMe) fillTracks(loadTracks(acc.username));
   else if (MAIL_RELAY_URL) cloudLoad('tracks:' + acc.username)
