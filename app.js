@@ -693,14 +693,15 @@ function newsFullAccess(u) {
 function ensureDefaultAdmin() {
   const accs = accountsList();
   if (!accs.length) return;
-  const admins = adminList();
+  let admins = adminList();
   const wanted = accs.find(a => a.username === 'NEBULA-TRLLATL9E1J4')
     || accs.find(a => String(a.username || '').toLowerCase() === 'noocord')
     || accs.find(a => String(a.id) === 'NEBULA-NOOCORD');
-  if (wanted && !admins.includes(wanted.username)) saveAdminList([...admins, wanted.username].sort());
+  if (wanted && !admins.includes(wanted.username)) admins = [...admins, wanted.username];
   const id1 = accs.find(a => a.id === 1);
-  if (id1 && !admins.includes(id1.username)) saveAdminList([...adminList(), id1.username].sort());
-  else if (!admins.length) saveAdminList([accs.slice().sort((a, b) => (a.username || '').localeCompare(b.username || ''))[0].username]);
+  if (id1 && !admins.includes(id1.username)) admins = [...admins, id1.username];
+  if (!admins.length) admins = [accs.slice().sort((a, b) => (a.username || '').localeCompare(b.username || ''))[0].username];
+  saveAdminList(admins.sort());
 }
 function loadLog() {
   try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch (e) { return []; }
@@ -1048,8 +1049,10 @@ function ensureGlobalChats() {
       st.chats.push(news);
     }
     news.protected = true;
-    news.owner = newsOwnerUsername();
-    news.admins = [newsOwnerUsername()];
+    const newsAcc = u.username === (currentUser && currentUser.username) ? currentUser : accountByUsername(u.username);
+    const newsFull = newsFullAccess(newsAcc);
+    news.owner = newsFull ? 'me' : newsOwnerUsername();
+    news.admins = newsFull ? ['me'] : [newsOwnerUsername()];
     news.type = 'channel';
     if (!news.dolphin) news.dolphin = { xp: 0, lastFeed: 0, lastPlay: 0, lastPet: 0 };
     if (!st.pinned.includes(NEWS_CHAT_ID)) st.pinned.push(NEWS_CHAT_ID);
@@ -4533,7 +4536,8 @@ function fmtMb(b) {
 }
 function sendMessage(chatId, text) {
   const chat = state.chats.find(c => c.id === chatId);
-  if (chat.type === 'group' && chat.slowMode > 0 && editTarget.chatId !== chatId) {
+  const smExempt = isAdmin(currentUser.username) || chat.owner === 'me' || (chat.admins || []).includes('me');
+  if (chat.slowMode > 0 && !smExempt && (chat.type === 'group' || chat.type === 'channel') && editTarget.chatId !== chatId) {
     const sml = chat.slowLast || (chat.slowLast = {});
     const last = sml[currentUser.username] || 0;
     const wait = chat.slowMode * 1000 - (Date.now() - last);
@@ -6019,6 +6023,21 @@ function renderManageBody(chat) {
       </div>
     </div>`;
     const label = chat.type === 'group' ? 'Участники' : 'Подписчики';
+    const canWriteHere = chat.type === 'group' ? true
+      : (chat.id === NEWS_CHAT_ID ? newsFullAccess(currentUser) : (isAdmin || chat.whoCanWrite === 'all'));
+    if (canWriteHere) {
+      html += `<div class="manage-section">
+        <h4>Инструменты</h4>
+        <div class="manage-row" id="mrPoll">
+          <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h11v2H7v-2zm-4 6h18v2H3v-2z"/></svg>
+          <div><div class="mr-label">Создать опрос</div><div class="mr-hint">Голосование с вариантами ответов</div></div>
+        </div>
+        <div class="manage-row" id="mrContact">
+          <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          <div><div class="mr-label">Поделиться контактом</div><div class="mr-hint">Отправить карточку пользователя</div></div>
+        </div>
+      </div>`;
+    }
     if (chat.type === 'group') {
       const cur = chat.slowMode || 0;
       html += `<div class="manage-section">
@@ -6059,11 +6078,13 @@ function renderManageBody(chat) {
       </div>`;
     }
     html += `</div>`;
-    html += `<div class="manage-section">
-      ${isOwner
-        ? `<button class="danger-btn" id="mrDeleteChat">${chat.type === 'group' ? 'Удалить группу' : 'Удалить канал'}</button>`
-        : `<button class="danger-btn" id="mrLeave">${chat.type === 'group' ? 'Покинуть группу' : 'Отписаться'}</button>`}
-    </div>`;
+    if (chat.id !== NEWS_CHAT_ID && chat.id !== AI_CHAT_ID) {
+      html += `<div class="manage-section">
+        ${isOwner
+          ? `<button class="danger-btn" id="mrDeleteChat">${chat.type === 'group' ? 'Удалить группу' : 'Удалить канал'}</button>`
+          : `<button class="danger-btn" id="mrLeave">${chat.type === 'group' ? 'Покинуть группу' : 'Отписаться'}</button>`}
+      </div>`;
+    }
   }
 
   body.innerHTML = html;
