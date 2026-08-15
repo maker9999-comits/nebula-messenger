@@ -1049,18 +1049,27 @@ function syncCloudTickets() {
     if (changed) saveTickets(merged);
   }).catch(() => {});
 }
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+function createdTodayCount(tickets) {
+  const st = startOfToday();
+  return Object.values(tickets).filter(x => x.author === currentUser.username && (x.createdAt || new Date(x.time).getTime()) >= st).length;
+}
 function supportTicketListHtml() {
   const t = loadTickets();
   const mine = Object.values(t).filter(x => x.author === currentUser.username)
     .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  const active = mine.filter(x => x.status !== 'closed').length;
-  const remaining = Math.max(0, MAX_ACTIVE_TICKETS - active);
+  const createdToday = createdTodayCount(t);
+  const remaining = Math.max(0, MAX_ACTIVE_TICKETS - createdToday);
   const cnt = s => mine.filter(x => x.status === s).length;
   const locked = remaining === 0;
   const form = `
     <div class="manage-section">
-      <h4>Создать тикет <span class="ticket-limit ${locked ? 'ticket-limit-full' : ''}">${locked ? 'Лимит исчерпан' : 'Осталось: ' + remaining + ' из ' + MAX_ACTIVE_TICKETS}</span></h4>
-      <div class="admin-hint">Активными считаются тикеты в статусе «Открыт», «В работе» и «Решён». Закрытые лимит не занимают</div>
+      <h4>Создать тикет <span class="ticket-limit ${locked ? 'ticket-limit-full' : ''}">${locked ? 'Лимит на сегодня исчерпан' : 'Сегодня осталось: ' + remaining + ' из ' + MAX_ACTIVE_TICKETS}</span></h4>
+      <div class="admin-hint">Можно создать не больше ${MAX_ACTIVE_TICKETS} тикетов в день — счётчик сбрасывается каждый день в полночь</div>
       <select class="support-topic" ${locked ? 'disabled' : ''}>${TICKET_TOPICS.map(x => `<option>${x}</option>`).join('')}</select>
       <textarea class="support-text" rows="3" maxlength="500" placeholder="Опишите вашу проблему..." ${locked ? 'disabled' : ''}></textarea>
       <button type="button" class="btn btn-primary support-create" ${locked ? 'disabled style="opacity:.5"' : ''}>${locked ? 'Лимит тикетов достигнут' : 'Отправить тикет'}</button>
@@ -1071,7 +1080,7 @@ function supportTicketListHtml() {
       <span class="st-chip">В работе: ${cnt('work')}</span>
       <span class="st-chip">Решён: ${cnt('done')}</span>
       <span class="st-chip">Закрыт: ${cnt('closed')}</span>
-      <span class="st-chip st-chip-accent">Активных: ${active}/${MAX_ACTIVE_TICKETS}</span>
+      <span class="st-chip st-chip-accent">Открыто сегодня: ${createdToday}/${MAX_ACTIVE_TICKETS}</span>
     </div>`;
   const list = mine.length ? mine.map(x => {
     const author = accountByUsername(x.author);
@@ -1258,8 +1267,7 @@ function supportModalClick(e) {
     const text = ov.querySelector('.support-text').value.trim();
     if (!text) return toast('Ошибка', 'Опишите вашу проблему');
     const t = loadTickets();
-    const active = Object.values(t).filter(x => x.author === currentUser.username && x.status !== 'closed').length;
-    if (active >= MAX_ACTIVE_TICKETS) return toast('Лимит', `Максимум ${MAX_ACTIVE_TICKETS} активных тикетов — закройте старые`);
+    if (createdTodayCount(t) >= MAX_ACTIVE_TICKETS) return toast('Лимит', `Максимум ${MAX_ACTIVE_TICKETS} тикетов в день — лимит обновится завтра в полночь`);
     const id = 't' + Date.now() + Math.random().toString(36).slice(2, 5);
     t[id] = {
       id, author: currentUser.username, topic, text,
