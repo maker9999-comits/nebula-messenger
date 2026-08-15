@@ -213,6 +213,8 @@ function runCloudBackup() {
       if (ann) tasks.push(cloudSave(ANN_KEY, ann));
       const tickets = localStorage.getItem(TICKETS_KEY);
       if (tickets) tasks.push(cloudSave(TICKETS_KEY, tickets));
+      const tracksRaw = currentUser ? localStorage.getItem('nebula_tracks_' + currentUser.username) : null;
+      if (tracksRaw) tasks.push(cloudSave('tracks:' + currentUser.username, tracksRaw));
       await Promise.all(tasks);
     } finally {
       cloudQueue = null;
@@ -521,7 +523,7 @@ function startCloudSync() {
   syncCloudChats();
   syncCloudTickets();
   syncCloudUsers();
-  cloudSyncTimer = setInterval(() => { syncCloudChats(); syncCloudTickets(); syncCloudUsers(); }, 4000);
+  cloudSyncTimer = setInterval(() => { syncCloudChats(); syncCloudTickets(); syncCloudUsers(); syncCloudTracks(); }, 4000);
 }
 function stateKey(u) { return STATE_PREFIX + u; }
 function loadState() {
@@ -999,9 +1001,14 @@ function syncNewsDeleteEverywhere(msgId) {
 const TICKETS_KEY = 'nebula_tickets_v1';
 const TICKETS_CLOUD_KEY = 'tickets';
 const TICKET_TOPICS = ['Проблема с аккаунтом', 'Синхронизация и облако', 'Жалоба на пользователя', 'Ошибка в работе', 'Другое'];
+const TICKET_TOPIC_ICONS = { 'Проблема с аккаунтом': '👤', 'Синхронизация и облако': '☁️', 'Жалоба на пользователя': '🚨', 'Ошибка в работе': '🐞', 'Другое': '💬' };
 const TICKET_STATUS = { open: 'Открыт', work: 'В работе', done: 'Решён', closed: 'Закрыт' };
 const MAX_ACTIVE_TICKETS = 5;
+const TRACKS_MAX = 3;
+const TRACK_MAX_BYTES = 600000;
+const TRACK_TOTAL_MAX = 1800000;
 let ticketsPushTimer = null;
+let tracksPushTimer = null;
 let supportView = 'list';
 let supportTicketId = null;
 let supportFilter = 'all';
@@ -1073,7 +1080,7 @@ function supportTicketListHtml() {
       <div class="st-head">
         <span class="avatar" style="${avatarStyle(author)}">${avatarInnerHtml(author)}</span>
         <div class="st-info">
-          <div class="st-topic">${escapeHtml(x.topic)}</div>
+          <div class="st-topic">${TICKET_TOPIC_ICONS[x.topic] || '💬'} ${escapeHtml(x.topic)}</div>
           <div class="st-meta">${fmtTime(x.time)} · ${(x.messages || []).length} сообщ.${x.assignee ? ' · отвечает @' + escapeHtml(x.assignee) : ''}${x.doneBy ? ' · решил @' + escapeHtml(x.doneBy) : ''}</div>
         </div>
         <span class="support-status st-${x.status}">${ticketStatusLabel(x.status)}</span>
@@ -1101,7 +1108,7 @@ function supportStaffHtml() {
         <div class="st-head">
           <span class="avatar" style="${avatarStyle(author)}">${avatarInnerHtml(author)}</span>
           <div class="st-info">
-            <div class="st-topic">${escapeHtml(x.topic)}</div>
+            <div class="st-topic">${TICKET_TOPIC_ICONS[x.topic] || '💬'} ${escapeHtml(x.topic)}</div>
             <div class="st-meta">От @${escapeHtml(x.author)}${author ? ' · ' + escapeHtml(author.name) : ''} · ${fmtTime(x.time)}${x.assignee ? ' · в работе у @' + escapeHtml(x.assignee) : ''}${x.doneBy ? ' · решил @' + escapeHtml(x.doneBy) + ' · ' + fmtTime(x.doneAt) : ''}</div>
           </div>
           <span class="support-status st-${x.status}">${ticketStatusLabel(x.status)}</span>
@@ -1189,17 +1196,17 @@ function renderSupportModal(ov) {
   }
   ov.innerHTML = `
     <div class="modal-box support-modal">
-      <div class="pm-head">
-        <span class="pm-ico">🎧</span>
-        <div class="pm-head-txt">
+      <div class="support-hero">
+        <span class="support-hero-ico">🎧</span>
+        <div class="support-hero-txt">
           <h3>Тех поддержка</h3>
           <p>${staff ? 'Вы — сотрудник тех поддержки. Вам доступны все тикеты' : 'Опишите проблему — мы ответим в чате тикета'}</p>
         </div>
-        <button type="button" class="pm-x" title="Закрыть">✕</button>
+        <button type="button" class="pm-x support-hero-x" title="Закрыть">✕</button>
       </div>
       ${bodyHtml}
     </div>`;
-  const closeBtn = ov.querySelector('.pm-x');
+  const closeBtn = ov.querySelector('.support-hero-x');
   if (closeBtn) closeBtn.addEventListener('click', closeSupportModal);
   const inp = ov.querySelector('.support-input');
   if (inp) {
@@ -1303,6 +1310,124 @@ function supportModalClick(e) {
   if (closeT) { setTicketStatus(closeT.closest('.support-ticket').dataset.tid, 'closed', 'Тикет закрыт'); renderSupportModal(ov); return; }
   const reopen = e.target.closest('.st-reopen');
   if (reopen) { setTicketStatus(reopen.closest('.support-ticket').dataset.tid, 'open', 'Тикет открыт заново'); renderSupportModal(ov); return; }
+}
+
+/* ---------- МОИ ТРЕКИ (MP3) ---------- */
+function loadTracks(u) {
+  try { return JSON.parse(localStorage.getItem('nebula_tracks_' + u)) || []; } catch (e) { return []; }
+}
+function writeTracksLocal(u, list) {
+  if (safeSet('nebula_tracks_' + u, JSON.stringify(list)) && u === currentUser.username) scheduleCloudBackup();
+}
+function saveTracks(u, list) {
+  if (safeSet('nebula_tracks_' + u, JSON.stringify(list))) {
+    if (u === currentUser.username) scheduleTracksPush();
+  }
+}
+function scheduleTracksPush() {
+  if (tracksPushTimer) clearTimeout(tracksPushTimer);
+  tracksPushTimer = setTimeout(() => { tracksPushTimer = null; pushTracksToCloud(); }, 1500);
+}
+function pushTracksToCloud() {
+  if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve(false);
+  return cloudSave('tracks:' + currentUser.username, JSON.stringify(loadTracks(currentUser.username)));
+}
+function syncCloudTracks() {
+  if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve();
+  return cloudLoad('tracks:' + currentUser.username).then(r => {
+    if (!r || !r.d) return;
+    try {
+      const t = JSON.parse(r.d);
+      if (Array.isArray(t) && JSON.stringify(t) !== JSON.stringify(loadTracks(currentUser.username))) writeTracksLocal(currentUser.username, t);
+    } catch (e) {}
+  }).catch(() => {});
+}
+function tracksListHtml() {
+  const list = loadTracks(currentUser.username);
+  return list.map((t, i) => `
+    <div class="track-item">
+      <span class="track-num">${i + 1}</span>
+      <div class="track-info">
+        <div class="track-name">${escapeHtml(t.name)}</div>
+        <div class="track-meta">${fmtBytes(t.size)} · ${new Date(t.added).toLocaleDateString('ru-RU')}</div>
+        <audio controls preload="none" src="${t.data}"></audio>
+      </div>
+      <button type="button" class="btn btn-danger track-del" data-i="${i}">Удалить</button>
+    </div>`).join('') || '<div class="empty-list">Пока нет треков</div>';
+}
+function renderTracksModal(ov) {
+  const list = loadTracks(currentUser.username);
+  ov.innerHTML = `
+    <div class="modal-box support-modal tracks-modal">
+      <div class="pm-head">
+        <span class="pm-ico">🎵</span>
+        <div class="pm-head-txt">
+          <h3>Мои треки (MP3)</h3>
+          <p>Показываются в вашей карточке у других пользователей</p>
+        </div>
+        <button type="button" class="pm-x tr-close" title="Закрыть">✕</button>
+      </div>
+      <div class="manage-section">
+        <h4>Добавить трек</h4>
+        <div class="admin-hint">Файл до ${Math.round(TRACK_MAX_BYTES / 1024)} КБ · максимум ${TRACKS_MAX} треков · всего до ${Math.round(TRACK_TOTAL_MAX / 1024 / 1024 * 10) / 10} МБ</div>
+        <label class="track-upload">
+          <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+          <span>Выбрать MP3-файл</span>
+          <input type="file" class="track-file" accept="audio/mpeg,audio/mp3,.mp3">
+        </label>
+      </div>
+      <div class="manage-section">
+        <h4>Мои треки (${list.length}/${TRACKS_MAX})</h4>
+        ${tracksListHtml()}
+      </div>
+    </div>`;
+  const closeBtn = ov.querySelector('.tr-close');
+  if (closeBtn) closeBtn.addEventListener('click', () => ov.remove());
+  const fileInput = ov.querySelector('.track-file');
+  if (fileInput) fileInput.addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (!/\.mp3$/i.test(f.name) && f.type !== 'audio/mpeg') return toast('Ошибка', 'Нужен файл MP3');
+    if (f.size > TRACK_MAX_BYTES) return toast('Лимит', 'Файл больше ' + Math.round(TRACK_MAX_BYTES / 1024) + ' КБ');
+    const list = loadTracks(currentUser.username);
+    if (list.length >= TRACKS_MAX) return toast('Лимит', 'Максимум ' + TRACKS_MAX + ' треков');
+    const total = list.reduce((n, x) => n + x.data.length, 0);
+    const rd = new FileReader();
+    rd.onload = () => {
+      const data = String(rd.result);
+      if (total + data.length > TRACK_TOTAL_MAX) return toast('Лимит', 'Суммарный объём треков больше ' + Math.round(TRACK_TOTAL_MAX / 1024 / 1024 * 10) / 10 + ' МБ');
+      list.push({ name: f.name.replace(/\.mp3$/i, ''), size: f.size, data, added: Date.now() });
+      saveTracks(currentUser.username, list);
+      renderTracksModal(ov);
+      toast('Трек добавлен', f.name);
+    };
+    rd.onerror = () => toast('Ошибка', 'Не удалось прочитать файл');
+    rd.readAsDataURL(f);
+  });
+}
+function openTracksModal() {
+  if (!currentUser) return;
+  let ov = $('#tracksModal');
+  if (ov) ov.remove();
+  ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.id = 'tracksModal';
+  document.body.appendChild(ov);
+  renderTracksModal(ov);
+  ov.classList.add('open');
+  ov.addEventListener('click', (e) => {
+    if (e.target === ov) ov.remove();
+  });
+  ov.addEventListener('click', (e) => {
+    const del = e.target.closest('.track-del');
+    if (del) {
+      const list = loadTracks(currentUser.username);
+      list.splice(+del.dataset.i, 1);
+      saveTracks(currentUser.username, list);
+      renderTracksModal(ov);
+      toast('Трек удалён');
+    }
+  });
 }
 
 function groupOwnerName(chat) {
@@ -2207,7 +2332,10 @@ function sendAuthCode(email) {
     } else if (r.ok) {
       showAuthError($('#authCodeError'), 'Код отправлен на ' + email);
     } else {
-      showAuthError($('#authCodeError'), 'Ошибка отправки: ' + (r.err || 'попробуйте ещё раз'));
+      box.innerHTML = demoCodeHtml(authCode, 'Письмо не доставлено (' + (r.err || 'ошибка') + ') — вот ваш код:');
+      box.classList.remove('hidden');
+      bindDemoCopy(box);
+      showAuthError($('#authCodeError'), 'Код не дошёл до почты, но показан на экране');
     }
   });
 }
@@ -2881,6 +3009,9 @@ function renderChat() {
 
   area.innerHTML = `
     <header class="chat-header">
+      <button class="icon-btn m-back-btn" id="mBackBtn" title="К списку чатов" style="flex-shrink:0">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
       ${headPost ? `<span class="st-ring st-head" data-post="${escapeHtml(acc.username)}" title="Статус">` : ''}${avatarHtml(acc, '', frame)}${headPost ? '</span>' : ''}
       <div class="chat-header-info">
         <div class="chat-header-title${chat.type !== 'private' && chat.type !== 'ai' && chat.type !== 'saved' ? ' clickable-title' : ''}" ${chat.type !== 'private' && chat.type !== 'ai' && chat.type !== 'saved' ? `data-chcard="${escapeHtml(chat.id)}" title="Карточка ${chat.type === 'channel' ? 'канала' : 'группы'}"` : ''}>${chat.type === 'private' ? displayName(acc) : escapeHtml(chatTitle(chat))}${chat.type === 'channel' && chat.handle ? `<span class="chat-handle ch-link" data-ch="${chat.id}">@${escapeHtml(chat.handle)}</span>` : ''}</div>
@@ -2907,6 +3038,7 @@ function renderChat() {
     requestAnimationFrame(() => scrollChatToBottom());
   });
   bindChatEvents(chat);
+  mobileShowChat();
 }
 
 /* ---------- Прокрутка чата ---------- */
@@ -3311,6 +3443,8 @@ function bindChatEvents(chat) {
   if (hdrLink) hdrLink.addEventListener('click', (e) => { e.stopPropagation(); openChannelByLink(hdrLink.dataset.ch); });
   const manageBtn = $('#manageBtn');
   if (manageBtn) manageBtn.addEventListener('click', () => openManageModal(chat));
+  const mBack = $('#mBackBtn');
+  if (mBack) mBack.addEventListener('click', mobileShowList);
   const callBtn = $('#callBtn');
   if (callBtn) callBtn.addEventListener('click', () => startCall(chat.id, false));
   const vcb = $('#videoCallBtn');
@@ -4450,6 +4584,10 @@ function renderUserCard(acc) {
         <div class="ucard-row"><span>Макс. уровень дельфина</span><b>🐬 ${dolphinMax}</b></div>
         <div class="ucard-row"><span>Рамка аватара</span><b>${frameEmoji} ${frameName}</b></div>
       </div>
+      <div class="ucard-tracks" id="ucTracks">
+        <div class="ucard-tracks-head">🎵 Треки</div>
+        <div class="ucard-tracks-sub">загрузка...</div>
+      </div>
       <div class="ucard-actions">
         ${isMe ? '' : `<button class="btn btn-primary" id="ucWrite"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;margin-right:6px"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 14H6.83L4 18.83V4h14v12z"/></svg>Написать</button>`}
         ${isMe ? '' : `<button class="btn btn-ghost" id="ucCall">📞 Позвонить</button>`}
@@ -4477,6 +4615,18 @@ function renderUserCard(acc) {
   });
   const cc = $('#ucClose');
   if (cc) cc.addEventListener('click', closeUserCard);
+  const fillTracks = (list) => {
+    const box = $('#ucTracks');
+    if (!box) return;
+    box.innerHTML = `<div class="ucard-tracks-head">🎵 Треки (${list.length})</div>` + (list.length
+      ? list.map((t, i) => `<div class="uc-track"><div class="uc-track-name">${i + 1}. ${escapeHtml(t.name)}</div><audio controls preload="none" src="${t.data}"></audio></div>`).join('')
+      : '<div class="ucard-tracks-sub">Нет треков</div>');
+  };
+  if (isMe) fillTracks(loadTracks(acc.username));
+  else if (MAIL_RELAY_URL) cloudLoad('tracks:' + acc.username)
+    .then(r => { try { const t = r && JSON.parse(r.d); fillTracks(Array.isArray(t) ? t : []); } catch (e) { fillTracks([]); } })
+    .catch(() => fillTracks([]));
+  else fillTracks([]);
 }
 function bindUserCardModal() {
   $('#userCardClose').addEventListener('click', closeUserCard);
@@ -4574,8 +4724,30 @@ function selectChat(id) {
   saveState();
   renderChat();
   renderChatList();
+  mobileShowChat();
   maybeShowIncoming(chat);
 }
+
+function isMobileView() { return window.innerWidth <= 820; }
+function mobileShowChat() {
+  if (!isMobileView()) return;
+  const area = $('#chatArea'), side = $('#sidebar');
+  if (!area || !side) return;
+  area.classList.add('mobile-open');
+  side.classList.add('mobile-hidden');
+}
+function mobileShowList() {
+  const area = $('#chatArea'), side = $('#sidebar');
+  if (!area || !side) return;
+  area.classList.remove('mobile-open');
+  side.classList.remove('mobile-hidden');
+}
+window.addEventListener('resize', () => {
+  if (!isMobileView()) {
+    const side = $('#sidebar');
+    if (side) side.classList.remove('mobile-hidden');
+  }
+});
 
 /* ---------- EMOJI ---------- */
 function toggleEmojiPicker(btn, textarea) {
@@ -6001,6 +6173,7 @@ function renderSettingsProfile(body) {
       <div class="setting-row" id="srBio"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg><div><span class="sr-label">Описание</span><span class="sr-hint">${u.bio ? escapeHtml(u.bio) : 'Расскажите о себе (показывается в карточке)'}</span></div></div>
       <div class="setting-row" id="srStatus"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm1-13h-2v6l5.25 3.15L17 12.2l-4-2.4V7z"/></svg><div><span class="sr-label">Статус</span><span class="sr-hint">${escapeHtml(statusOf(u).label + (statusOf(u).text ? ' · ' + statusOf(u).text : ''))}</span></div></div>
       <div class="setting-row" id="srStickers"><svg viewBox="0 0 24 24"><path d="M18.5 2H5.5C4.12 2 3 3.12 3 4.5v15C3 20.88 4.12 22 5.5 22h13c1.38 0 2.5-1.12 2.5-2.5v-15C21 3.12 19.88 2 18.5 2zm0 17.5h-13v-15h13v15zM7.5 6h9v2h-9V6zm0 4h9v2h-9v-2zm0 4h6v2h-6v-2z"/></svg><div><span class="sr-label">Мои стикер-паки</span><span class="sr-hint">Создать пак из фото, избранное, паки друзей</span></div></div>
+      <div class="setting-row" id="srTracks"><svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg><div><span class="sr-label">Мои треки (MP3)</span><span class="sr-hint">Загрузите музыку — она появится в вашей карточке</span></div></div>
       <div class="setting-row" id="srEmail"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><div><span class="sr-label">Сменить почту</span><span class="sr-hint">Текущая: ${escapeHtml(u.email)}</span></div></div>
       <div class="setting-row" id="srPassword"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg><div><span class="sr-label">Сменить пароль</span><span class="sr-hint">Обновите пароль аккаунта</span></div></div>
       <div class="setting-row" id="srSwitch"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><div><span class="sr-label">Сменить аккаунт</span><span class="sr-hint">Войти под другим юзернеймом</span></div></div>
@@ -6017,6 +6190,8 @@ function renderSettingsProfile(body) {
   body.querySelector('#srStatus').addEventListener('click', viewChangeStatus);
   const srStickers = body.querySelector('#srStickers');
   if (srStickers) srStickers.addEventListener('click', openStickersManager);
+  const srTracks = body.querySelector('#srTracks');
+  if (srTracks) srTracks.addEventListener('click', openTracksModal);
   body.querySelector('#srEmail').addEventListener('click', viewChangeEmail);
   body.querySelector('#srPassword').addEventListener('click', viewChangePassword);
   body.querySelector('#srSwitch').addEventListener('click', () => { closeSettings(); openSwitchMenu(); });
@@ -7858,7 +8033,10 @@ function sendModalCode() {
     } else if (r.ok) {
       showAuthError($('#verifyError'), 'Код отправлен на ' + modalVerify.email);
     } else {
-      showAuthError($('#verifyError'), 'Ошибка отправки: ' + (r.err || 'попробуйте ещё раз'));
+      box.innerHTML = demoCodeHtml(modalVerify.code, 'Письмо не доставлено (' + (r.err || 'ошибка') + ') — вот ваш код:');
+      box.classList.remove('hidden');
+      bindDemoCopy(box);
+      showAuthError($('#verifyError'), 'Код не дошёл до почты, но показан на экране');
     }
   });
 }
