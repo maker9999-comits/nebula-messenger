@@ -32,7 +32,7 @@ function sendCodeToEmail(email, code, label) {
       resolve({ ok: false, demo: true });
       return;
     }
-    fetch(MAIL_RELAY_URL, {
+    fetch(MAIL_RELAY_URL + '/mail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to: email, code: code, label: label || 'Код подтверждения Nebula Messenger', secret: MAIL_RELAY_SECRET }),
