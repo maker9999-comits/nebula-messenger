@@ -3828,4 +3828,8 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   #chatArea { position: relative; z-index: 10; }
   #chatArea.mobile-open { margin-left: 0; }
   .m-back-btn { display: inline-flex !important; flex-shrink: 0; }
+  #callBtn, #videoCallBtn, #dolphinBtn { display: none !important; }
+  #stickBtn { display: none !important; }
+  .composer-extra { display: none !important; }
+  .composer { padding-left: 8px; padding-right: 8px; gap: 6px; }
 }
