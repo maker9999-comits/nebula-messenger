@@ -403,16 +403,6 @@ button:hover, .member-item:hover, .create-option:hover, .filter-tab:hover, .prof
 }
 .chat-item:hover { background: var(--bg-hover); }
 .chat-item.active { background: var(--bg-tertiary); }
-.admin-item .admin-avatar {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, #6C5CE7, #00CEC9);
-  box-shadow: 0 2px 8px rgba(0,0,0,.35);
-}
 .chat-item.active::before {
   content: "";
   position: absolute;
