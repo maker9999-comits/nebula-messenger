@@ -3289,6 +3289,7 @@ function renderChat() {
     ${isBlocked ? `<div class="service-msg warn" style="margin:0 22px 10px;align-self:center">в›” Р’С‹ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°Р»Рё СЌС‚РѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ вЂ” РѕРЅ Р±РѕР»СЊС€Рµ РЅРµ СЃРјРѕР¶РµС‚ РІР°Рј РїРёСЃР°С‚СЊ</div>` : ''}
     <div class="composer">
       <div class="rec-bar hidden" id="recBar">
+        <video class="rec-preview hidden" id="recPreview" muted playsinline autoplay></video>
         <span class="rec-dot"></span>
         <span class="rec-label" id="recLabel">Р“РѕР»РѕСЃРѕРІРѕРµ</span>
         <span class="rec-timer" id="recTimer">0:00</span>
@@ -4785,8 +4786,15 @@ function bindMsgDelegation() {
     }
     const kruzhok = e.target.closest('.msg-kruzhok');
     if (kruzhok) {
-      if (kruzhok.paused) { kruzhok.muted = false; kruzhok.play().catch(() => {}); }
-      else kruzhok.pause();
+      if (kruzhok.paused) {
+        kruzhok.muted = false;
+        const tryPlay = () => { kruzhok.play().catch(() => {}); };
+        if (kruzhok.readyState === 0) {
+          kruzhok.load();
+          kruzhok.addEventListener('loadeddata', tryPlay, { once: true });
+          setTimeout(tryPlay, 1500);
+        } else tryPlay();
+      } else kruzhok.pause();
       return;
     }
     const msgEl = e.target.closest('.msg');
@@ -5398,7 +5406,7 @@ const VIDEO_MSG_MAX_SEC = 60;
 function pickRecordMime(video) {
   try {
     const cands = video
-      ? ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4']
+      ? ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4']
       : ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/mpeg'];
     return cands.find(c => MediaRecorder.isTypeSupported(c)) || '';
   } catch (e) { return ''; }
@@ -5409,6 +5417,8 @@ function showRecBar(type) {
   const lab = $('#recLabel');
   if (lab) lab.textContent = type === 'video' ? 'РљСЂСѓР¶РѕРє В· Р·Р°РїРёСЃСЊвЂ¦' : 'Р“РѕР»РѕСЃРѕРІРѕРµ В· Р·Р°РїРёСЃСЊвЂ¦';
   bar.classList.remove('hidden');
+  const pv = $('#recPreview');
+  if (pv) { if (type === 'video') pv.classList.remove('hidden'); else { pv.classList.add('hidden'); pv.srcObject = null; } }
   $('#recTimer').textContent = '0:00';
   const vbtn = $('#voiceBtn'), vbtn2 = $('#videoMsgBtn');
   if (vbtn) vbtn.disabled = true;
@@ -5417,6 +5427,8 @@ function showRecBar(type) {
 function hideRecBar() {
   const bar = $('#recBar');
   if (bar) bar.classList.add('hidden');
+  const pv = $('#recPreview');
+  if (pv) { pv.classList.add('hidden'); pv.srcObject = null; }
   const vbtn = $('#voiceBtn'), vbtn2 = $('#videoMsgBtn');
   if (vbtn) vbtn.disabled = false;
   if (vbtn2) vbtn2.disabled = false;
@@ -5433,17 +5445,19 @@ function startRecording(type) {
   const video = type === 'video';
   const chat = currentChat();
   if (!chat) return;
-  const begin = (stream) => {
-    const mime = pickRecordMime(video);
-    let rec;
-    try { rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
-    catch (e) { stream.getTracks().forEach(t => t.stop()); return toast('РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°С‡Р°С‚СЊ Р·Р°РїРёСЃСЊ'); }
-    const chunks = [];
-    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-    rec.onstop = () => {
-      clearInterval(recState && recState.timer);
-      stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(chunks, { type: rec.mimeType || (video ? 'video/webm' : 'audio/webm') });
+const begin = (stream) => {
+      if (video && !stream.getVideoTracks().length) { stream.getTracks().forEach(t => t.stop()); return toast('РљР°РјРµСЂР° РЅРµ РЅР°Р№РґРµРЅР°'); }
+      const mime = pickRecordMime(video);
+      let rec;
+      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
+      catch (e) { stream.getTracks().forEach(t => t.stop()); return toast('РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°С‡Р°С‚СЊ Р·Р°РїРёСЃСЊ'); }
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        clearInterval(recState && recState.timer);
+        stream.getTracks().forEach(t => t.stop());
+        if (!chunks.length) { recState = null; hideRecBar(); return toast('Р—Р°РїРёСЃСЊ РЅРµ СѓРґР°Р»Р°СЃСЊ, РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·'); }
+        const blob = new Blob(chunks, { type: rec.mimeType || (video ? 'video/webm' : 'audio/webm') });
       const dur = Math.max(1, Math.round((Date.now() - recState.t0) / 1000));
       const rd = new FileReader();
       rd.onload = () => {
@@ -5457,12 +5471,16 @@ function startRecording(type) {
     rec.start(250);
     recState = { type, stream, rec, t0: Date.now(), timer: setInterval(updateRecTimer, 500) };
     showRecBar(type);
+    if (video) {
+      const pv = $('#recPreview');
+      if (pv) { try { pv.srcObject = stream; } catch (e) {} }
+    }
     if (video) setTimeout(() => { if (recState && recState.rec.state === 'recording') stopRecording(); }, VIDEO_MSG_MAX_SEC * 1000);
     else setTimeout(() => { if (recState && recState.rec.state === 'recording') stopRecording(); }, VOICE_MAX_SEC * 1000);
     toast(video ? 'Р—Р°РїРёСЃСЊ РєСЂСѓР¶РєР°вЂ¦' : 'Р—Р°РїРёСЃСЊ РіРѕР»РѕСЃРѕРІРѕРіРѕвЂ¦');
   };
   navigator.mediaDevices.getUserMedia(video
-    ? { audio: true, video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 480 } } }
+    ? { audio: true, video: { facingMode: 'user' } }
     : { audio: true })
     .then(begin)
     .catch(() => {
