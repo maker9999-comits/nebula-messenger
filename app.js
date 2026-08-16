@@ -197,7 +197,35 @@ function cloudSave(key, value) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
     keepalive: true,
-  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => !!d.ok).catch(() => false);
+  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
+    const ok = !!d.ok;
+    if (!ok) { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); }
+    return ok;
+  }).catch(() => { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); return false; });
+}
+function cloudFailedRecently(ms) {
+  const m = loadCloudMeta();
+  return !!(m.failAt && Date.now() - m.failAt < (ms || 20000));
+}
+/* Р‘С‹СЃС‚СЂР°СЏ Р·Р°РїРёСЃСЊ С‚РѕР»СЊРєРѕ РїСЂРё РёР·РјРµРЅРµРЅРёРё СЃРѕРґРµСЂР¶РёРјРѕРіРѕ вЂ” СЌРєРѕРЅРѕРјРёС‚ РєРІРѕС‚Сѓ KV:
+   РїРѕРІС‚РѕСЂРЅС‹Рµ Р±СЌРєР°РїС‹ РЅРµРёР·РјРµРЅРЅС‹С… РєР»СЋС‡РµР№ РЅРµ РїРёС€СѓС‚СЃСЏ РІ РѕР±Р»Р°РєРѕ */
+function qhash(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return h >>> 0;
+}
+function cloudSaveIfChanged(key, value) {
+  const m = loadCloudMeta();
+  if (m.pushed && m.pushed[key] === qhash(value)) return Promise.resolve(true);
+  return cloudSave(key, value).then(ok => {
+    if (ok) {
+      const m2 = loadCloudMeta();
+      m2.pushed = m2.pushed || {};
+      m2.pushed[key] = qhash(value);
+      saveCloudMeta(m2);
+    }
+    return ok;
+  });
 }
 function cloudLoad(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(null);
@@ -288,6 +316,7 @@ function runCloudBackup() {
   if (cloudQueue) return cloudQueue;
   cloudQueue = (async () => {
     try {
+      if (cloudFailedRecently(60000)) return;
       const tasks = [];
       try {
         let raw = localStorage.getItem(ACCOUNTS_KEY);
@@ -301,26 +330,26 @@ function runCloudBackup() {
               if (changed) raw = JSON.stringify(lc);
             } catch (e) {}
           }
-          tasks.push(mergeAccountsWithCloud(raw).then(m => cloudSave(ACCOUNTS_KEY, m)));
+          tasks.push(mergeAccountsWithCloud(raw).then(m => cloudSaveIfChanged(ACCOUNTS_KEY, m)));
         }
       } catch (e) {}
       const delList = deletedUsers();
-      if (delList.length) tasks.push(cloudSave(DELETED_USERS_KEY, JSON.stringify(delList)));
+      if (delList.length) tasks.push(cloudSaveIfChanged(DELETED_USERS_KEY, JSON.stringify(delList)));
       const accounts = loadAccounts();
       Object.keys(accounts.users || {}).forEach(u => {
         const raw = localStorage.getItem(stateKey(u));
-        if (raw) tasks.push(cloudSave(stateKey(u), raw));
+        if (raw) tasks.push(cloudSaveIfChanged(stateKey(u), raw));
       });
       const admins = localStorage.getItem(ADMIN_KEY);
-      if (admins) tasks.push(cloudSave(ADMIN_KEY, admins));
+      if (admins) tasks.push(cloudSaveIfChanged(ADMIN_KEY, admins));
       const logs = localStorage.getItem(LOG_KEY);
-      if (logs) tasks.push(cloudSave(LOG_KEY, logs));
+      if (logs) tasks.push(cloudSaveIfChanged(LOG_KEY, logs));
       const ann = localStorage.getItem(ANN_KEY);
-      if (ann) tasks.push(cloudSave(ANN_KEY, ann));
+      if (ann) tasks.push(cloudSaveIfChanged(ANN_KEY, ann));
       const tickets = localStorage.getItem(TICKETS_KEY);
-      if (tickets) tasks.push(cloudSave(TICKETS_KEY, tickets));
+      if (tickets) tasks.push(cloudSaveIfChanged(TICKETS_KEY, tickets));
       const tracksRaw = currentUser ? localStorage.getItem('nebula_tracks_' + currentUser.username) : null;
-      if (tracksRaw) tasks.push(cloudSave('tracks:' + currentUser.username, tracksRaw));
+      if (tracksRaw) tasks.push(cloudSaveIfChanged('tracks:' + currentUser.username, tracksRaw));
       await Promise.all(tasks);
     } finally {
       cloudQueue = null;
@@ -471,7 +500,9 @@ function scheduleChatMetaPush() {
 function pushMsgToCloud(chat, msg) {
   if (!currentUser || !MAIL_RELAY_URL) return;
   if (chat.type === 'ai' || chat.type === 'saved') return;
-  cloudSave(cloudMsgKey(chat.id, msg.id), JSON.stringify(sanitizeForCloud(msg)));
+  const out = sanitizeForCloud(msg);
+  if (currentUser) out.sp = { n: currentUser.name, id: currentUser.id, a: currentUser.avatar || null };
+  cloudSave(cloudMsgKey(chat.id, msg.id), JSON.stringify(out));
 }
 
 function privateChatId(a, b) { return 'p' + [a, b].sort().join('_'); }
@@ -571,6 +602,13 @@ function syncCloudChats() {
           if (!m || !m.id || deletedIds.has(m.id)) continue;
           sanitizeFromCloud(m);
           if (m.from === me) m.from = 'me';
+          if (m.sp && m.from && m.from !== 'me') {
+            const acc = loadAccounts();
+            if (cloudMergeUserOk(acc, m.sp, m.from)) {
+              acc.users[m.from] = { username: m.from, name: m.sp.n || m.from, id: m.sp.id || m.from, avatar: m.sp.a || null, createdAt: Date.now() };
+              saveAccounts(acc);
+            }
+          }
           if (known.has(m.id)) {
             const idx = chat.messages.findIndex(x => x.id === m.id);
             if (idx >= 0) { chat.messages[idx] = m; added = true; }
@@ -600,12 +638,16 @@ function syncCloudChats() {
 }
 function syncCloudUsers() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve();
+  const meta0 = loadCloudMeta();
+  if (meta0.usersCheckAt && Date.now() - meta0.usersCheckAt < 30000) return Promise.resolve();
   return Promise.all([cloudLoad(ACCOUNTS_KEY), cloudLoad(DELETED_USERS_KEY)]).then(([r, delR]) => {
+    const meta = loadCloudMeta();
+    meta.usersCheckAt = Date.now();
+    saveCloudMeta(meta);
     if (delR && delR.d) {
       try { applyDeletedFromCloud(JSON.parse(delR.d)); } catch (e) {}
     }
     if (!r) return;
-    const meta = loadCloudMeta();
     if ((meta[ACCOUNTS_KEY] || 0) >= r.v) return;
     let cloud;
     try { cloud = JSON.parse(r.d); } catch (e) { return; }
@@ -631,12 +673,25 @@ function syncCloudUsers() {
     tryAutoLogin();
   }).catch(e => console.error('Cloud users sync failed:', e));
 }
+let cloudSyncInterval = 3000;
+function scheduleCloudCycle() {
+  const iv = cloudFailedRecently(20000) ? Math.min(60000, cloudSyncInterval * 2) : Math.max(3000, cloudSyncInterval - 500);
+  cloudSyncInterval = iv;
+  cloudSyncTimer = setTimeout(() => {
+    syncCloudChats();
+    syncCloudTickets();
+    syncCloudUsers();
+    syncCloudTracks();
+    scheduleCloudCycle();
+  }, iv);
+}
 function startCloudSync() {
-  if (cloudSyncTimer) clearInterval(cloudSyncTimer);
+  if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
   syncCloudChats();
   syncCloudTickets();
   syncCloudUsers();
-  cloudSyncTimer = setInterval(() => { syncCloudChats(); syncCloudTickets(); syncCloudUsers(); syncCloudTracks(); }, 4000);
+  syncCloudTracks();
+  scheduleCloudCycle();
 }
 function stateKey(u) { return STATE_PREFIX + u; }
 function loadState() {
@@ -2990,7 +3045,7 @@ function logout() {
   state = buildInitialState();
   updateAdminBtn();
   clearInterval(onlineTimer);
-  if (cloudSyncTimer) clearInterval(cloudSyncTimer);
+  if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
   $('#authForm').reset();
   showAuth('login');
   $('#authOverlay').classList.add('open');
