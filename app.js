@@ -3104,7 +3104,7 @@ function renderChatList() {
     const missed = chat.missedCalls || 0;
     let sub = '';
     if (chat.type === 'private') { const stt = statusOf(user); sub = stt.label + ((user.status && user.status.s) ? ' · ' + user.status.s : ''); }
-    else if (chat.type === 'ai') sub = 'ИИ-ассистент · всегда онлайн';
+    else if (chat.type === 'ai') sub = '';
     else if (chat.type === 'saved') sub = 'Личные заметки';
     else if (chat.type === 'group') sub = `${chat.members.length} участников`;
     else sub = `${chat.members.length} подписчиков`;
@@ -3126,7 +3126,7 @@ function renderChatList() {
           <span class="chat-time">${lm ? fmtTime(lm.time) : ''}</span>
         </div>
         <div class="chat-bottom">
-          <span class="chat-preview ${unread && !active ? 'muted' : ''}">${isMe ? '<strong>Вы: </strong>' : ''}${escapeHtml(lastMessagePreview(chat))}</span>
+          ${chat.type === 'ai' ? '' : `<span class="chat-preview ${unread && !active ? 'muted' : ''}">${isMe ? '<strong>Вы: </strong>' : ''}${escapeHtml(lastMessagePreview(chat))}</span>`}
           ${unread ? `<span class="badge">${unread}</span>` : ''}
           ${missed ? `<span class="missed-badge" title="Пропущенный звонок">📵${missed > 1 ? ' ' + missed : ''}</span>` : ''}
         </div>
@@ -3137,21 +3137,7 @@ function renderChatList() {
   let html = statusBarHtml();
   html += catalogHtml;
   html += userCatalogHtml;
-  let chatHtml = chats.sort(sortChats).map((c, i) => chatItem(c, i)).join('');
-  if (canAdmin() && !q) {
-    const adminRow = `
-    <div class="chat-item admin-item" id="adminListItem" style="animation-delay:0ms">
-      <div class="chat-avatar admin-avatar">🛡️</div>
-      <div class="chat-info">
-        <div class="chat-top"><span class="chat-name">Админ-панель</span><span class="chat-time">🛡️</span></div>
-        <div class="chat-bottom"><span class="chat-preview">Управление мессенджером</span></div>
-      </div>
-    </div>`;
-    const aiPos = chatHtml.indexOf('data-id="' + AI_CHAT_ID + '"');
-    if (aiPos >= 0) chatHtml = chatHtml.slice(0, aiPos) + adminRow + chatHtml.slice(aiPos);
-    else chatHtml = adminRow + chatHtml;
-  }
-  html += chatHtml;
+  html += chats.sort(sortChats).map((c, i) => chatItem(c, i)).join('');
 
   if (hidden.length) {
     html += `
@@ -3182,9 +3168,6 @@ function renderChatList() {
     if (it.dataset.mine !== undefined) { openStatusEditor(); return; }
     if (it.dataset.user) openStatusView(it.dataset.user);
   });
-
-  const ail = $('#adminListItem');
-  if (ail) ail.addEventListener('click', openAdminPanel);
 
   const hrow = $('#hiddenToggle');
   if (hrow) hrow.addEventListener('click', () => { showHidden = !showHidden; renderChatList(); });
@@ -3228,7 +3211,7 @@ function renderChat() {
   if (chat.type === 'private') {
     const stt = statusOf(user);
     sub = `<span class="online st-${stt.cls}">${stt.label}</span>` + (stt.text ? ` · ${escapeHtml(stt.text)}` : '');
-  } else if (chat.type === 'ai') sub = 'ИИ-ассистент · всегда онлайн';
+  } else if (chat.type === 'ai') sub = '';
   else if (chat.type === 'saved') sub = 'Личные заметки · видны только вам';
   else if (chat.type === 'group') sub = `${chat.members.length} участников · ${chat.desc || 'группа'}`;
   else sub = `${chat.members.length} подписчиков · ${chat.desc || 'канал'}`;
