@@ -46,7 +46,7 @@ body.theme-black {
   --outgoing: #20203a;
 }
 
-/* ===== СПЕЦИАЛЬНЫЕ ТЕМЫ (тестеры и администраторы) ===== */
+/* ===== РЎРџР•Р¦РРђР›Р¬РќР«Р• РўР•РњР« (С‚РµСЃС‚РµСЂС‹ Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹) ===== */
 body.theme-tgreen {
   --bg: #0b1712;
   --bg-secondary: #132019;
@@ -198,7 +198,7 @@ body.cursor-press .cursor-ring { transform: translate(-50%,-50%) scale(.75); }
   .cursor-dot, .cursor-ring { display: none; }
 }
 
-/* ===== BUTTONS: подсветка белым при наведении ===== */
+/* ===== BUTTONS: РїРѕРґСЃРІРµС‚РєР° Р±РµР»С‹Рј РїСЂРё РЅР°РІРµРґРµРЅРёРё ===== */
 button, .member-item, .create-option, .color-swatch, .chat-item, .filter-tab, .profile, .settings-tabs .st {
   transition: transform .15s, box-shadow .2s, background .2s, border-color .2s, color .2s, filter .2s;
 }
@@ -497,7 +497,7 @@ body.theme-light .chat-preview.muted { color: #99a1ad; }
 
 .empty-list { text-align: center; color: var(--text-muted); padding: 30px 16px; font-size: 14px; }
 
-/* ===== РАМКИ АВАТАРА (анимированные) ===== */
+/* ===== Р РђРњРљР РђР’РђРўРђР Рђ (Р°РЅРёРјРёСЂРѕРІР°РЅРЅС‹Рµ) ===== */
 .avatar.fs { width: 46px; height: 46px; font-size: 17px; }
 .avatar.framed { position: relative; }
 .avatar.frame-crown {
@@ -854,6 +854,10 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   flex-shrink: 0;
 }
 @keyframes recPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.8); } }
+.rec-bar .rec-preview {
+  width: 92px; height: 92px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+  border: 2px solid var(--accent); margin-right: 4px;
+}
 .rec-bar .rec-label { font-weight: 600; font-size: 14px; color: #ff4d4d; white-space: nowrap; }
 .rec-bar .rec-timer { font-variant-numeric: tabular-nums; font-size: 15px; color: var(--text); min-width: 40px; }
 .rec-bar .rec-spacer { flex: 1; }
@@ -992,7 +996,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .modal-overlay.open { opacity: 1; pointer-events: auto; }
 .modal-overlay.open .modal { transform: translateY(0) scale(1); }
 
-/* ===== БЕЙДЖИ ===== */
+/* ===== Р‘Р•Р™Р”Р–Р ===== */
 .badge { display: inline-flex; align-items: center; margin-left: 4px; vertical-align: middle; }
 .badge-scam {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
@@ -1065,7 +1069,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .badge-verify svg, .badge-verify-gray svg { width: 8.5px; height: 7px; stroke: #fff; stroke-width: 2.2; }
 .manage-name .badge, .chat-header-title .badge, .chat-name .badge, .switch-name .badge { vertical-align: middle; }
 
-/* ===== ТЕХ ПОДДЕРЖКА ===== */
+/* ===== РўР•РҐ РџРћР”Р”Р•Р Р–РљРђ ===== */
 .support-modal { width: 640px; max-width: 94vw; }
 .support-modal .manage-section { margin-bottom: 12px; }
 .support-hero {
@@ -1154,7 +1158,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .sup-cell b { display: block; font-size: 16px; color: var(--text); }
 .sup-cell span { font-size: 10.5px; color: var(--text-dim, #8b93a7); }
 
-/* ===== МОИ ТРЕКИ (MP3) ===== */
+/* ===== РњРћР РўР Р•РљР (MP3) ===== */
 .tracks-modal .pm-head { margin-bottom: 0; }
 .track-upload {
   display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -1248,7 +1252,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   font-size: 14px; font-family: inherit;
 }
 
-/* ===== АДМИН-ПАНЕЛЬ ===== */
+/* ===== РђР”РњРРќ-РџРђРќР•Р›Р¬ ===== */
 .manage-body { max-height: 62vh; overflow-y: auto; }
 .admin-hint { font-size: 12.5px; color: var(--text-muted); margin: -6px 0 12px; }
 .admin-user {
@@ -1384,7 +1388,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .chat-type-tag.t-group { background: rgba(16,185,129,.18); color: #34d399; }
 .chat-type-tag.t-private { background: rgba(59,130,246,.18); color: #60a5fa; }
 
-/* ===== СОЗДАНИЕ БОТА ===== */
+/* ===== РЎРћР—Р”РђРќРР• Р‘РћРўРђ ===== */
 #step-bot { display: flex; flex-direction: column; gap: 10px; padding: 4px 2px; }
 #botAvatarPreview { align-self: center; }
 .admin-del-chat { padding: 6px 11px; font-size: 12px; }
@@ -1405,7 +1409,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .btn-danger:hover { filter: brightness(1.12); }
 .switch-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
 
-/* ===== ДЕЙСТВИЯ НАД СООБЩЕНИЯМИ ===== */
+/* ===== Р”Р•Р™РЎРўР’РРЇ РќРђР” РЎРћРћР‘Р©Р•РќРРЇРњР ===== */
 .msg { transition: box-shadow .2s; }
 .msg:hover { box-shadow: 0 2px 10px rgba(0,0,0,.35); }
 .msg-text { white-space: pre-wrap; }
@@ -1590,7 +1594,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 }
 .composer-bar button:hover { background: var(--accent-glow); color: var(--text); }
 
-/* ===== ЗВОНКИ ===== */
+/* ===== Р—Р’РћРќРљР ===== */
 .call-overlay { align-items: stretch; z-index: 60; padding: 0; }
 .call-window {
   width: 100%;
@@ -1820,7 +1824,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   .call-remote .cape { width: 92px; height: 92px; }
 }
 
-/* ===== ЗВОНОК: мини-аватар, меню устройств, игра, пузыри ===== */
+/* ===== Р—Р’РћРќРћРљ: РјРёРЅРё-Р°РІР°С‚Р°СЂ, РјРµРЅСЋ СѓСЃС‚СЂРѕР№СЃС‚РІ, РёРіСЂР°, РїСѓР·С‹СЂРё ===== */
 .gp-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
 .gp-tab {
   flex: 1; padding: 7px 4px;
@@ -1940,7 +1944,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 }
 .gp-reset:hover { filter: brightness(1.1); }
 
-/* ===== ПЕРЕСЫЛКА ===== */
+/* ===== РџР•Р Р•РЎР«Р›РљРђ ===== */
 .fwd-item {
   display: flex;
   align-items: center;
@@ -2639,7 +2643,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .eye-btn:hover { color: var(--accent-hover); transform: scale(1.1); }
 .eye-btn.active { color: var(--accent-hover); }
 
-/* ===== ВОЛНИСТАЯ ЛИНИЯ ПРИ ВВОДЕ ===== */
+/* ===== Р’РћР›РќРРЎРўРђРЇ Р›РРќРРЇ РџР Р Р’Р’РћР”Р• ===== */
 .auth-wave {
   position: relative;
   height: 8px;
@@ -2730,7 +2734,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 }
 #authCaptchaInput::placeholder { color: #5b6877; }
 
-/* ===== СЛОЖНОСТЬ ПАРОЛЯ ===== */
+/* ===== РЎР›РћР–РќРћРЎРўР¬ РџРђР РћР›РЇ ===== */
 .pw-strength { margin: -10px 0 16px; }
 .pw-meter {
   height: 4px;
@@ -2752,7 +2756,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   color: var(--text-muted);
 }
 
-/* ===== CODE INPUTS (подтверждение почты) ===== */
+/* ===== CODE INPUTS (РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїРѕС‡С‚С‹) ===== */
 .code-inputs {
   display: flex;
   justify-content: center;
@@ -2981,7 +2985,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 }
 .radio-item.selected .radio-circle::after { transform: scale(1); }
 
-/* рамки */
+/* СЂР°РјРєРё */
 .frame-item {
   display: flex;
   align-items: center;
@@ -3001,7 +3005,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .frame-item .fi-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; }
 .frame-item.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 4px 16px var(--accent-glow); }
 
-/* дельфин */
+/* РґРµР»СЊС„РёРЅ */
 .dolphin-pet {
   display: flex;
   flex-direction: column;
@@ -3128,7 +3132,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .dolphin-action:disabled { opacity: .4; pointer-events: none; }
 .dolphin-action .da-cd { font-size: 11px; color: var(--text-muted); }
 
-/* аватары */
+/* Р°РІР°С‚Р°СЂС‹ */
 .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
 .avatar-opt {
   aspect-ratio: 1;
@@ -3176,7 +3180,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .upload-btn:hover { background: var(--accent-glow); transform: translateY(-2px); }
 .upload-btn svg { width: 22px; height: 22px; fill: currentColor; }
 
-/* статистика */
+/* СЃС‚Р°С‚РёСЃС‚РёРєР° */
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .stat-card {
   background: var(--bg-tertiary);
@@ -3295,7 +3299,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .ctx-item.disabled:hover { background: transparent; }
 .ctx-sep { height: 1px; background: var(--border); margin: 5px 8px; }
 
-/* ===== ПАПКИ ===== */
+/* ===== РџРђРџРљР ===== */
 .folder-group { margin-bottom: 4px; }
 .folder-header {
   display: flex;
@@ -3387,7 +3391,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .folder-pick-item:hover { background: var(--bg-hover); }
 .mini-btn.danger-mini:hover { background: var(--danger); }
 
-/* ===== ПОИСК КОНТАКТОВ ===== */
+/* ===== РџРћРРЎРљ РљРћРќРўРђРљРўРћР’ ===== */
 .contact-search {
   width: 100%;
   padding: 10px 12px;
@@ -3403,7 +3407,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .contact-hint { text-align: center; color: var(--text-muted); font-size: 12.5px; padding: 18px 10px; }
 .contact-results { display: flex; flex-direction: column; gap: 2px; }
 
-/* ===== СТАТУСЫ ===== */
+/* ===== РЎРўРђРўРЈРЎР« ===== */
 .status-opts { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
 .status-opt {
   display: flex; align-items: center; gap: 10px;
@@ -3428,7 +3432,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .ucard-status.st-busy { color: #ff6b5e; }
 .ucard-status.st-off { color: var(--text-muted); }
 
-/* ===== ДОСТУП (публичная/приватная) ===== */
+/* ===== Р”РћРЎРўРЈРџ (РїСѓР±Р»РёС‡РЅР°СЏ/РїСЂРёРІР°С‚РЅР°СЏ) ===== */
 .access-toggle-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 .acc-btn {
   padding: 10px 12px;
@@ -3440,7 +3444,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .acc-btn:hover { border-color: var(--accent); }
 .acc-btn.sel { border-color: var(--accent); background: var(--accent-glow); }
 
-/* ===== ВЫЗОВЫ ===== */
+/* ===== Р’Р«Р—РћР’Р« ===== */
 .sys-call {
   display: flex; align-items: center; gap: 10px;
   margin: 10px 0; padding: 10px 14px;
@@ -3464,7 +3468,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   margin-left: auto; flex-shrink: 0;
 }
 
-/* ===== ВХОДЯЩИЙ ЗВОНОК ===== */
+/* ===== Р’РҐРћР”РЇР©РР™ Р—Р’РћРќРћРљ ===== */
 .incoming-overlay {
   position: fixed; inset: 0;
   z-index: 90;
@@ -3493,7 +3497,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   50% { box-shadow: 0 0 0 22px rgba(62,207,142,0); }
 }
 
-/* ===== АНИМАЦИИ ===== */
+/* ===== РђРќРРњРђР¦РР ===== */
 @keyframes slideInLeft { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes slideInDown { from { transform: translateY(-16px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes fadeInUp { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -3515,7 +3519,7 @@ body {
 }
 input, textarea { user-select: text; -webkit-user-select: text; }
 
-/* ===== ОПРОСЫ ===== */
+/* ===== РћРџР РћРЎР« ===== */
 .poll-block {
   max-width: 320px;
   background: rgba(255,255,255,.05);
@@ -3545,7 +3549,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .po-count { font-size: 11px; color: var(--text-muted); }
 .poll-total { font-size: 11px; color: var(--text-muted); margin-top: 7px; }
 
-/* ===== КОНТАКТЫ ===== */
+/* ===== РљРћРќРўРђРљРўР« ===== */
 .contact-card {
   display: flex; align-items: center; gap: 10px;
   background: rgba(255,255,255,.05);
@@ -3571,7 +3575,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .cp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .cp-name { font-weight: 600; font-size: 13.5px; }
 .cp-sub { font-size: 11.5px; color: var(--text-muted); }
-/* ===== СТАТУСЫ (сторис) ===== */
+/* ===== РЎРўРђРўРЈРЎР« (СЃС‚РѕСЂРёСЃ) ===== */
 .stories-row {
   padding: 7px 14px 5px;
   border-bottom: 1px solid var(--border);
@@ -3605,7 +3609,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   box-shadow: 0 1px 4px rgba(0,0,0,.4);
 }
 
-/* редактор статуса */
+/* СЂРµРґР°РєС‚РѕСЂ СЃС‚Р°С‚СѓСЃР° */
 .status-editor-overlay {
   position: fixed; inset: 0; z-index: 210;
   display: flex; align-items: center; justify-content: center;
@@ -3655,7 +3659,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .se-del { color: #ff6b6b; }
 .se-del:hover { background: rgba(255,107,107,.12); border-color: rgba(255,107,107,.4); }
 
-/* просмотр статуса с медиа */
+/* РїСЂРѕСЃРјРѕС‚СЂ СЃС‚Р°С‚СѓСЃР° СЃ РјРµРґРёР° */
 .status-view-overlay { z-index: 220; }
 .status-view-box.with-media {
   position: relative; width: min(400px, 94vw);
@@ -3706,7 +3710,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .sv-prev { left: 8px; }
 .sv-next { right: 8px; }
 
-/* панель статуса: реакции, просмотры, комментарии */
+/* РїР°РЅРµР»СЊ СЃС‚Р°С‚СѓСЃР°: СЂРµР°РєС†РёРё, РїСЂРѕСЃРјРѕС‚СЂС‹, РєРѕРјРјРµРЅС‚Р°СЂРёРё */
 .status-view-box { max-height: 94vh; overflow-y: auto; }
 .status-view-box.with-media { max-height: 94vh; overflow-y: auto; }
 .sv-extra {
@@ -3756,7 +3760,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .sv-compose input:focus { outline: none; border-color: var(--accent); }
 .sv-compose .btn { white-space: nowrap; }
 
-/* карточка канала/группы */
+/* РєР°СЂС‚РѕС‡РєР° РєР°РЅР°Р»Р°/РіСЂСѓРїРїС‹ */
 .chat-card { width: 400px; max-width: 94vw; }
 .cc-top { display: flex; align-items: center; gap: 12px; }
 .cc-avatar { width: 54px; height: 54px; font-size: 22px; flex-shrink: 0; }
@@ -3774,7 +3778,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .chat-header-title.clickable-title { cursor: pointer; }
 .chat-header-title.clickable-title:hover { text-decoration: underline; }
 
-/* ===== СОЗДАНИЕ ОПРОСА (красивая менюшка) ===== */
+/* ===== РЎРћР—Р”РђРќРР• РћРџР РћРЎРђ (РєСЂР°СЃРёРІР°СЏ РјРµРЅСЋС€РєР°) ===== */
 .poll-modal {
   width: 430px; max-width: 94vw;
   border: 1px solid var(--border);
@@ -3903,7 +3907,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .pm-switch-row input:checked + .pm-switch i { left: 20px; }
 .pm-switch-label { font-size: 13px; color: var(--text); }
 
-/* RGB-настройки курсора */
+/* RGB-РЅР°СЃС‚СЂРѕР№РєРё РєСѓСЂСЃРѕСЂР° */
 .rgb-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .rgb-item { display: flex; align-items: center; gap: 10px; }
 .rgb-name { width: 18px; font-weight: 800; font-size: 13px; text-align: center; }
@@ -3911,7 +3915,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .rgb-preview-row { display: flex; align-items: center; gap: 10px; }
 .rgb-prev { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); box-shadow: 0 0 12px rgba(255,255,255,.2); }
 
-/* викторина в сообщении */
+/* РІРёРєС‚РѕСЂРёРЅР° РІ СЃРѕРѕР±С‰РµРЅРёРё */
 .poll-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .poll-tag {
   font-size: 10.5px; font-weight: 700; color: var(--accent);
@@ -3924,11 +3928,11 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .poll-opt.wrong { border-color: #ff6b6b !important; background: rgba(255,107,107,.08) !important; }
 .poll-opt.wrong .po-label { color: #ff6b6b; }
 
-/* ===== КОПИРОВАНИЕ ID ===== */
+/* ===== РљРћРџРР РћР’РђРќРР• ID ===== */
 .copy-id { cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,.25); transition: color .15s; }
 .copy-id:hover { color: var(--accent); }
 
-/* ===== ИГРЫ: ход соперника ===== */
+/* ===== РР“Р Р«: С…РѕРґ СЃРѕРїРµСЂРЅРёРєР° ===== */
 .gp-board.busy .gp-cell:not(.taken) { pointer-events: none; opacity: .55; }
 
 .m-back-btn { display: none; }
