@@ -311,6 +311,25 @@ function findAccountInCloud(username, email) {
     });
   }).catch(() => null);
 }
+let cloudSearchTimer = null;
+/* РћР±Р»Р°С‡РЅС‹Р№ РїРѕРёСЃРє РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ @СЋР·РµСЂРЅРµР№РјСѓ/ID СЃ Р°РІС‚Рѕ-СЂРµРіРёСЃС‚СЂР°С†РёРµР№ РІ
+   Р»РѕРєР°Р»СЊРЅСѓСЋ Р±Р°Р·Сѓ вЂ” С‡С‚РѕР±С‹ РЅР° Р»СЋР±РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РЅР°Р№С‚Рё Рё РЅР°РїРёСЃР°С‚СЊ
+   Р»СЋР±РѕРјСѓ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ (РµРґРёРЅР°СЏ Р±Р°Р·Р°) */
+function cloudSearchAndMerge(q) {
+  if (!MAIL_RELAY_URL || !currentUser || !q) return Promise.resolve(null);
+  if (cloudSearchTimer) clearTimeout(cloudSearchTimer);
+  return new Promise(res => {
+    cloudSearchTimer = setTimeout(() => {
+      cloudSearchTimer = null;
+      findAccountInCloud(q, q).then(f => {
+        if (!f || !currentUser) return res(null);
+        const local = loadAccounts();
+        if (cloudMergeUserOk(local, f, f.username)) { local.users[f.username] = f; saveAccounts(local); }
+        res(f);
+      }).catch(() => res(null));
+    }, 300);
+  });
+}
 function runCloudBackup() {
   if (!MAIL_RELAY_URL) return Promise.resolve();
   if (cloudQueue) return cloudQueue;
@@ -477,6 +496,15 @@ function sanitizeFromCloud(msg) {
 function pushChatMeta(chat) {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve(false);
   if (chat.type === 'ai' || chat.type === 'saved') return Promise.resolve(false);
+  const users = {};
+  const profOf = (un) => {
+    if (un === 'me' || un === currentUser.username) return { n: currentUser.name, id: currentUser.id, a: currentUser.avatar || null };
+    const a = accountByUsername(un);
+    return a ? { n: a.name, id: a.id, a: a.avatar || null } : null;
+  };
+  const norm = (un) => un === 'me' ? currentUser.username : un;
+  const names = new Set([...(chat.members || []).map(norm), norm(chat.owner), norm(chat.userId)].filter(Boolean));
+  names.forEach(un => { const p = profOf(un); if (p) users[un] = p; });
   const meta = {
     id: chat.id, type: chat.type, name: chat.name, desc: chat.desc, color: chat.color,
     handle: chat.handle, access: chat.access, whoCanInvite: chat.whoCanInvite,
@@ -486,6 +514,7 @@ function pushChatMeta(chat) {
     members: (chat.members || []).map(x => x === 'me' ? currentUser.username : x),
     userId: chat.type === 'private' ? chat.userId : undefined,
     createdAt: chat.createdAt || Date.now(),
+    users,
   };
   return cloudSave(cloudChatKey(chat.id), JSON.stringify(meta));
 }
@@ -528,6 +557,17 @@ function syncCloudChats() {
       const leftChats = state.leftChats || [];
       metas.forEach(m => {
         if (!m || !m.id) return;
+        if (m.users) {
+          Object.keys(m.users).forEach(un => {
+            const p = m.users[un];
+            if (!p || un === me) return;
+            const acc = loadAccounts();
+            if (cloudMergeUserOk(acc, p, un)) {
+              acc.users[un] = { username: un, name: p.n || un, id: p.id || un, avatar: p.a || null, createdAt: Date.now() };
+              saveAccounts(acc);
+            }
+          });
+        }
         if (leftChats.includes(m.id)) return;
         const mine = m.type === 'private'
           ? (m.members || []).includes(me) || m.userId === me || m.owner === me
@@ -3095,6 +3135,9 @@ function renderChatList() {
         u.username.toLowerCase().startsWith(qh) ||
         u.name.toLowerCase().includes(q))
     ).slice(0, 5);
+    if (!userCatalog.length && qh.length >= 2) {
+      cloudSearchAndMerge(qh).then(f => { if (f) renderChatList(); });
+    }
   }
 
   const sortChats = (a, b) => {
@@ -5778,7 +5821,16 @@ function renderSearchPicker(container, sources, opts) {
       if (u.username.toLowerCase().startsWith(q)) return true;
       return u.name.toLowerCase().includes(q);
     }).slice(0, 25);
-    if (!list.length) { res.innerHTML = '<div class="empty-list">РќРёРєРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</div>'; return; }
+    if (!list.length) {
+      res.innerHTML = '<div class="empty-list">РќРёРєРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</div>';
+      if (q.length >= 2) {
+        cloudSearchAndMerge(q).then(f => {
+          if (f && currentUser && !sources.some(x => x && x.username === f.username)) sources.push(f);
+          if (f) draw();
+        });
+      }
+      return;
+    }
     res.innerHTML = list.map(u => `
       <div class="member-item ${checkable && selected.includes(u.username) ? 'checked' : ''}" data-id="${u.username}">
         <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
