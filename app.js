@@ -686,9 +686,12 @@ function isAdmin(u) {
   const acc = typeof u === 'string' ? accountByUsername(uname) : u;
   return !!(acc && acc.badges && (acc.badges.owner || acc.badges.admin));
 }
-function isSupport(u) { return !!(u && (u.support || u.username === 'noocord' || u.id === 'NEBULA-NOOCORD')); }
+function isOwnerAcc(u) {
+  return !!(u && (u.id === 'NEBULA-NOOCORD' || u.username === 'noocord' || u.username === 'noocordik'));
+}
+function isSupport(u) { return !!(u && (u.support || isOwnerAcc(u))); }
 function newsFullAccess(u) {
-  return !!u && (isAdmin(u.username) || (u.badges && (u.badges.owner || u.badges.admin)) || u.support || u.id === 'NEBULA-NOOCORD' || u.username === 'noocord');
+  return !!u && (isAdmin(u.username) || (u.badges && (u.badges.owner || u.badges.admin)) || u.support || isOwnerAcc(u));
 }
 function ensureDefaultAdmin() {
   const accs = accountsList();
@@ -696,6 +699,7 @@ function ensureDefaultAdmin() {
   let admins = adminList();
   const wanted = accs.find(a => a.username === 'NEBULA-TRLLATL9E1J4')
     || accs.find(a => String(a.username || '').toLowerCase() === 'noocord')
+    || accs.find(a => String(a.username || '').toLowerCase() === 'noocordik')
     || accs.find(a => String(a.id) === 'NEBULA-NOOCORD');
   if (wanted && !admins.includes(wanted.username)) admins = [...admins, wanted.username];
   const id1 = accs.find(a => a.id === 1);
@@ -2954,6 +2958,26 @@ function startApp(user) {
   maybeShowIncoming(state.chats.find(c => c.id === state.currentChatId));
   const ann = loadAnnouncement();
   if (ann) toast('📢 Объявление', ann.text + (ann.by ? ' — @' + ann.by : ''), 6000);
+  handleDeepLink();
+  refreshAccountsFromCloud().then(() => {
+    if (!currentUser) return;
+    const me = accountByUsername(currentUser.username);
+    if (me) { currentUser = me; persistCurrentUser(); }
+    ensureDefaultAdmin();
+    updateAdminBtn();
+    renderChatList();
+    renderChat();
+  });
+}
+
+function handleDeepLink() {
+  const q = new URLSearchParams(location.search).get('c');
+  if (!q) return;
+  setTimeout(() => {
+    if (!state || !currentUser) return;
+    openChannelByLink(q);
+    history.replaceState(null, '', location.pathname + location.hash);
+  }, 500);
 }
 
 function logout() {
@@ -3113,7 +3137,21 @@ function renderChatList() {
   let html = statusBarHtml();
   html += catalogHtml;
   html += userCatalogHtml;
-  html += chats.sort(sortChats).map((c, i) => chatItem(c, i)).join('');
+  let chatHtml = chats.sort(sortChats).map((c, i) => chatItem(c, i)).join('');
+  if (canAdmin() && !q) {
+    const adminRow = `
+    <div class="chat-item admin-item" id="adminListItem" style="animation-delay:0ms">
+      <div class="chat-avatar admin-avatar">🛡️</div>
+      <div class="chat-info">
+        <div class="chat-top"><span class="chat-name">Админ-панель</span><span class="chat-time">🛡️</span></div>
+        <div class="chat-bottom"><span class="chat-preview">Управление мессенджером</span></div>
+      </div>
+    </div>`;
+    const aiPos = chatHtml.indexOf('data-id="' + AI_CHAT_ID + '"');
+    if (aiPos >= 0) chatHtml = chatHtml.slice(0, aiPos) + adminRow + chatHtml.slice(aiPos);
+    else chatHtml = adminRow + chatHtml;
+  }
+  html += chatHtml;
 
   if (hidden.length) {
     html += `
@@ -3144,6 +3182,9 @@ function renderChatList() {
     if (it.dataset.mine !== undefined) { openStatusEditor(); return; }
     if (it.dataset.user) openStatusView(it.dataset.user);
   });
+
+  const ail = $('#adminListItem');
+  if (ail) ail.addEventListener('click', openAdminPanel);
 
   const hrow = $('#hiddenToggle');
   if (hrow) hrow.addEventListener('click', () => { showHidden = !showHidden; renderChatList(); });
@@ -3223,6 +3264,12 @@ function renderChat() {
       <button class="icon-btn" id="attachBtn" title="Прикрепить файл">
         <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
       </button>
+      <button class="icon-btn" id="voiceBtn" title="Голосовое сообщение">
+        <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+      </button>
+      <button class="icon-btn" id="videoMsgBtn" title="Кружок — видеосообщение">
+        <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+      </button>
       <button class="icon-btn" id="emojiBtn" title="Эмодзи">
         <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
       </button>
@@ -3258,6 +3305,14 @@ function renderChat() {
     <button class="jump-btn" id="jumpBottom" title="Вниз">↓</button>
     ${isBlocked ? `<div class="service-msg warn" style="margin:0 22px 10px;align-self:center">⛔ Вы заблокировали этого пользователя — он больше не сможет вам писать</div>` : ''}
     <div class="composer">
+      <div class="rec-bar hidden" id="recBar">
+        <span class="rec-dot"></span>
+        <span class="rec-label" id="recLabel">Голосовое</span>
+        <span class="rec-timer" id="recTimer">0:00</span>
+        <div class="rec-spacer"></div>
+        <button class="rec-cancel" id="recCancel" title="Отменить">✕</button>
+        <button class="rec-send" id="recSend" title="Отправить">➤</button>
+      </div>
       <div class="pending-bar hidden" id="pendingBar"></div>
       ${composer}
     </div>
@@ -3301,7 +3356,7 @@ function bindChatScroll() {
 }
 
 function linkifyChannels(html) {
-  if (!html || (!html.includes('@') && !html.includes('nebula://'))) return html;
+  if (!html || (!html.includes('@') && !html.includes('nebula://') && !html.includes('?c='))) return html;
   const handles = [];
   html.replace(/@([a-z0-9_]{3,14})/g, (m, h) => { handles.push(h); return m; });
   const all = uniqueChatsAcrossUsers();
@@ -3319,17 +3374,19 @@ function linkifyChannels(html) {
       out = out.replace(new RegExp('(?<![\\w])@' + h + '(?![\\w])', 'g'), `<a class="ch-link" data-ch="${c.id}">@${h}</a>`);
     }
   });
-  out = out.replace(/nebula:\/\/c\/([A-Za-z0-9_]+)/g, (m, ref) => {
+  out = out.replace(/(?:nebula:\/\/c\/|https?:\/\/[^\s'"<>]*[?&]c=)([A-Za-z0-9_]+)/g, (m, ref) => {
     const c = byId[ref] || byHandle[String(ref).toLowerCase()];
     if (c) return `<a class="ch-link" data-ch="${c.id}">🔗 ${c.handle ? '@' + c.handle : 'Ссылка на канал'}</a>`;
     return m;
   });
   return out;
 }
-function openChannelByLink(chatId) {
-  const chat = state.chats.find(c => c.id === chatId);
-  if (chat) { selectChat(chatId); return; }
-  const src = uniqueChatsAcrossUsers().find(c => c.id === chatId);
+function openChannelByLink(ref) {
+  const id = String(ref);
+  const lk = id.toLowerCase();
+  const chat = state.chats.find(c => c.id === id || (c.handle && c.handle.toLowerCase() === lk));
+  if (chat) { selectChat(chat.id); return; }
+  const src = uniqueChatsAcrossUsers().find(c => c.id === id || (c.handle && c.handle.toLowerCase() === lk));
   if (!src) return toast('Канал не найден');
   state.search = '@' + (src.handle || '');
   state.activeFolder = null;
@@ -3627,6 +3684,15 @@ function renderMessages(chat) {
         </div>`;
     }).join('') : '';
     const stickerHtml = msg.sticker ? `<img class="msg-sticker" src="${msg.sticker.dataUrl}" alt="Стикер">` : '';
+    const voiceHtml = msg.voice ? `
+      <div class="msg-voice" data-mid="${msg.id}">
+        <button class="voice-play" data-vplay="${msg.id}" title="Играть">▶</button>
+        <div class="voice-bar"><i></i></div>
+        <span class="voice-dur">${fmtRecDur(msg.voice.dur || 0)}</span>
+        <audio src="${msg.voice.dataUrl}" preload="none"></audio>
+      </div>` : '';
+    const videoHtml = msg.video ? `
+      <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" loop playsinline muted preload="metadata" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"></video>` : '';
     const pollHtml = msg.poll ? renderPollHtml(msg) : '';
     const contactHtml = msg.contact ? renderContactHtml(msg.contact) : '';
     html += `
@@ -3638,6 +3704,8 @@ function renderMessages(chat) {
           ${pollHtml}
           ${contactHtml}
           ${stickerHtml}
+          ${voiceHtml}
+          ${videoHtml}
           ${mediaHtml}
           ${msg.text ? `<div class="msg-text">${linkifyChannels(escapeHtml(msg.text))}</div>` : ''}
           ${msgMetaIcons(chat, msg)}
@@ -3777,6 +3845,14 @@ function bindChatEvents(chat) {
   if (stickBtn) {
     stickBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleStickPanel(stickBtn); });
   }
+  const voiceBtn = $('#voiceBtn');
+  if (voiceBtn) voiceBtn.addEventListener('click', (e) => { e.stopPropagation(); startRecording('voice'); });
+  const videoMsgBtn = $('#videoMsgBtn');
+  if (videoMsgBtn) videoMsgBtn.addEventListener('click', (e) => { e.stopPropagation(); startRecording('video'); });
+  const recSend = $('#recSend');
+  if (recSend) recSend.addEventListener('click', (e) => { e.stopPropagation(); stopRecording(); });
+  const recCancel = $('#recCancel');
+  if (recCancel) recCancel.addEventListener('click', (e) => { e.stopPropagation(); cancelRecording(); });
 }
 
 /* ---------- Отправка сообщений ---------- */
@@ -3793,6 +3869,8 @@ function mediaLabel(msg) {
     if (m.type && m.type.startsWith('image/')) return msg.media.length > 1 ? `[${msg.media.length} фото]` : '[Фото]';
     return `[Файл: ${m.name}]`;
   }
+  if (msg.voice) return '[Голосовое]';
+  if (msg.video) return '[Кружок]';
   return '';
 }
 function renderPendingMedia() {
@@ -4703,6 +4781,31 @@ function bindMsgDelegation() {
       if (md) openPhotoViewer(md);
       return;
     }
+    const vplay = e.target.closest('[data-vplay]');
+    if (vplay) {
+      const box = vplay.closest('.msg-voice');
+      const au = box && box.querySelector('audio');
+      if (au) {
+        const bar = box.querySelector('.voice-bar i');
+        if (au.paused) {
+          document.querySelectorAll('.msg-voice audio').forEach(a => { if (a !== au) { a.pause(); a.currentTime = 0; a.closest('.msg-voice').querySelector('.voice-play').textContent = '▶'; a.closest('.msg-voice').querySelector('.voice-bar i').style.width = '0%'; } });
+          vplay.textContent = '⏸';
+          au.play().catch(() => { vplay.textContent = '▶'; });
+          au.ontimeupdate = () => { if (bar) bar.style.width = Math.min(100, (au.currentTime / (au.duration || 1)) * 100) + '%'; };
+          au.onended = () => { vplay.textContent = '▶'; if (bar) bar.style.width = '0%'; };
+        } else {
+          au.pause();
+          vplay.textContent = '▶';
+        }
+      }
+      return;
+    }
+    const kruzhok = e.target.closest('.msg-kruzhok');
+    if (kruzhok) {
+      if (kruzhok.paused) { kruzhok.muted = false; kruzhok.play().catch(() => {}); }
+      else kruzhok.pause();
+      return;
+    }
     const msgEl = e.target.closest('.msg');
     if (!msgEl) { $$('.msg .react-picker.open').forEach(p => p.classList.remove('open')); return; }
     const msg = chat.messages.find(m => m.id === msgEl.dataset.mid);
@@ -5139,7 +5242,7 @@ function toggleStickPanel(btn) {
   sp.style.right = (innerWidth - r.right) + 'px';
   if (!sp.dataset.bound) {
     sp.dataset.bound = '1';
-    sp.querySelectorAll('.stick-tab').forEach(t => t.addEventListener('click', () => renderStickPanel(t.dataset.stab)));
+    sp.querySelectorAll('.stick-tab').forEach(t => t.addEventListener('click', () => { try { renderStickPanel(t.dataset.stab); } catch (e) { console.error(e); } }));
   }
   const body = $('#stickBody');
   const tab = sp.dataset.lastTab || 'fav';
@@ -5147,7 +5250,7 @@ function toggleStickPanel(btn) {
     sp.dataset.lastTab = tab;
     return;
   }
-  renderStickPanel(tab);
+  try { renderStickPanel(tab); } catch (e) { console.error(e); }
 }
 function renderStickPanel(tab) {
   const sp = $('#stickPanel');
@@ -5282,8 +5385,8 @@ function renderStickPanel(tab) {
   body.querySelectorAll('[data-send]').forEach(img => img.addEventListener('click', () => {
     const chat = currentChat();
     if (!chat) return;
-    sendSticker(chat, img.dataset.send);
     $('#stickPanel').classList.add('hidden');
+    sendSticker(chat, img.dataset.send);
   }));
 }
 function sendSticker(chat, dataUrl) {
@@ -5301,9 +5404,120 @@ function sendSticker(chat, dataUrl) {
   renderChatList();
   bindChatEvents(chat);
 }
+
+/* ============================================================
+   ГОЛОСОВЫЕ СООБЩЕНИЯ И КРУЖКИ (видеосообщения)
+   ============================================================ */
+let recState = null;
+const VOICE_MAX_SEC = 120;
+const VIDEO_MSG_MAX_SEC = 60;
+
+function pickRecordMime(video) {
+  try {
+    const cands = video
+      ? ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4']
+      : ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/mpeg'];
+    return cands.find(c => MediaRecorder.isTypeSupported(c)) || '';
+  } catch (e) { return ''; }
+}
+function showRecBar(type) {
+  const bar = $('#recBar');
+  if (!bar) return;
+  const lab = $('#recLabel');
+  if (lab) lab.textContent = type === 'video' ? 'Кружок · запись…' : 'Голосовое · запись…';
+  bar.classList.remove('hidden');
+  $('#recTimer').textContent = '0:00';
+  const vbtn = $('#voiceBtn'), vbtn2 = $('#videoMsgBtn');
+  if (vbtn) vbtn.disabled = true;
+  if (vbtn2) vbtn2.disabled = true;
+}
+function hideRecBar() {
+  const bar = $('#recBar');
+  if (bar) bar.classList.add('hidden');
+  const vbtn = $('#voiceBtn'), vbtn2 = $('#videoMsgBtn');
+  if (vbtn) vbtn.disabled = false;
+  if (vbtn2) vbtn2.disabled = false;
+}
+function updateRecTimer() {
+  const t = recState ? Math.floor((Date.now() - recState.t0) / 1000) : 0;
+  const el = $('#recTimer');
+  if (el) el.textContent = Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+}
+function startRecording(type) {
+  if (recState) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast('Запись не поддерживается этим браузером');
+  const video = type === 'video';
+  const chat = currentChat();
+  if (!chat) return;
+  navigator.mediaDevices.getUserMedia({ audio: true, video: video ? { facingMode: 'user', width: 480, height: 480 } : false })
+    .then(stream => {
+      const mime = pickRecordMime(video);
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        clearInterval(recState && recState.timer);
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunks, { type: rec.mimeType || (video ? 'video/webm' : 'audio/webm') });
+        const dur = Math.max(1, Math.round((Date.now() - recState.t0) / 1000));
+        const rd = new FileReader();
+        rd.onload = () => {
+          const c = currentChat();
+          if (c) sendMediaMessage(c, video ? { video: { dataUrl: rd.result, dur } } : { voice: { dataUrl: rd.result, dur } });
+        };
+        rd.readAsDataURL(blob);
+        recState = null;
+        hideRecBar();
+      };
+      rec.start();
+      recState = { type, stream, rec, t0: Date.now(), timer: setInterval(updateRecTimer, 500) };
+      showRecBar(type);
+      if (video) setTimeout(() => { if (recState && recState.rec.state === 'recording') stopRecording(); }, VIDEO_MSG_MAX_SEC * 1000);
+      else setTimeout(() => { if (recState && recState.rec.state === 'recording') stopRecording(); }, VOICE_MAX_SEC * 1000);
+      toast(video ? 'Запись кружка…' : 'Запись голосового…');
+    })
+    .catch(() => toast('Нет доступа к микрофону/камере'));
+}
+function stopRecording() {
+  if (!recState) return;
+  try { if (recState.rec.state === 'recording') recState.rec.stop(); } catch (e) {}
+}
+function cancelRecording() {
+  if (!recState) return;
+  clearInterval(recState.timer);
+  recState.rec.onstop = null;
+  try { if (recState.rec.state === 'recording') recState.rec.stop(); } catch (e) {}
+  recState.stream.getTracks().forEach(t => t.stop());
+  recState = null;
+  hideRecBar();
+}
+function sendMediaMessage(chat, media) {
+  const msg = { id: 'm' + Date.now(), from: chat.id === NEWS_CHAT_ID ? 'news' : 'me', text: '', time: new Date().toISOString(), read: false, sent: true, ...media };
+  chat.messages.push(msg);
+  pushMsgToCloud(chat, msg);
+  if (chat.type === 'group' || chat.type === 'channel') {
+    if (chat.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(msg);
+    else syncGroupMessageEverywhere(chat, msg, currentUser.username);
+  }
+  addLog(currentUser.username, `Отправил ${media.voice ? 'голосовое' : 'видеосообщение'} в «${chatTitle(chat)}»`);
+  saveState();
+  renderMessages(chat);
+  if (isChatNearBottom()) scrollChatToBottom();
+  renderChatList();
+  bindChatEvents(chat);
+}
+function fmtRecDur(sec) {
+  return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+}
 function compressStickerFile(f, cb) {
+  const animated = f.type === 'image/gif' || f.type === 'image/webp';
   const reader = new FileReader();
   reader.onload = () => {
+    if (animated) {
+      if (f.size > 3 * 1024 * 1024) toast('Стикер больше 3 МБ — может грузиться долго');
+      cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), dataUrl: reader.result });
+      return;
+    }
     const img = new Image();
     img.onload = () => {
       const maxSide = 512;
@@ -6354,7 +6568,7 @@ function bindManageModal() {
    ============================================================ */
 function channelLink(chat) {
   const h = chat && chat.handle;
-  return h ? 'nebula://c/' + h : 'nebula://c/' + (chat ? chat.id : '');
+  return location.origin + location.pathname + '?c=' + encodeURIComponent(h || (chat ? chat.id : ''));
 }
 function qrDataUrl(text) {
   try {
@@ -6462,12 +6676,15 @@ function changeChatAvatar(chat) {
 /* ============================================================
    НАСТРОЙКИ АККАУНТА
    ============================================================ */
+function canAdmin() {
+  return !!(currentUser && (isAdmin(currentUser.username) || isOwnerAcc(currentUser)));
+}
 function updateAdminBtn() {
   const b = $('#adminBtn');
-  if (b) b.classList.toggle('hidden', !(currentUser && isAdmin(currentUser.username)));
+  if (b) b.classList.toggle('hidden', !canAdmin());
 }
 function openAdminPanel() {
-  if (!currentUser || !isAdmin(currentUser.username)) return;
+  if (!canAdmin()) return;
   renderSettingsAdmin($('#adminBody'));
   $('#adminModal').classList.add('open');
 }
