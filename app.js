@@ -439,7 +439,40 @@ function runCloudBackup() {
       const accounts = loadAccounts();
       Object.keys(accounts.users || {}).forEach(u => {
         const raw = localStorage.getItem(stateKey(u));
-        if (raw) tasks.push(cloudSaveIfChanged(stateKey(u), raw));
+        if (!raw) return;
+        const sk = stateKey(u);
+        const sraw = stripStateForCloud(raw);
+        if (!sraw) return;
+        tasks.push(cloudLoad(sk).then(cur => {
+          const m2 = loadCloudMeta();
+          const sv = m2.seenStates || {};
+          if (cur && cur.v > (sv[sk] || 0)) {
+            sv[sk] = cur.v;
+            m2.seenStates = sv;
+            saveCloudMeta(m2);
+            if (u === (currentUser ? currentUser.username : null) && localStorage.getItem(sk) !== cur.d) {
+              try {
+                localStorage.setItem(sk, cur.d);
+                state = loadState() || state;
+                ensureGlobalChats();
+                saveState();
+                renderChatList();
+                renderChat();
+              } catch (e) {}
+            }
+            return false;
+          }
+          return cloudSaveIfChanged(sk, sraw).then(ok => {
+            if (ok) {
+              const m3 = loadCloudMeta();
+              const sv2 = m3.seenStates || {};
+              sv2[sk] = cur ? cur.v : 0;
+              m3.seenStates = sv2;
+              saveCloudMeta(m3);
+            }
+            return ok;
+          });
+        }));
       });
       const admins = localStorage.getItem(ADMIN_KEY);
       if (admins) tasks.push(cloudSaveIfChanged(ADMIN_KEY, admins));
@@ -462,6 +495,29 @@ function runCloudBackup() {
 /* Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РёР· РѕР±Р»Р°РєР°: Р°РєРєР°СѓРЅС‚С‹ + СЃРѕСЃС‚РѕСЏРЅРёРµ РєР°Р¶РґРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
    (С‡Р°С‚С‹, СЃРѕРѕР±С‰РµРЅРёСЏ) + Р°РґРјРёРЅС‹ + Р»РѕРіРё + РѕР±СЉСЏРІР»РµРЅРёРµ. Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РєР»СЋС‡Р° Р±РµСЂС‘С‚СЃСЏ
    Р±РѕР»РµРµ СЃРІРµР¶Р°СЏ РІРµСЂСЃРёСЏ; С‡СѓР¶РёРµ Р°РєРєР°СѓРЅС‚С‹ РёР· РѕР±Р»Р°РєР° РІСЃРµРіРґР° РґРѕР±Р°РІР»СЏСЋС‚СЃСЏ. */
+function restoreMyStateFromCloud(uname) {
+  if (!MAIL_RELAY_URL) return;
+  const k = stateKey(uname);
+  cloudLoad(k).then(r => {
+    if (!r || !currentUser || currentUser.username !== uname) return;
+    const meta = loadCloudMeta();
+    const seen = meta.seenStates || {};
+    if ((seen[k] || 0) >= r.v) return;
+    try {
+      localStorage.setItem(k, r.d);
+      seen[k] = r.v;
+      meta.seenStates = seen;
+      saveCloudMeta(meta);
+      state = loadState() || state;
+      ensureGlobalChats();
+      saveState();
+      renderChatList();
+      renderChat();
+      toast('Р‘Р°Р·Р° РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅР° РёР· РѕР±Р»Р°РєР°');
+    } catch (e) {}
+  }).catch(() => {});
+}
+
 function tryRestoreFromCloud() {
   if (!MAIL_RELAY_URL) return;
   const done = (async () => {
@@ -502,7 +558,14 @@ function tryRestoreFromCloud() {
         if (!r) return;
         const meta = loadCloudMeta();
         if ((meta[k] || 0) < r.v) {
-          try { localStorage.setItem(k, r.d); meta[k] = r.v; saveCloudMeta(meta); restored = true; } catch (e) {}
+          try {
+            localStorage.setItem(k, r.d);
+            meta[k] = r.v;
+            meta.seenStates = meta.seenStates || {};
+            meta.seenStates[k] = r.v;
+            saveCloudMeta(meta);
+            restored = true;
+          } catch (e) {}
         }
       }));
       for (const k of [ADMIN_KEY, LOG_KEY, ANN_KEY, TICKETS_KEY]) {
@@ -558,8 +621,19 @@ function cloudChatKey(chatId) { return CLOUD_CHAT_PREFIX + chatId; }
 function cloudMsgKey(chatId, msgId) { return CLOUD_MSG_PREFIX + chatId + ':' + msgId; }
 function cloudMdelKey(chatId, msgId) { return CLOUD_MDEL_PREFIX + chatId + ':' + msgId; }
 
+function stripMediaForCloud(msg) {
+  const out = JSON.parse(JSON.stringify(msg));
+  if (out.media && out.media.length) out.media = out.media.map(md => {
+    if (md.dataUrl && md.dataUrl.length > 700000) return { type: md.type, name: md.name, size: md.size, dataUrl: null };
+    return md;
+  });
+  if (out.voice && out.voice.dataUrl && out.voice.dataUrl.length > 700000) out.voice = { dur: out.voice.dur || 0, dataUrl: null };
+  if (out.video) out.video = { dur: out.video.dur || 0 };
+  if (out.sticker && out.sticker.dataUrl && out.sticker.dataUrl.length > 700000) out.sticker = { name: out.sticker.name || 'РЎС‚РёРєРµСЂ', dataUrl: null };
+  return out;
+}
 function sanitizeForCloud(obj) {
-  const out = JSON.parse(JSON.stringify(obj));
+  const out = stripMediaForCloud(obj);
   if (out.from === 'me') out.from = currentUser.username;
   if (out.reactions) {
     Object.keys(out.reactions).forEach(e => {
@@ -567,6 +641,16 @@ function sanitizeForCloud(obj) {
     });
   }
   return out;
+}
+function stripStateForCloud(raw) {
+  try {
+    const st = JSON.parse(raw);
+    if (st.chats && st.chats.length) st.chats.forEach(c => {
+      if (c.messages && c.messages.length) c.messages = c.messages.map(stripMediaForCloud);
+    });
+    const s = JSON.stringify(st);
+    return s.length <= 1600000 ? s : null;
+  } catch (e) { return null; }
 }
 function sanitizeFromCloud(msg) {
   if (msg && msg.reactions) {
@@ -786,11 +870,19 @@ function syncCloudUsers() {
     meta.seenAccounts = r.v;
     saveCloudMeta(meta);
     Object.keys(cloud.users).forEach(u => {
-      if (!localStorage.getItem(stateKey(u))) {
-        cloudLoad(stateKey(u)).then(sr => {
-          if (sr) { try { localStorage.setItem(stateKey(u), sr.d); } catch (e) {} }
-        });
-      }
+      cloudLoad(stateKey(u)).then(sr => {
+        if (!sr) return;
+        const m = loadCloudMeta();
+        const seen = m.seenStates || {};
+        const k = stateKey(u);
+        if ((seen[k] || 0) >= sr.v) return;
+        try {
+          localStorage.setItem(k, sr.d);
+          seen[k] = sr.v;
+          m.seenStates = seen;
+          saveCloudMeta(m);
+        } catch (e) {}
+      });
     });
     ensureGlobalChats();
     if (currentUser) { saveState(); renderChatList(); renderChat(); }
@@ -3120,6 +3212,7 @@ function startApp(user) {
   if (!('activeFolder' in state)) state.activeFolder = null;
   ensureGlobalChats();
   saveState();
+  restoreMyStateFromCloud(user.username);
   applyTheme(user.settings.theme || 'default');
   applyCursorSize((user.settings && user.settings.cursorSize) || 'm');
   applyCursorGlow(user.settings && user.settings.cursorGlow);
@@ -3839,26 +3932,29 @@ function renderMessages(chat) {
     }).join('') : '';
     const mediaHtml = msg.media && msg.media.length ? msg.media.map((md, mi) => {
       if (md.type && md.type.startsWith('image/')) {
-        return `<img class="msg-photo" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
+        if (md.dataUrl) return `<img class="msg-photo" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
+        return `<div class="msg-photo-off" data-mid="${msg.id}" data-mi="${mi}" title="${escapeHtml(md.name)}">рџ–ј <span>${escapeHtml(md.name)}</span></div>`;
       }
       return `
         <div class="msg-file">
           <span class="file-ic">рџ“„</span>
           <span class="file-name">${escapeHtml(md.name)}</span>
           <span class="file-size">${fmtBytes(md.size)}</span>
-          <a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="РЎРєР°С‡Р°С‚СЊ">в¬‡</a>
+          ${md.dataUrl ? `<a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="РЎРєР°С‡Р°С‚СЊ">в¬‡</a>` : '<span class="file-dl-off" title="Р¤Р°Р№Р» РЅРµ Р·Р°РіСЂСѓР¶РµРЅ РЅР° СЌС‚Рѕ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ">вЂ”</span>'}
         </div>`;
     }).join('') : '';
-    const stickerHtml = msg.sticker ? `<img class="msg-sticker" src="${msg.sticker.dataUrl}" alt="РЎС‚РёРєРµСЂ">` : '';
-    const voiceHtml = msg.voice ? `
+    const stickerHtml = msg.sticker && msg.sticker.dataUrl ? `<img class="msg-sticker" src="${msg.sticker.dataUrl}" alt="РЎС‚РёРєРµСЂ">` : '';
+    const voiceHtml = msg.voice ? (msg.voice.dataUrl ? `
       <div class="msg-voice" data-mid="${msg.id}">
         <button class="voice-play" data-vplay="${msg.id}" title="РРіСЂР°С‚СЊ">в–¶</button>
         <div class="voice-bar"><i></i></div>
         <span class="voice-dur">${fmtRecDur(msg.voice.dur || 0)}</span>
         <audio src="${msg.voice.dataUrl}" preload="none"></audio>
-      </div>` : '';
-    const videoHtml = msg.video ? `
-      <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" loop playsinline muted preload="metadata" title="РљСЂСѓР¶РѕРє В· ${fmtRecDur(msg.video.dur || 0)}"></video>` : '';
+      </div>` : `
+      <div class="msg-voice-off" data-mid="${msg.id}">рџЋ¤ <span>Р“РѕР»РѕСЃРѕРІРѕРµ В· ${fmtRecDur(msg.voice.dur || 0)}</span><span class="vo-note">РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ</span></div>`) : '';
+    const videoHtml = msg.video ? (msg.video.dataUrl ? `
+      <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" loop playsinline muted preload="metadata" title="РљСЂСѓР¶РѕРє В· ${fmtRecDur(msg.video.dur || 0)}"></video>` : `
+      <div class="msg-kruzhok-off" data-mid="${msg.id}" title="РљСЂСѓР¶РѕРє В· ${fmtRecDur(msg.video.dur || 0)}"><span>рџЋ¬</span><span class="kk-dur">${fmtRecDur(msg.video.dur || 0)}</span><span class="kk-note">РЅРµ Р·Р°РіСЂСѓР¶РµРЅ</span></div>`) : '';
     const pollHtml = msg.poll ? renderPollHtml(msg) : '';
     const contactHtml = msg.contact ? renderContactHtml(msg.contact) : '';
     html += `
