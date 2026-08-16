@@ -187,21 +187,86 @@ function saveCloudMeta(m) {
   try { localStorage.setItem(CLOUD_META_KEY, JSON.stringify(m)); } catch (e) {}
 }
 
+/* ---------- Р’С‚РѕСЂР°СЏ Р±Р°Р·Р°: Firestore-Р·РµСЂРєР°Р»Рѕ ----------
+   Cloudflare KV (Р±РµСЃРїР»Р°С‚РЅС‹Р№ Р»РёРјРёС‚ ~1000 Р·Р°РїРёСЃРµР№/РґРµРЅСЊ) С‡Р°СЃС‚Рѕ РёСЃС‡РµСЂРїС‹РІР°РµС‚СЃСЏ,
+   Рё СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РІСЃС‚Р°С‘С‚. Firestore (Р±РµСЃРїР»Р°С‚РЅРѕ ~20000 Р·Р°РїРёСЃРµР№/РґРµРЅСЊ) вЂ”
+   РЅР°РґС‘Р¶РЅС‹Р№ РґСѓР±Р»СЊ. Р§С‚РѕР±С‹ РІРєР»СЋС‡РёС‚СЊ: 1) РІ РєРѕРЅСЃРѕР»Рё Firebase РѕС‚РєСЂРѕР№ РїСЂРѕРµРєС‚
+   nebula-1337 в†’ Build в†’ Firestore Database в†’ Create database (СЂРµР¶РёРј
+   production РёР»Рё test); 2) Project settings в†’ Your apps в†’ Web app в†’
+   СЃРєРѕРїРёСЂСѓР№С‚Рµ apiKey Рё projectId РІ NEBULA_FIREBASE РЅРёР¶Рµ. */
+const NEBULA_FIREBASE = { apiKey: '', projectId: '' };
+function fsEnabled() { return !!(NEBULA_FIREBASE.apiKey && NEBULA_FIREBASE.projectId); }
+function fsDocId(key) {
+  try { return btoa(unescape(encodeURIComponent(key))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''); }
+  catch (e) { return 'k' + key.length; }
+}
+function fsBase() { return 'https://firestore.googleapis.com/v1/projects/' + NEBULA_FIREBASE.projectId + '/databases/(default)'; }
+function fsUrl(doc) { return fsBase() + '/documents/' + doc + '?key=' + NEBULA_FIREBASE.apiKey; }
+function fsRead(key) {
+  return fetch(fsUrl('kv/' + fsDocId(key)), { method: 'GET' })
+    .then(r => r.json().catch(() => ({ error: true })))
+    .then(d => { if (d.error || !d.fields || !d.fields.value) return null; return d.fields.value.stringValue || null; })
+    .catch(() => null);
+}
+function fsList(prefix) {
+  return fetch(fsUrl('kv/idx'), { method: 'GET' })
+    .then(r => r.json().catch(() => ({ error: true })))
+    .then(d => {
+      if (d.error || !d.fields || !d.fields.keys || !d.fields.keys.arrayValue) return [];
+      const vals = d.fields.keys.arrayValue.values || [];
+      return vals.map(x => x.stringValue).filter(k => k && k.startsWith(prefix));
+    })
+    .catch(() => []);
+}
+function fsIndexOp(key, op) {
+  return fetch(fsBase() + '/documents:commit?key=' + NEBULA_FIREBASE.apiKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      writes: [{
+        transform: {
+          document: fsBase() + '/documents/kv/idx',
+          fieldTransforms: [{
+            fieldPath: 'keys',
+            [op === 'add' ? 'appendMissingElements' : 'removeAllFromArray']: { values: [{ stringValue: key }] },
+          }],
+        },
+      }],
+    }),
+  }).then(r => r.json().catch(() => ({ error: true }))).then(d => !d.error).catch(() => false);
+}
+function fsWrite(key, value) {
+  if (value.length > 900000) return Promise.resolve(false);
+  const put = fetch(fsUrl('kv/' + fsDocId(key)) + '&updateMask.fieldPaths=value', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: { value: { stringValue: value } } }),
+  }).then(r => r.json().catch(() => ({ error: true }))).then(d => !d.error).catch(() => false);
+  return Promise.all([put, fsIndexOp(key, 'add')]).then(([a, b]) => a && b);
+}
+function fsDelete(key) {
+  const del = fetch(fsUrl('kv/' + fsDocId(key)), { method: 'DELETE' })
+    .then(r => r.json().catch(() => ({ error: true }))).then(d => !d.error).catch(() => false);
+  return Promise.all([del, fsIndexOp(key, 'remove')]).then(([a, b]) => a && b);
+}
+
 function cloudSave(key, value) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
   const meta = loadCloudMeta();
   meta[key] = Date.now();
   saveCloudMeta(meta);
-  return fetch(MAIL_RELAY_URL + '/store', {
+  const kv = fetch(MAIL_RELAY_URL + '/store', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
     keepalive: true,
-  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
-    const ok = !!d.ok;
+  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => !!d.ok).catch(() => false);
+  const fsp = fsEnabled() ? fsWrite(key, value) : Promise.resolve(false);
+  return Promise.all([kv, fsp]).then(([a, b]) => {
+    const ok = !!(a || b);
     if (!ok) { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); }
     return ok;
-  }).catch(() => { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); return false; });
+  });
 }
 function cloudFailedRecently(ms) {
   const m = loadCloudMeta();
@@ -229,19 +294,27 @@ function cloudSaveIfChanged(key, value) {
 }
 function cloudLoad(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(null);
-  return fetch(cloudUrl(key), { method: 'GET' })
+  const fsp = fsEnabled() ? fsRead(key).then(r => r ? cloudUnwrap(r) : null) : Promise.resolve(null);
+  const kp = fetch(cloudUrl(key), { method: 'GET' })
     .then(r => r.json().catch(() => ({ ok: false })))
     .then(d => (d && d.ok && d.value) ? cloudUnwrap(d.value) : null)
     .catch(() => null);
+  return Promise.all([fsp, kp]).then(([f, k]) => {
+    if (!f) return k;
+    if (!k) return f;
+    return k.v > f.v ? k : f;
+  });
 }
 function cloudDelete(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
-  return fetch(MAIL_RELAY_URL + '/store', {
+  const kv = fetch(MAIL_RELAY_URL + '/store', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key, secret: MAIL_RELAY_SECRET }),
     keepalive: true,
   }).then(r => r.json().catch(() => ({ ok: false }))).then(d => !!d.ok).catch(() => false);
+  const fsp = fsEnabled() ? fsDelete(key) : Promise.resolve(false);
+  return Promise.all([kv, fsp]).then(([a, b]) => !!(a || b));
 }
 function scheduleCloudBackup() {
   if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
@@ -281,7 +354,7 @@ function refreshAccountsFromCloud() {
       if (changed) {
         saveAccounts(local);
         const meta = loadCloudMeta();
-        meta[ACCOUNTS_KEY] = Math.max(meta[ACCOUNTS_KEY] || 0, r.v);
+        meta.seenAccounts = Math.max(meta.seenAccounts || 0, r.v);
         saveCloudMeta(meta);
       }
       return local;
@@ -402,7 +475,7 @@ function tryRestoreFromCloud() {
           } catch (e) {}
         } else {
           nextRaw = accountsRaw.d;
-          meta[ACCOUNTS_KEY] = accountsRaw.v;
+          meta.seenAccounts = accountsRaw.v;
           saveCloudMeta(meta);
         }
         if (nextRaw && nextRaw !== localRaw) {
@@ -465,10 +538,12 @@ let cloudSyncingNow = false;
 
 function cloudListKeys(prefix) {
   if (!MAIL_RELAY_URL) return Promise.resolve([]);
-  return fetch(MAIL_RELAY_URL + '/store/keys?prefix=' + encodeURIComponent(prefix))
+  const fsp = fsEnabled() ? fsList(prefix) : Promise.resolve([]);
+  const kp = fetch(MAIL_RELAY_URL + '/store/keys?prefix=' + encodeURIComponent(prefix))
     .then(r => r.json().catch(() => ({ ok: false })))
     .then(d => (d && d.ok && Array.isArray(d.keys)) ? d.keys : [])
     .catch(() => []);
+  return Promise.all([fsp, kp]).then(([a, b]) => Array.from(new Set([...a, ...b])));
 }
 function cloudChatKey(chatId) { return CLOUD_CHAT_PREFIX + chatId; }
 function cloudMsgKey(chatId, msgId) { return CLOUD_MSG_PREFIX + chatId + ':' + msgId; }
@@ -688,7 +763,7 @@ function syncCloudUsers() {
       try { applyDeletedFromCloud(JSON.parse(delR.d)); } catch (e) {}
     }
     if (!r) return;
-    if ((meta[ACCOUNTS_KEY] || 0) >= r.v) return;
+    if ((meta.seenAccounts || 0) >= r.v) return;
     let cloud;
     try { cloud = JSON.parse(r.d); } catch (e) { return; }
     if (!cloud || !cloud.users) return;
@@ -697,9 +772,9 @@ function syncCloudUsers() {
     Object.keys(cloud.users).forEach(u => {
       if (cloudMergeUserOk(local, cloud.users[u], u)) { local.users[u] = cloud.users[u]; changed = true; }
     });
-    if (!changed) { meta[ACCOUNTS_KEY] = r.v; saveCloudMeta(meta); return; }
+    if (!changed) { meta.seenAccounts = r.v; saveCloudMeta(meta); return; }
     saveAccounts(local);
-    meta[ACCOUNTS_KEY] = r.v;
+    meta.seenAccounts = r.v;
     saveCloudMeta(meta);
     Object.keys(cloud.users).forEach(u => {
       if (!localStorage.getItem(stateKey(u))) {
