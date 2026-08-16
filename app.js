@@ -190,11 +190,20 @@ function saveCloudMeta(m) {
 /* ---------- Р’С‚РѕСЂР°СЏ Р±Р°Р·Р°: Firestore-Р·РµСЂРєР°Р»Рѕ ----------
    Cloudflare KV (Р±РµСЃРїР»Р°С‚РЅС‹Р№ Р»РёРјРёС‚ ~1000 Р·Р°РїРёСЃРµР№/РґРµРЅСЊ) С‡Р°СЃС‚Рѕ РёСЃС‡РµСЂРїС‹РІР°РµС‚СЃСЏ,
    Рё СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РІСЃС‚Р°С‘С‚. Firestore (Р±РµСЃРїР»Р°С‚РЅРѕ ~20000 Р·Р°РїРёСЃРµР№/РґРµРЅСЊ) вЂ”
-   РЅР°РґС‘Р¶РЅС‹Р№ РґСѓР±Р»СЊ. Р§С‚РѕР±С‹ РІРєР»СЋС‡РёС‚СЊ: 1) РІ РєРѕРЅСЃРѕР»Рё Firebase РѕС‚РєСЂРѕР№ РїСЂРѕРµРєС‚
-   nebula-1337 в†’ Build в†’ Firestore Database в†’ Create database (СЂРµР¶РёРј
-   production РёР»Рё test); 2) Project settings в†’ Your apps в†’ Web app в†’
-   СЃРєРѕРїРёСЂСѓР№С‚Рµ apiKey Рё projectId РІ NEBULA_FIREBASE РЅРёР¶Рµ. */
-const NEBULA_FIREBASE = { apiKey: '', projectId: '' };
+   РЅР°РґС‘Р¶РЅС‹Р№ РґСѓР±Р»СЊ. Р§С‚РѕР±С‹ РІРєР»СЋС‡РёС‚СЊ:
+   1) РєРѕРЅСЃРѕР»СЊ Firebase в†’ РїСЂРѕРµРєС‚ nebula-1337 в†’ Build в†’ Firestore Database в†’
+      Create database (СЂРµР¶РёРј production РёР»Рё test);
+   2) Project settings в†’ Your apps в†’ Web app в†’ СЃРєРѕРїРёСЂСѓР№С‚Рµ apiKey Рё projectId;
+   3) РІСЃС‚Р°РІСЊС‚Рµ РёС… РІ РєРѕРЅСЃС‚Р°РЅС‚Сѓ РЅРёР¶Рµ РР›Р (РїСЂРѕС‰Рµ) РѕС‚РєСЂРѕР№С‚Рµ СЃР°Р№С‚ Рё РІ РєРѕРЅСЃРѕР»Рё
+      Р±СЂР°СѓР·РµСЂР° (F12) РІС‹РїРѕР»РЅРёС‚Рµ:
+      localStorage.setItem('nebula_firebase_cfg', JSON.stringify({ apiKey: 'Р’РђРЁ_API_KEY', projectId: 'nebula-1337' }))
+      Р·Р°С‚РµРј РїРµСЂРµР·Р°РіСЂСѓР·РёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ. */
+const NEBULA_FIREBASE_DEFAULT = { apiKey: '', projectId: '' };
+let NEBULA_FIREBASE = NEBULA_FIREBASE_DEFAULT;
+try {
+  const cfg = JSON.parse(localStorage.getItem('nebula_firebase_cfg') || 'null');
+  if (cfg && cfg.apiKey && cfg.projectId) NEBULA_FIREBASE = cfg;
+} catch (e) {}
 function fsEnabled() { return !!(NEBULA_FIREBASE.apiKey && NEBULA_FIREBASE.projectId); }
 function fsDocId(key) {
   try { return btoa(unescape(encodeURIComponent(key))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''); }
