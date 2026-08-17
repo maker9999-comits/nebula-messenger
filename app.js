@@ -349,6 +349,21 @@ function mergeAccountsWithCloud(raw) {
 /* РЎРІРµР¶Р°СЏ Р·Р°РіСЂСѓР·РєР° Р°РєРєР°СѓРЅС‚РѕРІ РёР· РѕР±Р»Р°РєР° + СЃР»РёСЏРЅРёРµ СЃ Р»РѕРєР°Р»СЊРЅС‹РјРё.
    РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС…РѕРґРµ Рё СЂРµРіРёСЃС‚СЂР°С†РёРё, С‡С‚РѕР±С‹ РЅР° Р»СЋР±РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ
    Р±С‹Р»Рѕ РІРёРґРЅРѕ РІСЃРµС… СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ */
+/* Р’С‹СЂР°РІРЅРёРІР°РЅРёРµ Р±Р°Р· РїСЂРё РєР°Р¶РґРѕРј РѕС‚РєСЂС‹С‚РёРё: Р»РѕРєР°Р»СЊРЅР°СЏ Р±Р°Р·Р° РїСѓС€РёС‚ РѕР±СЉРµРґРёРЅРµРЅРёРµ,
+   РµСЃР»Рё РІ РЅРµР№ Р°РєРєР°СѓРЅС‚РѕРІ Р±РѕР»СЊС€Рµ, С‡РµРј РІ РѕР±Р»Р°РєРµ; Рё РЅР°РѕР±РѕСЂРѕС‚ вЂ” С‚СЏРЅРµС‚ РёР· РѕР±Р»Р°РєР° */
+function reconcileAccountsNow() {
+  if (!MAIL_RELAY_URL) return Promise.resolve();
+  return cloudLoad(ACCOUNTS_KEY).then(r => {
+    let cloudN = 0;
+    try { cloudN = r && r.d ? Object.keys(JSON.parse(r.d).users || {}).length : 0; } catch (e) {}
+    const localN = Object.keys(loadAccounts().users || {}).length;
+    if (cloudN < localN) return forceCloudBackup();
+    if (cloudN > localN) return refreshAccountsFromCloud().then(() => {
+      if (currentUser) { renderChatList(); renderChat(); }
+    });
+    return null;
+  }).catch(() => null);
+}
 function refreshAccountsFromCloud() {
   if (!MAIL_RELAY_URL) return Promise.resolve(loadAccounts());
   return cloudLoad(ACCOUNTS_KEY).then(r => {
@@ -3215,6 +3230,7 @@ function startApp(user) {
   ensureGlobalChats();
   saveState();
   restoreMyStateFromCloud(user.username);
+  reconcileAccountsNow();
   applyTheme(user.settings.theme || 'default');
   applyCursorSize((user.settings && user.settings.cursorSize) || 'm');
   applyCursorGlow(user.settings && user.settings.cursorGlow);
@@ -9274,6 +9290,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCursor();
   initRipples();
   tryRestoreFromCloud();
+  reconcileAccountsNow();
   initAuth();
   bindFilters();
   bindCreateModal();
