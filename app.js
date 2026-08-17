@@ -9130,7 +9130,6 @@ function initCtxMenuActions() {
 }
 function initContextMenu() {
   document.addEventListener('contextmenu', (e) => {
-    if (devAllowed()) return;
     const item = e.target.closest('.chat-item');
     if (!item) return;
     e.preventDefault();
@@ -9342,16 +9341,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ============================================================
    Р—РђР©РРўРђ РћРў РљРћРџРР РћР’РђРќРРЇ
-   (Р°РґРјРёРЅС‹ Рё РІР»Р°РґРµР»РµС† РѕСЃРІРѕР±РѕР¶РґРµРЅС‹ вЂ” РёРј РјРѕР¶РЅРѕ F12, РєРѕРЅСЃРѕР»СЊ, РєРѕРїРёСЂРѕРІР°РЅРёРµ)
+   (Р°РґРјРёРЅР°Рј Рё РІР»Р°РґРµР»СЊС†Сѓ СЂР°Р·СЂРµС€С‘РЅ С‚РѕР»СЊРєРѕ F12 вЂ” РєРѕРЅСЃРѕР»СЊ)
    ============================================================ */
 function devAllowed() { return !!(currentUser && (isAdmin(currentUser) || isOwnerAcc(currentUser))); }
-document.addEventListener('contextmenu', (e) => { if (devAllowed()) return; e.preventDefault(); });
-document.addEventListener('selectstart', (e) => { if (devAllowed()) return; e.preventDefault(); });
-document.addEventListener('copy', (e) => { if (devAllowed()) return; e.preventDefault(); });
-document.addEventListener('cut', (e) => { if (devAllowed()) return; e.preventDefault(); });
+document.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+document.addEventListener('selectstart', (e) => { e.preventDefault(); });
+document.addEventListener('copy', (e) => { e.preventDefault(); });
+document.addEventListener('cut', (e) => { e.preventDefault(); });
 document.addEventListener('keydown', (e) => {
-  if (devAllowed()) return;
-  if (e.key === 'F12') { e.preventDefault(); return; }
+  if (e.key === 'F12') { if (!devAllowed()) e.preventDefault(); return; }
   if ((e.ctrlKey || e.metaKey) && ['u', 's', 'c', 'x', 'p', 'a'].includes(String(e.key).toLowerCase())) {
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
     e.preventDefault();
