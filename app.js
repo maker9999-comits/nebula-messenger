@@ -445,10 +445,8 @@ function runCloudBackup() {
         if (!sraw) return;
         tasks.push(cloudLoad(sk).then(cur => {
           const m2 = loadCloudMeta();
-          const sv = m2.seenStates || {};
-          if (cur && cur.v > (sv[sk] || 0)) {
-            sv[sk] = cur.v;
-            m2.seenStates = sv;
+          if (cur && cur.v > (m2[sk] || 0)) {
+            m2[sk] = cur.v;
             saveCloudMeta(m2);
             if (u === (currentUser ? currentUser.username : null) && localStorage.getItem(sk) !== cur.d) {
               try {
@@ -462,16 +460,7 @@ function runCloudBackup() {
             }
             return false;
           }
-          return cloudSaveIfChanged(sk, sraw).then(ok => {
-            if (ok) {
-              const m3 = loadCloudMeta();
-              const sv2 = m3.seenStates || {};
-              sv2[sk] = cur ? cur.v : 0;
-              m3.seenStates = sv2;
-              saveCloudMeta(m3);
-            }
-            return ok;
-          });
+          return cloudSaveIfChanged(sk, sraw);
         }));
       });
       const admins = localStorage.getItem(ADMIN_KEY);
@@ -503,11 +492,12 @@ function restoreMyStateFromCloud(uname) {
     const meta = loadCloudMeta();
     const seen = meta.seenStates || {};
     if ((seen[k] || 0) >= r.v) return;
-    try {
-      localStorage.setItem(k, r.d);
-      seen[k] = r.v;
-      meta.seenStates = seen;
-      saveCloudMeta(meta);
+try {
+        localStorage.setItem(k, r.d);
+        seen[k] = r.v;
+        meta.seenStates = seen;
+        meta[k] = r.v;
+        saveCloudMeta(meta);
       state = loadState() || state;
       ensureGlobalChats();
       saveState();
@@ -880,6 +870,7 @@ function syncCloudUsers() {
           localStorage.setItem(k, sr.d);
           seen[k] = sr.v;
           m.seenStates = seen;
+          m[k] = sr.v;
           saveCloudMeta(m);
         } catch (e) {}
       });
@@ -1237,19 +1228,29 @@ function renderAdminMembersPanel(panel, chat) {
     renderAdminMembersPanel(panel, adminChatCanonical(fresh.id) || fresh);
   }));
   const search = panel.querySelector('.am-search');
-  if (search) renderSearchPicker(search, accountsList().filter(a => !members.some(m => m.username === a.username)), {
-    checkable: false,
-    selected: [],
-    hint: 'РќР°Р№РґРёС‚Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, С‡С‚РѕР±С‹ РґРѕР±Р°РІРёС‚СЊ',
-    onPick: (uid) => {
-      groupMemberEverywhere(chat.id, 'add', uid);
-      addLog(currentUser.username, `Р”РѕР±Р°РІРёР» @${uid} РІ В«${chat.name}В»`);
-      toast('Р”РѕР±Р°РІР»РµРЅ', '@' + uid);
-      renderChatList();
-      renderChat();
-      renderAdminMembersPanel(panel, adminChatCanonical(chat.id) || chat);
-    },
-  });
+  if (search) {
+    const beforeCount = accountsList().length;
+    const pickerOpts = {
+      checkable: false,
+      selected: [],
+      hint: 'РќР°Р№РґРёС‚Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, С‡С‚РѕР±С‹ РґРѕР±Р°РІРёС‚СЊ',
+      onPick: (uid) => {
+        groupMemberEverywhere(chat.id, 'add', uid);
+        addLog(currentUser.username, `Р”РѕР±Р°РІРёР» @${uid} РІ В«${chat.name}В»`);
+        toast('Р”РѕР±Р°РІР»РµРЅ', '@' + uid);
+        renderChatList();
+        renderChat();
+        renderAdminMembersPanel(panel, adminChatCanonical(chat.id) || chat);
+      },
+    };
+    renderSearchPicker(search, accountsList().filter(a => !members.some(m => m.username === a.username)), pickerOpts);
+    refreshAccountsFromCloud().then(() => {
+      if (accountsList().length > beforeCount) {
+        const p2 = panel.querySelector('.am-search');
+        if (p2) renderSearchPicker(p2, accountsList().filter(a => !members.some(m => m.username === a.username)), pickerOpts);
+      }
+    });
+  }
 }
 function subscribeChannel(id) {
   const src = uniqueChatsAcrossUsers().find(c => c.id === id);
@@ -1304,7 +1305,8 @@ function newsChannelData() {
 }
 function ensureGlobalChats() {
   accountsList().forEach(u => {
-    const st = (currentUser && currentUser.username === u.username && state) ? state : (getStateFor(u.username) || buildInitialState());
+    const st = (currentUser && currentUser.username === u.username && state) ? state : getStateFor(u.username);
+    if (!st) return;
     if (!st.pinned) st.pinned = [];
     if (!st.hidden) st.hidden = [];
     if (!st.folders) st.folders = [];
@@ -6038,6 +6040,17 @@ function renderPrivatePicker() {
     onPick: startPrivateChat,
     hint: 'Р’С‹Р±РµСЂРёС‚Рµ РєРѕРЅС‚Р°РєС‚ РёР»Рё РЅР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё',
   });
+  refreshAccountsFromCloud().then(() => {
+    const fresh = accountsList().filter(u => u.username !== currentUser.username);
+    if (fresh.length > others.length) {
+      renderSearchPicker($('#privatePicker'), fresh, {
+        checkable: false,
+        selected: [],
+        onPick: startPrivateChat,
+        hint: 'Р’С‹Р±РµСЂРёС‚Рµ РєРѕРЅС‚Р°РєС‚ РёР»Рё РЅР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё',
+      });
+    }
+  });
 }
 
 function startPrivateChat(userId) {
@@ -6085,7 +6098,9 @@ function renderCreateStep() {
     `<button type="button" class="color-swatch ${createContext.color === p ? 'selected' : ''}" data-i="${i}" style="background:linear-gradient(135deg,${p[0]},${p[1]})"></button>`
   ).join('');
   const picker = $('#memberPicker');
-  renderSearchPicker(picker, accountsList().filter(u => u.username !== currentUser.username && !u.isBot), {
+  const beforeCount = accountsList().length;
+  const pickerSrc = () => accountsList().filter(u => u.username !== currentUser.username && !u.isBot);
+  const renderPicker = () => renderSearchPicker(picker, pickerSrc(), {
     checkable: true,
     selected: createContext.selected,
     onToggle: (id) => {
@@ -6094,6 +6109,10 @@ function renderCreateStep() {
       else createContext.selected.push(id);
     },
     hint: 'Р’С‹Р±РµСЂРёС‚Рµ СѓС‡Р°СЃС‚РЅРёРєРѕРІ РёР»Рё РЅР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё',
+  });
+  renderPicker();
+  refreshAccountsFromCloud().then(() => {
+    if (accountsList().length > beforeCount) renderPicker();
   });
   const name = $('#createName');
   name.value = '';
