@@ -118,6 +118,9 @@ const FRAMES = [
 ];
 const FRAME_ORDER = ['crown', 'vip', 'nebula', 'admin', 'tester', '100h', '50h', '10h', '5h', '1h', 'dolphin', 'old'];
 
+const FLAG_EMOJIS = [
+  'рџ‡·рџ‡є','рџ‡єрџ‡¦','рџ‡§рџ‡ѕ','рџ‡°рџ‡ї','рџ‡єрџ‡ї','рџ‡¦рџ‡І','рџ‡¦рџ‡ї','рџ‡¬рџ‡Є','рџ‡Ірџ‡©','рџ‡±рџ‡№','рџ‡±рџ‡»','рџ‡Єрџ‡Є','рџ‡µрџ‡±','рџ‡Ёрџ‡ї','рџ‡ёрџ‡°','рџ‡­рџ‡є','рџ‡·рџ‡ґ','рџ‡§рџ‡¬','рџ‡·рџ‡ё','рџ‡­рџ‡·','рџ‡ёрџ‡®','рџ‡¬рџ‡·','рџ‡№рџ‡·','рџ‡®рџ‡·','рџ‡®рџ‡±','рџ‡¦рџ‡Є','рџ‡ёрџ‡¦','рџ‡¶рџ‡¦','рџ‡°рџ‡ј','рџ‡§рџ‡­','рџ‡ґрџ‡І','рџ‡ѕрџ‡Є','рџ‡®рџ‡¶','рџ‡ёрџ‡ѕ','рџ‡±рџ‡§','рџ‡Їрџ‡ґ','рџ‡Єрџ‡¬','рџ‡Ірџ‡¦','рџ‡©рџ‡ї','рџ‡№рџ‡і','рџ‡±рџ‡ѕ','рџ‡ёрџ‡©','рџ‡Єрџ‡№','рџ‡°рџ‡Є','рџ‡№рџ‡ї','рџ‡ірџ‡¬','рџ‡¬рџ‡­','рџ‡їрџ‡¦','рџ‡Єрџ‡ё','рџ‡µрџ‡№','рџ‡®рџ‡№','рџ‡«рџ‡·','рџ‡©рџ‡Є','рџ‡¬рџ‡§','рџ‡®рџ‡Є','рџ‡ірџ‡±','рџ‡§рџ‡Є','рџ‡Ёрџ‡­','рџ‡¦рџ‡№','рџ‡ёрџ‡Є','рџ‡ірџ‡ґ','рџ‡©рџ‡°','рџ‡«рџ‡®','рџ‡®рџ‡ё','рџ‡єрџ‡ё','рџ‡Ёрџ‡¦','рџ‡Ірџ‡Ѕ','рџ‡§рџ‡·','рџ‡¦рџ‡·','рџ‡Ёрџ‡±','рџ‡µрџ‡Є','рџ‡Ёрџ‡ґ','рџ‡»рџ‡Є','рџ‡Ёрџ‡є','рџ‡Їрџ‡І','рџ‡¦рџ‡є','рџ‡ірџ‡ї','рџ‡Ёрџ‡і','рџ‡­рџ‡°','рџ‡№рџ‡ј','рџ‡°рџ‡·','рџ‡Їрџ‡µ','рџ‡№рџ‡­','рџ‡»рџ‡і','рџ‡®рџ‡і','рџ‡µрџ‡°','рџ‡§рџ‡©','рџ‡±рџ‡°','рџ‡Ірџ‡ѕ','рџ‡ёрџ‡¬','рџ‡®рџ‡©','рџ‡µрџ‡­','рџ‡°рџ‡­','рџ‡Ірџ‡і','рџ‡°рџ‡µ','рџ‡ірџ‡µ','рџ‡¦рџ‡«','рџ‡єрџ‡і','рџ‡Єрџ‡є',
+];
 const EMOJIS = [
   'рџЂ','рџЃ','рџ‚','рџ¤Ј','рџЉ','рџЌ','рџ','рџЋ','рџ¤©','рџҐі','рџ‰','рџ™‚','рџ…','рџ¤”','рџґ','рџ­','рџ¤','рџ±','рџ¤Ї','рџҐє','рџ‡','рџ¤—','рџ™„','рџ‹','рџ¤ђ','рџ·','рџ¤’','рџҐ¶','рџҐµ','рџ€','рџ¤ ','рџ¤Ў','рџ‘»','рџ’Ђ','рџ‘Ѕ','рџ¤–','рџЋѓ','рџє','рџё','рџ№','рџ»','рџј','рџ™Ђ','рџї','рџѕ',
   'вќ¤пёЏ','рџ§Ў','рџ’›','рџ’љ','рџ’™','рџ’њ','рџ–¤','рџ¤Ќ','рџ¤Ћ','рџ’”','рџ’–','рџ’','рџ’ќ','рџ’ћ','рџ’“','рџ’—','рџ’•','рџ’џ','рџ’Њ','рџ’‹','рџ’Ї','рџ’ў','рџ’Ґ','рџ’«','рџ’¦','рџ’Ё','рџ•іпёЏ','рџ’¬','рџ’­','рџ—ЇпёЏ',
@@ -481,7 +484,7 @@ function runCloudBackup() {
             saveCloudMeta(m2);
             if (u === (currentUser ? currentUser.username : null) && localStorage.getItem(sk) !== cur.d) {
               try {
-                localStorage.setItem(sk, cur.d);
+                localStorage.setItem(sk, mergeStateWithCloud(localStorage.getItem(sk) || '', cur.d));
                 state = loadState() || state;
                 ensureGlobalChats();
                 saveState();
@@ -524,7 +527,7 @@ function restoreMyStateFromCloud(uname) {
     const seen = meta.seenStates || {};
     if ((seen[k] || 0) >= r.v) return;
 try {
-        localStorage.setItem(k, r.d);
+        localStorage.setItem(k, mergeStateWithCloud(localStorage.getItem(k) || '', r.d));
         seen[k] = r.v;
         meta.seenStates = seen;
         meta[k] = r.v;
@@ -580,7 +583,7 @@ function tryRestoreFromCloud() {
         const meta = loadCloudMeta();
         if ((meta[k] || 0) < r.v) {
           try {
-            localStorage.setItem(k, r.d);
+            localStorage.setItem(k, mergeStateWithCloud(localStorage.getItem(k) || '', r.d));
             meta[k] = r.v;
             meta.seenStates = meta.seenStates || {};
             meta.seenStates[k] = r.v;
@@ -900,7 +903,7 @@ function syncCloudUsers() {
         const k = stateKey(u);
         if ((seen[k] || 0) >= sr.v) return;
         try {
-          localStorage.setItem(k, sr.d);
+          localStorage.setItem(k, mergeStateWithCloud(localStorage.getItem(k) || '', sr.d));
           seen[k] = sr.v;
           m.seenStates = seen;
           m[k] = sr.v;
@@ -950,6 +953,35 @@ function applyPresence(list) {
     renderChatList();
     renderChat();
   }
+}
+/* РЎР»РёСЏРЅРёРµ РѕР±Р»Р°С‡РЅРѕР№ РєРѕРїРёРё СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃ Р»РѕРєР°Р»СЊРЅРѕР№: С‡Р°С‚С‹ РёР· РѕР±Р»Р°РєР° РґРѕР±Р°РІР»СЏСЋС‚СЃСЏ,
+   РЅРѕ Р»РѕРєР°Р»СЊРЅС‹Рµ С‡Р°С‚С‹ РќР• СѓРґР°Р»СЏСЋС‚СЃСЏ (РёРЅР°С‡Рµ РєРѕРїРёСЏ СЃ РґСЂСѓРіРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°, РІ РєРѕС‚РѕСЂРѕР№
+   РµС‰С‘ РЅРµС‚ СЃРІРµР¶РµСЃРѕР·РґР°РЅРЅРѕРіРѕ С‡Р°С‚Р°, СЃС‚РёСЂР°Р»Р° Р±С‹ РµРіРѕ РёР· СЃРїРёСЃРєР°) */
+function mergeStateWithCloud(raw, cloudRaw) {
+  try {
+    const a = JSON.parse(raw), b = JSON.parse(cloudRaw);
+    if (!b || !Array.isArray(b.chats)) return cloudRaw;
+    if (!a || !Array.isArray(a.chats) || !a.chats.length) return cloudRaw;
+    const byId = {};
+    a.chats.forEach(c => { if (c && c.id) byId[c.id] = c; });
+    let changed = false;
+    const FIELDS = ['title', 'desc', 'type', 'folder', 'pinned', 'members', 'admins', 'owner', 'handle', 'color', 'avatar', 'cover', 'emoji', 'access', 'whoCanWrite', 'post', 'video', 'broadcast', 'lastActivity'];
+    (b.chats || []).forEach(c => {
+      if (!c || !c.id) return;
+      const ex = byId[c.id];
+      if (!ex) { byId[c.id] = c; changed = true; return; }
+      const have = new Set((ex.messages || []).map(m => m && m.id));
+      const add = (c.messages || []).filter(m => m && m.id && !have.has(m.id));
+      if (add.length) {
+        ex.messages = (ex.messages || []).concat(add).sort((x, y) => String(x.time || '').localeCompare(String(y.time || '')));
+        changed = true;
+      }
+      FIELDS.forEach(f => { if (c[f] !== undefined && ex[f] === undefined) { ex[f] = c[f]; changed = true; } });
+      if ((c.unread || 0) > (ex.unread || 0)) { ex.unread = c.unread; changed = true; }
+    });
+    if (!changed) return raw;
+    return JSON.stringify(Object.assign({}, a, { chats: Object.values(byId) }));
+  } catch (e) { return cloudRaw; }
 }
 let cloudSyncInterval = 3000;
 function scheduleCloudCycle() {
@@ -5721,7 +5753,9 @@ function toggleEmojiPicker(btn, textarea) {
   picker.classList.remove('hidden');
   const r = btn.getBoundingClientRect();
   picker.style.right = (innerWidth - r.right) + 'px';
-  picker.innerHTML = EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('');
+  picker.innerHTML = EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')
+    + `<div class="emoji-sep">Р¤Р»Р°РіРё</div>`
+    + FLAG_EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('');
   picker.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     textarea.value += b.dataset.e;
     textarea.focus();
