@@ -401,6 +401,7 @@ button:hover, .member-item:hover, .create-option:hover, .filter-tab:hover, .prof
   position: relative;
   animation: fadeInUp .35s cubic-bezier(.22,.61,.36,1) both;
 }
+#chatList.settled .chat-item { animation: none; }
 .chat-item:hover { background: var(--bg-hover); }
 .chat-item.active { background: var(--bg-tertiary); }
 .chat-item.active::before {
@@ -1110,9 +1111,9 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   justify-content: center;
   margin-left: 3px;
 }
-.badge-verify { background: #2AABEE; box-shadow: 0 0 0 1px rgba(42,171,238,.3), 0 1px 4px rgba(42,171,238,.4); }
-.badge-verify-gray { background: #95a5a6; box-shadow: 0 0 0 1px rgba(149,165,166,.3), 0 1px 4px rgba(149,165,166,.35); }
-.badge-verify svg, .badge-verify-gray svg { width: 8.5px; height: 7px; stroke: #fff; stroke-width: 2.2; }
+.badge-verify { background: radial-gradient(circle at 32% 26%, #6ec8f5, #1e9bd8 70%, #147fae); box-shadow: 0 0 0 1px rgba(42,171,238,.3), 0 1px 4px rgba(42,171,238,.4); }
+.badge-verify-gray { background: radial-gradient(circle at 32% 26%, #d8dee3, #9aa7b0 70%, #7d8a94); box-shadow: 0 0 0 1px rgba(149,165,166,.3), 0 1px 4px rgba(149,165,166,.35); }
+.badge-verify svg, .badge-verify-gray svg { width: 8.5px; height: 7px; stroke: #fff; stroke-width: 1.8; }
 .manage-name .badge, .chat-header-title .badge, .chat-name .badge, .switch-name .badge { vertical-align: middle; }
 
 /* ===== РўР•РҐ РџРћР”Р”Р•Р Р–РљРђ ===== */
@@ -1354,15 +1355,16 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   transition: all .25s;
 }
 .mini-tick {
-  width: 13px; height: 13px; border-radius: 50%;
+  width: 15px; height: 15px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   color: #fff; flex: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.35);
 }
-.mini-tick svg { width: 8px; height: 7px; stroke-width: 2.2; }
-.mini-tick-blue { background: #2AABEE; }
-.mini-tick-gray { background: #95a5a6; }
-.badge-chip.on .mini-tick-blue { background: #fff; color: #2AABEE; }
-.badge-chip.on .mini-tick-gray { background: #fff; color: #95a5a6; }
+.mini-tick svg { width: 9px; height: 8px; stroke-width: 1.7; }
+.mini-tick-blue { background: radial-gradient(circle at 32% 26%, #6ec8f5, #1e9bd8 70%, #147fae); }
+.mini-tick-gray { background: radial-gradient(circle at 32% 26%, #d8dee3, #9aa7b0 70%, #7d8a94); }
+.badge-chip.on .mini-tick-blue { background: #fff; color: #2AABEE; box-shadow: none; }
+.badge-chip.on .mini-tick-gray { background: #fff; color: #95a5a6; box-shadow: none; }
 .badge-chip:hover { border-color: var(--accent); color: var(--accent-hover); }
 .badge-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 10px var(--accent-glow); }
 .badge-chip.on[data-b="scam"] { background: #e74c3c; border-color: #e74c3c; }
@@ -1692,6 +1694,8 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   object-fit: cover;
   z-index: 3;
 }
+.call-stage #rtcRemoteVideo { object-fit: cover; z-index: 1; }
+.call-stage #rtcRemoteAudio { display: none; }
 .call-stage #shareVideo { object-fit: contain; z-index: 1; background: #000; }
 .call-stage #shareVideo.on { object-fit: contain; background: #000; }
 .share-badge {
