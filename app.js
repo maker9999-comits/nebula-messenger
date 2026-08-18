@@ -259,17 +259,28 @@ function fsDelete(key) {
   return Promise.all([del, fsIndexOp(key, 'remove')]).then(([a, b]) => a && b);
 }
 
+function kvWriteBudgetOk() {
+  const m = loadCloudMeta();
+  const day = new Date().toISOString().slice(0, 10);
+  if (m.kvDay !== day) { m.kvDay = day; m.kvWrites = 0; saveCloudMeta(m); }
+  return (m.kvWrites || 0) < 700;
+}
 function cloudSave(key, value) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
   const meta = loadCloudMeta();
   meta[key] = Date.now();
   saveCloudMeta(meta);
-  const kv = fetch(MAIL_RELAY_URL + '/store', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
-    keepalive: true,
-  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => !!d.ok).catch(() => false);
+  const kv = kvWriteBudgetOk()
+    ? fetch(MAIL_RELAY_URL + '/store', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
+        keepalive: true,
+      }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
+        if (d.ok) { const m2 = loadCloudMeta(); m2.kvWrites = (m2.kvWrites || 0) + 1; saveCloudMeta(m2); }
+        return !!d.ok;
+      }).catch(() => false)
+    : Promise.resolve(false);
   const fsp = fsEnabled() ? fsWrite(key, value) : Promise.resolve(false);
   return Promise.all([kv, fsp]).then(([a, b]) => {
     const ok = !!(a || b);
@@ -316,12 +327,17 @@ function cloudLoad(key) {
 }
 function cloudDelete(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
-  const kv = fetch(MAIL_RELAY_URL + '/store', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, secret: MAIL_RELAY_SECRET }),
-    keepalive: true,
-  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => !!d.ok).catch(() => false);
+  const kv = kvWriteBudgetOk()
+    ? fetch(MAIL_RELAY_URL + '/store', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, secret: MAIL_RELAY_SECRET }),
+        keepalive: true,
+      }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
+        if (d.ok) { const m2 = loadCloudMeta(); m2.kvWrites = (m2.kvWrites || 0) + 1; saveCloudMeta(m2); }
+        return !!d.ok;
+      }).catch(() => false)
+    : Promise.resolve(false);
   const fsp = fsEnabled() ? fsDelete(key) : Promise.resolve(false);
   return Promise.all([kv, fsp]).then(([a, b]) => !!(a || b));
 }
@@ -829,8 +845,10 @@ function syncCloudChats() {
           }
           m.read = false;
           if (chat.type === 'private' && m.from !== me && !canWriteTo(m.from, currentUser)) continue;
+          const isMine = m.from === 'me' || m.from === currentUser.username;
           if (chat.id !== state.currentChatId) chat.unread = (chat.unread || 0) + 1;
           chat.messages.push(m);
+          if (!isMine) notifyNewMessages(chat, [m]);
           added = true;
         }
         if (added || hadDeletes) changed = true;
@@ -840,7 +858,7 @@ function syncCloudChats() {
         saveState();
         renderChatList();
         renderChat();
-        if (state.currentChatId) maybeShowIncoming(state.chats.find(c => c.id === state.currentChatId));
+        maybeShowIncomingAll();
       }
     } catch (e) {
       console.error('Cloud chat sync failed:', e);
@@ -852,7 +870,7 @@ function syncCloudChats() {
 function syncCloudUsers() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve();
   const meta0 = loadCloudMeta();
-  if (meta0.usersCheckAt && Date.now() - meta0.usersCheckAt < 30000) return Promise.resolve();
+  if (meta0.usersCheckAt && Date.now() - meta0.usersCheckAt < 60000) return Promise.resolve();
   return Promise.all([cloudLoad(ACCOUNTS_KEY), cloudLoad(DELETED_USERS_KEY)]).then(([r, delR]) => {
     const meta = loadCloudMeta();
     meta.usersCheckAt = Date.now();
@@ -890,10 +908,48 @@ function syncCloudUsers() {
         } catch (e) {}
       });
     });
+    const vis = {};
+    (state.chats || []).forEach(c => { if (c.type === 'private' && c.userId) vis[c.userId] = true; });
+    const visList = Object.keys(vis).filter(u => u !== (currentUser ? currentUser.username : null)).slice(0, 25);
+    if (visList.length) {
+      Promise.all(visList.map(u => cloudLoad(PRESENCE_KEY + u).then(p => {
+        if (!p || !p.d) return null;
+        try { return JSON.parse(p.d); } catch (e) { return null; }
+      }).catch(() => null))).then(applyPresence);
+    }
     ensureGlobalChats();
     if (currentUser) { saveState(); renderChatList(); renderChat(); }
     tryAutoLogin();
   }).catch(e => console.error('Cloud users sync failed:', e));
+}
+/* Р›С‘РіРєРёРµ В«РїСЂРёСЃСѓС‚СЃС‚РІРёСЏВ» (РєС‚Рѕ РѕРЅР»Р°Р№РЅ) вЂ” РѕС‚РґРµР»СЊРЅС‹Р№ РєР°РЅР°Р», С‡С‚РѕР±С‹ РЅРµ Р¶РµС‡СЊ РєРІРѕС‚Сѓ KV:
+   РїРёС€СѓС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ Firestore, С‡РёС‚Р°СЋС‚СЃСЏ СЂР°Р· РІ РјРёРЅСѓС‚Сѓ РґР»СЏ РѕС‚РєСЂС‹С‚С‹С… С‡Р°С‚РѕРІ */
+const PRESENCE_KEY = 'presence:';
+function pushPresence() {
+  if (!currentUser || !fsEnabled()) return;
+  const u = currentUser.username;
+  const st = currentUser.status || {};
+  const t = (st.t === 'busy' || st.t === 'away' || st.t === 'offline' || st.t === 'invisible') ? st.t : 'on';
+  fsWrite(PRESENCE_KEY + u, JSON.stringify({ u, t, s: st.s || '', ts: Date.now() }));
+}
+function applyPresence(list) {
+  if (!currentUser) return;
+  const local = loadAccounts();
+  let ch = false;
+  (list || []).forEach(x => {
+    if (!x || !x.u) return;
+    const acc = local.users[x.u];
+    if (!acc) return;
+    const t = (x.t === 'busy' || x.t === 'away' || x.t === 'invisible') ? x.t : (x.t === 'off' ? 'offline' : 'on');
+    const newSt = t === 'on' ? {} : { t, s: x.s || '' };
+    const stSame = JSON.stringify(acc.status || {}) === JSON.stringify(newSt);
+    if (!stSame || acc.lastSeen !== x.ts) { acc.lastSeen = x.ts; acc.status = newSt; ch = true; }
+  });
+  if (ch) {
+    safeSet(ACCOUNTS_KEY, JSON.stringify(local));
+    renderChatList();
+    renderChat();
+  }
 }
 let cloudSyncInterval = 3000;
 function scheduleCloudCycle() {
@@ -2291,6 +2347,38 @@ function toast(title, sub, ms = 2600) {
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
 }
 
+/* ---------- РЈР’Р•Р”РћРњР›Р•РќРРЇ Р‘Р РђРЈР—Р•Р Рђ ---------- */
+let notifyThrottle = {};
+function notifyAllowed() {
+  return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+}
+function ensureNotifyPermission() {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'default') return;
+  try { Notification.requestPermission().catch(() => {}); } catch (e) {}
+}
+function notifyNewMessages(chat, msgs) {
+  if (!notifyAllowed()) return;
+  if (!chat || !chat.id || !(msgs || []).length) return;
+  msgs.forEach(m => {
+    if (!m || m.from === 'system') return;
+    if (m.kind === 'call_in' || m.kind === 'call_out' || m.kind === 'call_ended' || m.kind === 'call_declined' || m.kind === 'call_missed') return;
+    if (chat.id === state.currentChatId && !document.hidden) return;
+    const now = Date.now();
+    if (now - (notifyThrottle[chat.id] || 0) < 8000) return;
+    notifyThrottle[chat.id] = now;
+    const sender = m.from && accountByUsername(m.from) ? accountByUsername(m.from) : null;
+    const from = sender ? sender.name : (chat.type === 'private' ? chatTitle(chat) : chatTitle(chat));
+    let body = (m.text || '').replace(/<[^>]+>/g, '').trim().slice(0, 120);
+    if (m.voice) body = 'рџЋ¤ Р“РѕР»РѕСЃРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ' + (body ? ' В· ' + body : '');
+    else if (m.video) body = 'рџЋ¬ РљСЂСѓР¶РѕРє';
+    else if (m.media && m.media.length) body = 'рџ–ј ' + m.media[0].name;
+    else if (m.sticker) body = 'РЎС‚РёРєРµСЂ';
+    if (!body) body = 'РЎРѕРѕР±С‰РµРЅРёРµ';
+    const title = 'Nebula В· ' + (sender ? sender.name : from);
+    try { new Notification(title, { body, tag: chat.id, silent: false }); } catch (e) {}
+  });
+}
+
 /* ---------- Р РђРњРљР / РЎРўРђРўРРЎРўРРљРђ ---------- */
 function hoursInApp(acc) { return Math.floor(((acc.stats && acc.stats.seconds) || 0) / 3600); }
 function dolphinsMaxLevelFor(u) {
@@ -2525,7 +2613,21 @@ function canUseSpecialThemes(u) { return isAdmin(u.username) || isTester(u); }
 
 /* ---------- РћРќР›РђР™Рќ-РўРђР™РњР•Р  / РЎРўРђРўРЈРЎР« ---------- */
 let onlineTimer = null;
-const ONLINE_WINDOW = 5 * 60 * 1000;
+let lastPresencePush = 0;
+const ONLINE_WINDOW = 2 * 60 * 1000;
+function startOnlineTimer() {
+  if (onlineTimer) clearInterval(onlineTimer);
+  onlineTimer = setInterval(() => {
+    if (!currentUser) return;
+    currentUser.stats.seconds = (currentUser.stats.seconds || 0) + 10;
+    currentUser.lastSeen = Date.now();
+    persistCurrentUser();
+    if (Date.now() - lastPresencePush >= 60000) { lastPresencePush = Date.now(); pushPresence(); }
+    if ($('#settingsModal').classList.contains('open') && $('.st.active') && $('.st.active').dataset.tab === 'stats') updateStatsUI();
+  }, 10000);
+}
+let incomingGuardTimer = null;
+window.addEventListener('pagehide', () => { if (currentUser) { markOffline(currentUser.username); if (fsEnabled()) fsWrite(PRESENCE_KEY + currentUser.username, JSON.stringify({ u: currentUser.username, t: 'off', s: '', ts: Date.now() })); } });
 function isOnline(u) {
   const a = accountByUsername(u);
   if (!a || !a.lastSeen) return false;
@@ -2586,18 +2688,6 @@ function statusChoiceHtml(cur) {
       <span class="st-check">${cur === o.t ? 'вњ“' : ''}</span>
     </button>`).join('');
 }
-function startOnlineTimer() {
-  if (onlineTimer) clearInterval(onlineTimer);
-  onlineTimer = setInterval(() => {
-    if (!currentUser) return;
-    currentUser.stats.seconds = (currentUser.stats.seconds || 0) + 10;
-    currentUser.lastSeen = Date.now();
-    persistCurrentUser();
-    if ($('#settingsModal').classList.contains('open') && $('.st.active') && $('.st.active').dataset.tab === 'stats') updateStatsUI();
-  }, 10000);
-}
-let incomingGuardTimer = null;
-window.addEventListener('pagehide', () => { if (currentUser) markOffline(currentUser.username); });
 function startIncomingGuard() {
   if (incomingGuardTimer) clearInterval(incomingGuardTimer);
   incomingGuardTimer = setInterval(() => {
@@ -2661,7 +2751,6 @@ function startRing(mode) {
   const total = pattern.reduce((t, [f, d]) => t + d + 0.05, 0);
   let timer = null;
   const playOnce = () => {
-    if (document.hidden) return;
     let t0 = ctx.currentTime + 0.02;
     pattern.forEach(([f, d]) => {
       if (!f) { t0 += d + 0.05; return; }
@@ -3244,6 +3333,9 @@ function startApp(user) {
   startOnlineTimer();
   startIncomingGuard();
   startCloudSync();
+  ensureNotifyPermission();
+  lastPresencePush = 0;
+  pushPresence();
   toast('Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ', user.name + ' В· ID ' + user.id + ' рџ‘‹');
   maybeShowIncoming(state.chats.find(c => c.id === state.currentChatId));
   const ann = loadAnnouncement();
@@ -3291,6 +3383,7 @@ function logout() {
 /* ============================================================
    RENDER CHAT LIST
    ============================================================ */
+let lastListSig = null;
 function renderChatList() {
   if (!state) return;
   if (!state.folders) state.folders = [];
@@ -3334,6 +3427,10 @@ function renderChatList() {
       cloudSearchAndMerge(qh).then(f => { if (f) renderChatList(); });
     }
   }
+
+  const listSig = (currentUser ? currentUser.username : '') + '|' + (state.filter || '') + '|' + (state.search || '') + '|' + (state.activeFolder || '') + '|' + hidden.join(',') + '|' + chats.map(c => c.id + '|' + unreadCount(c) + '|' + (lastMessage(c) ? lastMessage(c).time + '|' + lastMessage(c).text : '') + '|' + chatTitle(c) + '|' + (c.type === 'private' ? statusOf(accFromChat(c)).cls : '') + '|' + (state.pinned.includes(c.id) ? 1 : 0)).join(';') + '|' + catalog.map(c => c.id).join(',') + '|' + userCatalog.map(u => u.username).join(',');
+  if (listSig === lastListSig && lastListSig !== null) return;
+  lastListSig = listSig;
 
   const sortChats = (a, b) => {
     const pa = state.pinned.includes(a.id), pb = state.pinned.includes(b.id);
@@ -3453,6 +3550,7 @@ function renderChatList() {
   }
 
   list.innerHTML = html;
+  if (!list.classList.contains('settled')) list.classList.add('settled');
 
   const srow = $('#storiesRow');
   if (srow) srow.addEventListener('click', (e) => {
@@ -3473,10 +3571,22 @@ function renderChatList() {
    ============================================================ */
 function currentChat() { return state.chats.find(c => c.id === state.currentChatId); }
 
+function chatRenderSig(chat) {
+  const ms = chat.messages || [];
+  const last = ms[ms.length - 1];
+  const acc = chat.type === 'private' ? accFromChat(chat) : null;
+  return (chat.id || '') + '|' + ms.length + '|' + (last ? last.id + '|' + last.time + '|' + (last.read ? 1 : 0) : '') + '|' + (chat.unread || 0) + '|' + (chat.title || '') + '|' + (chat.muted ? 1 : 0) + '|' + (chat.members ? chat.members.length : 0) + '|' + (chat.type === 'private' ? statusOf(acc).cls + '|' + statusOf(acc).label : '') + '|' + (state.pinned.includes(chat.id) ? 1 : 0);
+}
+let lastChatSig = null;
 function renderChat() {
   if (!state) return;
   const chat = currentChat();
   const area = $('#chatArea');
+  if (chat) {
+    const sig = chatRenderSig(chat);
+    if (lastChatSig === sig && area && area.querySelector('.messages-wrap')) return;
+    lastChatSig = sig;
+  }
 
   if (!chat) {
     area.classList.add('empty-state');
@@ -3561,6 +3671,10 @@ function renderChat() {
     composer = `<div class="channel-notice">${chat.id === NEWS_CHAT_ID ? 'РџСѓР±Р»РёРєРѕРІР°С‚СЊ РІ Nebula News РјРѕРіСѓС‚ С‚РѕР»СЊРєРѕ Р°РґРјРёРЅС‹' : 'РўРѕР»СЊРєРѕ РІР»Р°РґРµР»РµС† Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹ РјРѕРіСѓС‚ РїСѓР±Р»РёРєРѕРІР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёСЏ'}</div>`;
   }
 
+  const inEl0 = $('#msgText');
+  const savedVal = inEl0 ? inEl0.value : null;
+  const savedSel = inEl0 ? inEl0.selectionStart : 0;
+
   area.innerHTML = `
     <header class="chat-header">
       <button class="icon-btn m-back-btn" id="mBackBtn" title="Рљ СЃРїРёСЃРєСѓ С‡Р°С‚РѕРІ" style="flex-shrink:0">
@@ -3596,9 +3710,12 @@ function renderChat() {
   `;
 
   renderMessages(chat);
+  const ni = $('#msgText');
+  if (savedVal !== null && ni) { ni.value = savedVal; ni.selectionStart = ni.selectionEnd = savedSel; }
   requestAnimationFrame(() => {
-    scrollChatToBottom();
-    requestAnimationFrame(() => scrollChatToBottom());
+    const w = $('#messagesWrap');
+    const near = !w || w.scrollHeight - w.scrollTop - w.clientHeight < 140;
+    if (near) scrollChatToBottom();
   });
   bindChatEvents(chat);
   mobileShowChat();
@@ -4192,6 +4309,17 @@ function maybeShowIncoming(chat) {
   $('#incomingOverlay').classList.remove('hidden');
   startRing('in');
 }
+function maybeShowIncomingAll() {
+  if (incomingCall) return;
+  let best = null, bestT = 0;
+  (state.chats || []).forEach(c => {
+    const ev = [...(c.messages || [])].reverse().find(m => m.kind === 'call_in' && !m.dismissed);
+    if (!ev) return;
+    const t = new Date(ev.time).getTime();
+    if (t > bestT && callState.chatId !== c.id) { best = c; bestT = t; }
+  });
+  if (best) maybeShowIncoming(best);
+}
 function closeIncoming(playSound = false) {
   $('#incomingOverlay').classList.add('hidden');
   incomingCall = null;
@@ -4245,6 +4373,7 @@ function pushCallEvent(chat, ev) {
     from: 'system',
     kind: ev.kind,
     video: !!ev.video,
+    u: ev.u || '',
     text: ev.text,
     time: new Date().toISOString(),
     read: true,
@@ -4317,12 +4446,12 @@ function stopStreams() {
   callState.shareActive = false;
 }
 function enableMic() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.resolve(false);
   const devs = (currentUser.settings && currentUser.settings.devices) || {};
   const opts = devs.audioId ? { audio: { deviceId: { exact: devs.audioId } } } : { audio: true };
-  navigator.mediaDevices.getUserMedia(opts)
-    .then(s => { callState.micStream = s; updateCallStatus(); })
-    .catch(() => {});
+  return navigator.mediaDevices.getUserMedia(opts)
+    .then(s => { callState.micStream = s; rtcAttachLocalTracks(); updateCallStatus(); return true; })
+    .catch(() => false);
 }
 async function enableCamera() {
   const camBtn = $('#callCamBtn');
@@ -4331,6 +4460,7 @@ async function enableCamera() {
     const opts = devs.videoId ? { video: { deviceId: { exact: devs.videoId } } } : { video: { facingMode: 'user' } };
     callState.camStream = await navigator.mediaDevices.getUserMedia(opts);
     callState.video = true;
+    rtcAttachLocalTracks();
     const v = $('#camVideo');
     if (v) { v.srcObject = callState.camStream; v.play().catch(() => {}); }
     if (camBtn) camBtn.classList.remove('muted');
@@ -4430,13 +4560,11 @@ function startCall(chatId, video = false, noEvents = false) {
   if (!noEvents) {
     pushCallEventEverywhere(
       chat,
-      { kind: 'call_out', video, text: `${video ? 'рџЋҐ' : 'рџ“ћ'} РСЃС…РѕРґСЏС‰РёР№ ${video ? 'РІРёРґРµРѕ' : ''}Р·РІРѕРЅРѕРє @${chat.type === 'private' ? chat.userId : 'СЃРѕР±РµСЃРµРґРЅРёРєР°Рј'}` },
-      { kind: 'call_in', video, text: `Р—РІРѕРЅРѕРє РѕС‚ @${currentUser.username}${video ? ' В· РІРёРґРµРѕ' : ''}` }
+      { kind: 'call_out', video, u: currentUser.username, text: `${video ? 'рџЋҐ' : 'рџ“ћ'} РСЃС…РѕРґСЏС‰РёР№ ${video ? 'РІРёРґРµРѕ' : ''}Р·РІРѕРЅРѕРє @${chat.type === 'private' ? chat.userId : 'СЃРѕР±РµСЃРµРґРЅРёРєР°Рј'}` },
+      { kind: 'call_in', video, u: currentUser.username, text: `Р—РІРѕРЅРѕРє РѕС‚ @${currentUser.username}${video ? ' В· РІРёРґРµРѕ' : ''}` }
     );
     startRing('out');
   }
-  enableMic();
-  if (video) enableCamera();
   callState.ticker = setInterval(() => {
     const ch = state.chats.find(c => c.id === callState.chatId);
     if (!ch) return;
@@ -4447,6 +4575,39 @@ function startCall(chatId, video = false, noEvents = false) {
     if (pt) pt.textContent = t ? t.textContent : `${String(Math.floor(dur / 60)).padStart(2, '0')}:${String(dur % 60).padStart(2, '0')}`;
   }, 1000);
   toast(video ? 'Р’РёРґРµРѕР·РІРѕРЅРѕРє РЅР°С‡Р°С‚' : 'Р—РІРѕРЅРѕРє РЅР°С‡Р°С‚', members.length > 2 ? 'Р“СЂСѓРїРїРѕРІРѕР№ Р·РІРѕРЅРѕРє' : chatTitle(chat));
+  if (chat.type === 'private' && rtcSupports()) {
+    rtcMode = 'rtc';
+    rtcRole = noEvents ? 'callee' : 'caller';
+    rtcConnected = false;
+    rtcSetupAt = Date.now();
+    rtcAddedCand = { a: 0, b: 0 };
+    try { rtcPeer = new RTCPeerConnection(RTC_STUN); } catch (e) { rtcPeer = null; }
+    if (rtcPeer) {
+      rtcPeer.onicecandidate = e => { if (e.candidate) rtcSendCandidates(chat.id, [e.candidate]); };
+      rtcPeer.ontrack = e => { rtcRemoteStream = e.streams[0] || null; rtcAttachRemote(); };
+      rtcPeer.onconnectionstatechange = () => {
+        if (!rtcPeer) return;
+        if (rtcPeer.connectionState === 'connected' || rtcPeer.connectionState === 'completed') {
+          rtcConnected = true;
+          stopRing();
+          updateCallStatus();
+        } else if (rtcPeer.connectionState === 'failed' && !rtcConnected && Date.now() - rtcSetupAt > 8000) {
+          rtcFallbackSim(chat.id);
+        }
+      };
+      const micP = enableMic();
+      const camP = video ? enableCamera() : Promise.resolve(true);
+      Promise.all([micP, camP]).then(() => rtcSetupLocal(chat)).catch(() => rtcSetupLocal(chat));
+    } else {
+      rtcMode = 'sim';
+      enableMic();
+      if (video) enableCamera();
+    }
+  } else {
+    rtcMode = 'sim';
+    enableMic();
+    if (video) enableCamera();
+  }
 }
 
 function renderCall(chat) {
@@ -4471,11 +4632,14 @@ function renderCall(chat) {
         ${remoteInner}
         <div class="cs-sub">${escapeHtml(other ? displayName(other) : chatTitle(chat))}</div>
       </div>
+      <video id="rtcRemoteVideo" autoplay playsinline></video>
+      <audio id="rtcRemoteAudio" autoplay></audio>
       <video id="camVideo" autoplay playsinline muted></video>`;
     const sv = $('#shareVideo');
     if (sv && callState.shareStream) { sv.srcObject = callState.shareStream; sv.play().catch(() => {}); }
     const cv = $('#camVideo');
     if (cv && callState.camStream) { cv.srcObject = callState.camStream; cv.play().catch(() => {}); }
+    rtcAttachRemote();
     updateCallStageUI();
   }
   const part = $('#callParticipants');
@@ -4526,9 +4690,131 @@ function endCall() {
   const cm = $('#callMenu'); if (cm) cm.classList.add('hidden');
   const gp = $('#gamePanel'); if (gp) gp.classList.add('hidden');
   $('#callModal').classList.remove('open');
+  const sigChat = endChat;
+  rtcTeardown(false);
+  if (sigChat) { cloudDelete(rtcSigKeyFor(sigChat.id) + '_a'); cloudDelete(rtcSigKeyFor(sigChat.id) + '_b'); }
   renderChat();
   renderChatList();
   if (dur > 0) toast('Р—РІРѕРЅРѕРє Р·Р°РІРµСЂС€С‘РЅ', (wasGroup ? 'Р“СЂСѓРїРїРѕРІРѕР№ В· ' : '') + fmtDur(dur));
+}
+
+/* ---------- РќРђРЎРўРћРЇР©РР• Р—Р’РћРќРљР (WebRTC) С‡РµСЂРµР· РѕР±Р»Р°РєРѕ ----------
+   РЎРёРіРЅР°Р»РёР·Р°С†РёСЏ: offer/answer/ICE РєР°РЅРґРёРґР°С‚С‹ РѕР±РјРµРЅРёРІР°СЋС‚СЃСЏ С‡РµСЂРµР· РѕР±Р»Р°С‡РЅС‹Рµ РєР»СЋС‡Рё
+   call_sig_<chatId>_a (Р·РІРѕРЅСЏС‰РёР№) Рё call_sig_<chatId>_b (РѕС‚РІРµС‡Р°СЋС‰РёР№).
+   Р•СЃР»Рё РїСЂСЏРјРѕРµ СЃРѕРµРґРёРЅРµРЅРёРµ РЅРµ СѓСЃС‚Р°РЅРѕРІРёР»РѕСЃСЊ (СЃР»РѕР¶РЅС‹Р№ NAT) вЂ” РѕСЃС‚Р°С‘С‚СЃСЏ РґРµРјРѕ-СЂРµР¶РёРј. */
+const RTC_STUN = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
+let rtcPeer = null, rtcRemoteStream = null, rtcSigTimer = null;
+let rtcMode = 'sim', rtcRole = 'caller', rtcConnected = false, rtcSetupAt = 0;
+let rtcAddedCand = { a: 0, b: 0 };
+function rtcSupports() {
+  return typeof RTCPeerConnection !== 'undefined' && !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
+}
+function rtcSigKeyFor(chatId) { return 'call_sig_' + chatId; }
+function rtcSideName() { return rtcRole === 'caller' ? 'a' : 'b'; }
+function rtcSendMine(chatId, doc) {
+  return cloudSave(rtcSigKeyFor(chatId) + '_' + rtcSideName(), JSON.stringify(Object.assign({ v: Date.now() }, doc)));
+}
+function rtcReadSide(chatId, role) {
+  return cloudLoad(rtcSigKeyFor(chatId) + '_' + (role === 'caller' ? 'a' : 'b')).then(r => {
+    if (!r) return null;
+    try { const d = JSON.parse(r.d); d.v = r.v; return d; } catch (e) { return null; }
+  });
+}
+function rtcReadSides(chatId) {
+  return Promise.all([rtcReadSide(chatId, 'caller'), rtcReadSide(chatId, 'callee')]).then(([a, b]) => ({ a, b }));
+}
+function rtcAttachLocalTracks() {
+  if (!rtcPeer) return;
+  [callState.micStream, callState.camStream].forEach(s => {
+    if (!s) return;
+    s.getTracks().forEach(t => {
+      if (!rtcPeer.getSenders().some(x => x.track === t)) {
+        try { rtcPeer.addTrack(t, s); } catch (e) {}
+      }
+    });
+  });
+}
+function rtcAttachRemote() {
+  if (!rtcRemoteStream) return;
+  if (callState.video) {
+    const rv = $('#rtcRemoteVideo');
+    if (rv) { rv.srcObject = rtcRemoteStream; rv.classList.add('on'); rv.play().catch(() => {}); }
+  } else {
+    const ra = $('#rtcRemoteAudio');
+    if (ra) { ra.srcObject = rtcRemoteStream; ra.play().catch(() => {}); }
+  }
+}
+function rtcSetupLocal(chat) {
+  if (!rtcPeer) return;
+  rtcAttachLocalTracks();
+  if (rtcRole === 'callee') {
+    rtcPollSig(chat);
+    rtcSigTimer = setInterval(() => rtcPollSig(chat), 2000);
+  } else {
+    rtcPeer.createOffer().then(o => rtcPeer.setLocalDescription(o))
+      .then(() => rtcSendMine(chat.id, { offer: rtcPeer.localDescription, from: currentUser.username }))
+      .then(() => { rtcPollSig(chat); rtcSigTimer = setInterval(() => rtcPollSig(chat), 2000); })
+      .catch(() => {});
+  }
+}
+function rtcPollSig(chat) {
+  if (!rtcPeer || rtcMode !== 'rtc') return;
+  rtcReadSides(chat.id).then(d => {
+    if (!rtcPeer || rtcMode !== 'rtc') return;
+    const theirs = rtcRole === 'caller' ? d.b : d.a;
+    if (!theirs) return;
+    if (theirs.offer && rtcPeer.remoteDescription === null) {
+      rtcPeer.setRemoteDescription(theirs.offer)
+        .then(() => rtcPeer.createAnswer())
+        .then(a => rtcPeer.setLocalDescription(a))
+        .then(() => rtcSendMine(chat.id, { answer: rtcPeer.localDescription, from: currentUser.username }))
+        .then(() => { if ((theirs.cand || []).length) rtcAddCandidates(theirs.cand); })
+        .catch(() => {});
+      return;
+    }
+    if (theirs.answer && rtcPeer.remoteDescription === null) {
+      rtcPeer.setRemoteDescription(theirs.answer)
+        .then(() => { if ((theirs.cand || []).length) rtcAddCandidates(theirs.cand); })
+        .catch(() => {});
+      return;
+    }
+    if (rtcPeer.remoteDescription && theirs.cand && theirs.cand.length) rtcAddCandidates(theirs.cand);
+  }).catch(() => {});
+}
+function rtcSendCandidates(chatId, cands) {
+  if (!rtcPeer || rtcMode !== 'rtc' || !cands || !cands.length) return;
+  rtcReadSide(chatId, rtcRole).then(mine => {
+    if (!rtcPeer || rtcMode !== 'rtc') return;
+    const doc = mine || {};
+    const cur = (doc.cand || []).filter(c => c && c.sdp);
+    const seen = new Set(cur.map(c => c.sdp));
+    const add = cands.filter(c => c && c.sdp && !seen.has(c.sdp));
+    if (!add.length) return;
+    doc.cand = cur.concat(add);
+    rtcSendMine(chatId, doc);
+  }).catch(() => {});
+}
+function rtcAddCandidates(cands) {
+  if (!rtcPeer || !cands || !cands.length) return;
+  const side = rtcRole === 'caller' ? 'b' : 'a';
+  const start = rtcAddedCand[side] || 0;
+  cands.slice(start).forEach(c => {
+    rtcAddedCand[side]++;
+    rtcPeer.addIceCandidate(c).catch(() => {});
+  });
+}
+function rtcTeardown(keepStreams) {
+  if (rtcSigTimer) { clearInterval(rtcSigTimer); rtcSigTimer = null; }
+  if (rtcPeer) { try { rtcPeer.close(); } catch (e) {} rtcPeer = null; }
+  rtcRemoteStream = null;
+  rtcConnected = false;
+  rtcMode = 'sim';
+  rtcAddedCand = { a: 0, b: 0 };
+  if (!keepStreams) stopStreams();
+}
+function rtcFallbackSim(chatId) {
+  rtcTeardown(true);
+  if (callState.chatId === chatId) toast('РќРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂСЏРјРѕРµ СЃРѕРµРґРёРЅРµРЅРёРµ', 'Р’РєР»СЋС‡С‘РЅ РґРµРјРѕ-СЂРµР¶РёРј Р·РІРѕРЅРєР°');
 }
 
 function bindCallModal() {
@@ -4537,6 +4823,7 @@ function bindCallModal() {
     if (!callState.chatId) return;
     callState.muted = !callState.muted;
     $('#callMuteBtn').classList.toggle('muted', callState.muted);
+    if (callState.micStream) callState.micStream.getAudioTracks().forEach(t => t.enabled = !callState.muted);
     if (callState.micStream) callState.micStream.getAudioTracks().forEach(t => t.enabled = !callState.muted);
     updateCallStatus();
     toast(callState.muted ? 'РњРёРєСЂРѕС„РѕРЅ РІС‹РєР»СЋС‡РµРЅ' : 'РњРёРєСЂРѕС„РѕРЅ РІРєР»СЋС‡С‘РЅ');
