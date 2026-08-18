@@ -194,11 +194,11 @@ function saveCloudMeta(m) {
    1) РєРѕРЅСЃРѕР»СЊ Firebase в†’ РїСЂРѕРµРєС‚ nebula-1337 в†’ Build в†’ Firestore Database в†’
       Create database (СЂРµР¶РёРј production РёР»Рё test);
    2) Project settings в†’ Your apps в†’ Web app в†’ СЃРєРѕРїРёСЂСѓР№С‚Рµ apiKey Рё projectId;
-   3) РІСЃС‚Р°РІСЊС‚Рµ РёС… РІ РєРѕРЅСЃС‚Р°РЅС‚Сѓ РЅРёР¶Рµ РР›Р (РїСЂРѕС‰Рµ) РѕС‚РєСЂРѕР№С‚Рµ СЃР°Р№С‚ Рё РІ РєРѕРЅСЃРѕР»Рё
-      Р±СЂР°СѓР·РµСЂР° (F12) РІС‹РїРѕР»РЅРёС‚Рµ:
-      localStorage.setItem('nebula_firebase_cfg', JSON.stringify({ apiKey: 'Р’РђРЁ_API_KEY', projectId: 'nebula-1337' }))
+   3) РєР»СЋС‡ СѓР¶Рµ РІСЃС‚СЂРѕРµРЅ РІ РїСЂРёР»РѕР¶РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ вЂ” Р±Р°Р·Р° РІРєР»СЋС‡Р°РµС‚СЃСЏ СЃР°РјР°;
+      РµСЃР»Рё РїРѕР·Р¶Рµ СЃРјРµРЅРёС€СЊ РєР»СЋС‡, РјРѕР¶РЅРѕ РїРµСЂРµРѕРїСЂРµРґРµР»РёС‚СЊ РІ РєРѕРЅСЃРѕР»Рё Р±СЂР°СѓР·РµСЂР° (F12):
+      localStorage.setItem('nebula_firebase_cfg', JSON.stringify({ apiKey: 'РќРћР’Р«Р™_РљР›Р®Р§', projectId: 'nebula-1337' }))
       Р·Р°С‚РµРј РїРµСЂРµР·Р°РіСЂСѓР·РёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ. */
-const NEBULA_FIREBASE_DEFAULT = { apiKey: '', projectId: '' };
+const NEBULA_FIREBASE_DEFAULT = { apiKey: 'AIzaSyCTLMsslePFNCp2leerUBx2ascBrITAz6Y', projectId: 'nebula-1337' };
 let NEBULA_FIREBASE = NEBULA_FIREBASE_DEFAULT;
 try {
   const cfg = JSON.parse(localStorage.getItem('nebula_firebase_cfg') || 'null');
