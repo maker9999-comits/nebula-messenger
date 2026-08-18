@@ -234,7 +234,7 @@ function fsIndexOp(key, op) {
     body: JSON.stringify({
       writes: [{
         transform: {
-          document: fsBase() + '/documents/kv/idx',
+          document: 'projects/' + NEBULA_FIREBASE.projectId + '/databases/(default)/documents/kv/idx',
           fieldTransforms: [{
             fieldPath: 'keys',
             [op === 'add' ? 'appendMissingElements' : 'removeAllFromArray']: { values: [{ stringValue: key }] },
