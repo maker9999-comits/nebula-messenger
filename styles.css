@@ -367,6 +367,25 @@ button:hover, .member-item:hover, .create-option:hover, .filter-tab:hover, .prof
 .search-icon { position: absolute; left: 12px; top: 50%; width: 18px; height: 18px; fill: var(--text-muted); transform: translateY(-50%); pointer-events: none; }
 
 .filter-tabs { display: flex; gap: 6px; padding: 0 16px 10px; }
+.dl-win-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 14px 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff;
+  color: #12141c;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  flex-shrink: 0;
+}
+.dl-win-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0, 0, 0, .3); filter: brightness(1.05); }
+.dl-win-btn:active { transform: translateY(0); filter: brightness(.96); }
 .filter-tab {
   flex: 1;
   padding: 8px 6px;
@@ -4011,6 +4030,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   .m-back-btn { display: inline-flex !important; flex-shrink: 0; }
   #dolphinBtn { display: none !important; }
   #stickBtn { display: none !important; }
+  .dl-win-btn { display: none; }
   .composer-extra { display: none !important; }
   .composer { padding-left: 8px; padding-right: 8px; gap: 6px; }
 }
