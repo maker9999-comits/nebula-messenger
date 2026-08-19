@@ -40,6 +40,20 @@ function applyDeletedFromCloud(delList) {
     try { localStorage.removeItem(stateKey(u)); } catch (e) {}
   });
   if (removed) saveAccounts(d);
+  accountsList().forEach(u => {
+    const s = getStateFor(u.username);
+    if (!s || !s.chats) return;
+    const before = s.chats.length;
+    s.chats = s.chats.filter(c => {
+      if (c.type === 'private') return !localDel.includes(c.userId);
+      c.members = (c.members || []).filter(m => !localDel.includes(m));
+      c.admins = (c.admins || []).filter(m => !localDel.includes(m));
+      if (c.owner && localDel.includes(c.owner)) c.owner = c.members.includes('me') ? 'me' : (c.members[0] || 'me');
+      return c.members.length > 0;
+    });
+    if (folderHasOnlyDeleted(s)) s.folders = [];
+    if (s.chats.length !== before) saveStateFor(u.username, s);
+  });
   return changed || removed;
 }
 const ADMIN_KEY = 'nebula_admins_v2';
@@ -968,15 +982,17 @@ function applyPresence(list) {
    РµС‰С‘ РЅРµС‚ СЃРІРµР¶РµСЃРѕР·РґР°РЅРЅРѕРіРѕ С‡Р°С‚Р°, СЃС‚РёСЂР°Р»Р° Р±С‹ РµРіРѕ РёР· СЃРїРёСЃРєР°) */
 function mergeStateWithCloud(raw, cloudRaw) {
   try {
+    const del = new Set(deletedUsers());
+    const keep = (c) => !(c && c.type === 'private' && del.has(c.userId));
     const a = JSON.parse(raw), b = JSON.parse(cloudRaw);
     if (!b || !Array.isArray(b.chats)) return cloudRaw;
     if (!a || !Array.isArray(a.chats) || !a.chats.length) return cloudRaw;
     const byId = {};
-    a.chats.forEach(c => { if (c && c.id) byId[c.id] = c; });
-    let changed = false;
+    a.chats.forEach(c => { if (c && c.id && keep(c)) byId[c.id] = c; });
+    let changed = a.chats.length !== Object.keys(byId).length;
     const FIELDS = ['title', 'desc', 'type', 'folder', 'pinned', 'members', 'admins', 'owner', 'handle', 'color', 'avatar', 'cover', 'emoji', 'access', 'whoCanWrite', 'post', 'video', 'broadcast', 'lastActivity'];
     (b.chats || []).forEach(c => {
-      if (!c || !c.id) return;
+      if (!c || !c.id || !keep(c)) return;
       const ex = byId[c.id];
       if (!ex) { byId[c.id] = c; changed = true; return; }
       const have = new Set((ex.messages || []).map(m => m && m.id));
@@ -3300,6 +3316,11 @@ async function handleAuthSubmit() {
     if (!acc && MAIL_RELAY_URL) {
       acc = await findAccountInCloud(username, email);
       if (acc) {
+        if (String(acc.username || '').toLowerCase() !== username) {
+          username = acc.username;
+          const unIn = $('#authUsername');
+          if (unIn) unIn.value = username;
+        }
         accounts.users[username] = acc;
         saveAccounts(accounts);
         toast('РђРєРєР°СѓРЅС‚ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ РёР· РѕР±Р»Р°РєР°');
