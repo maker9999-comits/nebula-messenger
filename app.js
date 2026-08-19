@@ -40,6 +40,19 @@ function applyDeletedFromCloud(delList) {
     try { localStorage.removeItem(stateKey(u)); } catch (e) {}
   });
   if (removed) saveAccounts(d);
+  accountsList().forEach(u => {
+    const s = getStateFor(u.username);
+    if (!s || !s.chats) return;
+    const before = s.chats.length;
+    s.chats = s.chats.filter(c => {
+      if (c.type === 'private') return !localDel.includes(c.userId);
+      c.members = (c.members || []).filter(m => !localDel.includes(m));
+      c.admins = (c.admins || []).filter(m => !localDel.includes(m));
+      if (c.owner && localDel.includes(c.owner)) c.owner = c.members.includes('me') ? 'me' : (c.members[0] || 'me');
+      return c.members.length > 0;
+    });
+    if (s.chats.length !== before) saveStateFor(u.username, s);
+  });
   return changed || removed;
 }
 const ADMIN_KEY = 'nebula_admins_v2';
@@ -968,15 +981,17 @@ function applyPresence(list) {
    РµС‰С‘ РЅРµС‚ СЃРІРµР¶РµСЃРѕР·РґР°РЅРЅРѕРіРѕ С‡Р°С‚Р°, СЃС‚РёСЂР°Р»Р° Р±С‹ РµРіРѕ РёР· СЃРїРёСЃРєР°) */
 function mergeStateWithCloud(raw, cloudRaw) {
   try {
+    const del = new Set(deletedUsers());
+    const keep = (c) => !(c && c.type === 'private' && del.has(c.userId));
     const a = JSON.parse(raw), b = JSON.parse(cloudRaw);
     if (!b || !Array.isArray(b.chats)) return cloudRaw;
     if (!a || !Array.isArray(a.chats) || !a.chats.length) return cloudRaw;
     const byId = {};
-    a.chats.forEach(c => { if (c && c.id) byId[c.id] = c; });
-    let changed = false;
+    a.chats.forEach(c => { if (c && c.id && keep(c)) byId[c.id] = c; });
+    let changed = a.chats.length !== Object.keys(byId).length;
     const FIELDS = ['title', 'desc', 'type', 'folder', 'pinned', 'members', 'admins', 'owner', 'handle', 'color', 'avatar', 'cover', 'emoji', 'access', 'whoCanWrite', 'post', 'video', 'broadcast', 'lastActivity'];
     (b.chats || []).forEach(c => {
-      if (!c || !c.id) return;
+      if (!c || !c.id || !keep(c)) return;
       const ex = byId[c.id];
       if (!ex) { byId[c.id] = c; changed = true; return; }
       const have = new Set((ex.messages || []).map(m => m && m.id));
@@ -3651,7 +3666,7 @@ function renderChatList() {
     const active = chat.id === state.currentChatId;
     const missed = chat.missedCalls || 0;
     let sub = '';
-    if (chat.type === 'private') { const stt = statusOf(user); sub = stt.label + ((user.status && user.status.s) ? ' В· ' + user.status.s : ''); }
+    if (chat.type === 'private') { const stt = statusOf(user); sub = stt.label + ((user && user.status && user.status.s) ? ' В· ' + user.status.s : ''); }
     else if (chat.type === 'ai') sub = '';
     else if (chat.type === 'saved') sub = 'Р›РёС‡РЅС‹Рµ Р·Р°РјРµС‚РєРё';
     else if (chat.type === 'group') sub = `${chat.members.length} СѓС‡Р°СЃС‚РЅРёРєРѕРІ`;
@@ -3762,8 +3777,8 @@ function renderChat() {
   const frame = chat.type === 'private' ? selectedFrameClass(acc) : '';
   const user = chat.type === 'private' ? acc : null;
   const headPost = user && user.statusPost && (Date.now() - user.statusPost.time) < 86400000;
-  const isBlocked = chat.type === 'private' && currentUser.blocked.includes(chat.userId);
-  const isIgnored = chat.type === 'private' && currentUser.ignored.includes(chat.userId);
+  const isBlocked = chat.type === 'private' && (currentUser.blocked || []).includes(chat.userId);
+  const isIgnored = chat.type === 'private' && (currentUser.ignored || []).includes(chat.userId);
   const canWrite = chat.type !== 'channel' || (chat.id === NEWS_CHAT_ID
     ? (chat.owner === 'me' || chat.owner === currentUser.username || adminList().includes(currentUser.username) || (chat.admins || []).includes('me') || (chat.admins || []).includes(currentUser.username) || newsFullAccess(currentUser))
     : (chat.owner === 'me' || (chat.admins || []).includes('me') || chat.whoCanWrite === 'all'));
@@ -6944,8 +6959,8 @@ function renderManageBody(chat) {
   `;
 
   if (isPrivate) {
-    const isBlocked = currentUser.blocked.includes(chat.userId);
-    const isIgnored = currentUser.ignored.includes(chat.userId);
+    const isBlocked = (currentUser.blocked || []).includes(chat.userId);
+    const isIgnored = (currentUser.ignored || []).includes(chat.userId);
     const isBotChat = !!((userById(chat.userId) || {}).isBot);
     html += `
       <div class="manage-section">
@@ -7063,8 +7078,8 @@ function renderManageBody(chat) {
         ${avatarHtml(u)}
         <div class="mc-name">${displayName(u)} ${tag}</div>
         ${!isMe ? `<button class="mini-btn mini-info" title="РљР°СЂС‚РѕС‡РєР°" data-action="card" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg></button>` : ''}
-        ${!isMe ? `<button class="mini-btn ${currentUser.blocked.includes(mid) ? 'mini-danger' : ''}" title="${currentUser.blocked.includes(mid) ? 'Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ' : 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ'}" data-action="block" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/></svg></button>` : ''}
-        ${!isMe ? `<button class="mini-btn ${currentUser.ignored.includes(mid) ? 'mini-danger' : ''}" title="${currentUser.ignored.includes(mid) ? 'РЎРЅСЏС‚СЊ РёРіРЅРѕСЂ' : 'РРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ'}" data-action="ignore" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button>` : ''}
+        ${!isMe ? `<button class="mini-btn ${(currentUser.blocked || []).includes(mid) ? 'mini-danger' : ''}" title="${(currentUser.blocked || []).includes(mid) ? 'Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ' : 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ'}" data-action="block" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/></svg></button>` : ''}
+        ${!isMe ? `<button class="mini-btn ${(currentUser.ignored || []).includes(mid) ? 'mini-danger' : ''}" title="${(currentUser.ignored || []).includes(mid) ? 'РЎРЅСЏС‚СЊ РёРіРЅРѕСЂ' : 'РРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ'}" data-action="ignore" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button>` : ''}
         ${canToggle ? `<button class="mini-btn" title="${isAdminC ? 'РЎРЅСЏС‚СЊ СЃ Р°РґРјРёРЅРѕРІ' : 'РЎРґРµР»Р°С‚СЊ Р°РґРјРёРЅРѕРј'}" data-action="toggle-admin" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></button>` : ''}
         ${canRemove ? `<button class="mini-btn" title="РЈРґР°Р»РёС‚СЊ" data-action="remove-member" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
       </div>`;
