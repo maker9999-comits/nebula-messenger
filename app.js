@@ -1,8 +1,8 @@
 /* ============================================================
-   Nebula Messenger — app.js (v2)
+   Nebula Messenger вЂ” app.js (v2)
    ============================================================ */
 
-let ME = { id: 'me', name: 'Гость', color: ['#6C5CE7', '#8E7BFF'] };
+let ME = { id: 'me', name: 'Р“РѕСЃС‚СЊ', color: ['#6C5CE7', '#8E7BFF'] };
 let state = null;
 let currentUser = null;
 
@@ -17,16 +17,16 @@ function markUserDeleted(username) {
   const list = deletedUsers();
   if (!list.includes(username)) { list.push(username); safeSet(DELETED_USERS_KEY, JSON.stringify(list)); }
 }
-/* Можно ли добавить облачного пользователя в локальную базу:
-   не совпадает ли юзернейм, не удалён ли он, и нет ли уже аккаунта с такой почтой */
+/* РњРѕР¶РЅРѕ Р»Рё РґРѕР±Р°РІРёС‚СЊ РѕР±Р»Р°С‡РЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РІ Р»РѕРєР°Р»СЊРЅСѓСЋ Р±Р°Р·Сѓ:
+   РЅРµ СЃРѕРІРїР°РґР°РµС‚ Р»Рё СЋР·РµСЂРЅРµР№Рј, РЅРµ СѓРґР°Р»С‘РЅ Р»Рё РѕРЅ, Рё РЅРµС‚ Р»Рё СѓР¶Рµ Р°РєРєР°СѓРЅС‚Р° СЃ С‚Р°РєРѕР№ РїРѕС‡С‚РѕР№ */
 function cloudMergeUserOk(local, u, uname) {
   if (local.users[uname]) return false;
   if (deletedUsers().includes(uname)) return false;
   if (u && u.email && Object.values(local.users).some(x => x && x.email && String(x.email).toLowerCase() === String(u.email).toLowerCase())) return false;
   return true;
 }
-/* Синхронизация списка удалённых аккаунтов: другие устройства тоже
-   перестают видеть удалённого пользователя */
+/* РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃРїРёСЃРєР° СѓРґР°Р»С‘РЅРЅС‹С… Р°РєРєР°СѓРЅС‚РѕРІ: РґСЂСѓРіРёРµ СѓСЃС‚СЂРѕР№СЃС‚РІР° С‚РѕР¶Рµ
+   РїРµСЂРµСЃС‚Р°СЋС‚ РІРёРґРµС‚СЊ СѓРґР°Р»С‘РЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ */
 function applyDeletedFromCloud(delList) {
   if (!Array.isArray(delList) || !delList.length) return false;
   const localDel = deletedUsers();
@@ -47,11 +47,11 @@ const LOG_KEY = 'nebula_log_v2';
 const ANN_KEY = 'nebula_announce_v2';
 
 const LIMITS = { name: 18, desc: 48, username: 14, password: 24 };
-const CODE_TTL = 15 * 60; // 15 минут
+const CODE_TTL = 15 * 60; // 15 РјРёРЅСѓС‚
 
-/* ---------- Отправка кодов на почту через сервер-реле (Яндекс SMTP) ----------
-   Сервер: mail-relay/server.js, развёрнут на бесплатном хостинге Render.
-   Ниже укажите его URL (без слеша в конце). Если URL пуст — включается демо-режим. */
+/* ---------- РћС‚РїСЂР°РІРєР° РєРѕРґРѕРІ РЅР° РїРѕС‡С‚Сѓ С‡РµСЂРµР· СЃРµСЂРІРµСЂ-СЂРµР»Рµ (РЇРЅРґРµРєСЃ SMTP) ----------
+   РЎРµСЂРІРµСЂ: mail-relay/server.js, СЂР°Р·РІС‘СЂРЅСѓС‚ РЅР° Р±РµСЃРїР»Р°С‚РЅРѕРј С…РѕСЃС‚РёРЅРіРµ Render.
+   РќРёР¶Рµ СѓРєР°Р¶РёС‚Рµ РµРіРѕ URL (Р±РµР· СЃР»РµС€Р° РІ РєРѕРЅС†Рµ). Р•СЃР»Рё URL РїСѓСЃС‚ вЂ” РІРєР»СЋС‡Р°РµС‚СЃСЏ РґРµРјРѕ-СЂРµР¶РёРј. */
 const MAIL_RELAY_HOST = 'https://nebula-mail-relay.nebula-mail.workers.dev';
 const LOCAL_RELAY_HOST = 'http://127.0.0.1:8000';
 const IS_LOCAL = typeof location !== 'undefined' && location
@@ -68,16 +68,16 @@ function sendCodeToEmail(email, code, label) {
     fetch(MAIL_RELAY_URL + '/mail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ to: email, code: code, label: label || 'Код подтверждения Nebula Messenger', secret: MAIL_RELAY_SECRET }),
+      body: JSON.stringify({ to: email, code: code, label: label || 'РљРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ Nebula Messenger', secret: MAIL_RELAY_SECRET }),
     })
       .then((r) => r.json().catch(() => ({ ok: false, err: 'HTTP ' + r.status })))
       .then((d) => d && d.ok ? resolve({ ok: true })
         : (d && d.err === 'demo')
           ? resolve({ ok: false, demo: true })
-          : resolve({ ok: false, err: (d && d.err) || 'Не удалось отправить письмо' }))
+          : resolve({ ok: false, err: (d && d.err) || 'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РїРёСЃСЊРјРѕ' }))
       .catch((err) => {
         console.error('Mail relay error:', err);
-        resolve({ ok: false, err: 'Не удалось отправить письмо' });
+        resolve({ ok: false, err: 'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РїРёСЃСЊРјРѕ' });
       });
   });
 }
@@ -89,51 +89,59 @@ const COLOR_PALETTE = [
 ];
 
 const PRESET_AVATARS = [
-  { c1: '#6C5CE7', c2: '#8E7BFF', g: '😎' },
-  { c1: '#0984E3', c2: '#74B9FF', g: '🚀' },
-  { c1: '#00B894', c2: '#55EFC4', g: '🌿' },
-  { c1: '#F39C12', c2: '#FDCB6E', g: '🔥' },
-  { c1: '#E84393', c2: '#FD79A8', g: '🌸' },
-  { c1: '#D63031', c2: '#FF7675', g: '❤️' },
-  { c1: '#00CEC9', c2: '#81ECEC', g: '🐬' },
-  { c1: '#A24DBD', c2: '#DDA0DD', g: '✨' },
+  { c1: '#6C5CE7', c2: '#8E7BFF', g: 'рџЋ' },
+  { c1: '#0984E3', c2: '#74B9FF', g: 'рџљЂ' },
+  { c1: '#00B894', c2: '#55EFC4', g: 'рџЊї' },
+  { c1: '#F39C12', c2: '#FDCB6E', g: 'рџ”Ґ' },
+  { c1: '#E84393', c2: '#FD79A8', g: 'рџЊё' },
+  { c1: '#D63031', c2: '#FF7675', g: 'вќ¤пёЏ' },
+  { c1: '#00CEC9', c2: '#81ECEC', g: 'рџђ¬' },
+  { c1: '#A24DBD', c2: '#DDA0DD', g: 'вњЁ' },
 ];
 
 const FRAMES = [
-  { id: 'crown',   name: 'КОРОНА',   emoji: '👑', desc: 'Королевская · только для администраторов',            unlock: (a) => isAdmin(a.username) },
-  { id: 'vip',     name: 'ВИП',      emoji: '🎩', desc: 'Чёрно-золотая · только для администраторов',           unlock: (a) => isAdmin(a.username) },
-  { id: 'nebula',  name: 'НЕБУЛА',   emoji: '🌌', desc: 'Космическая · только для администраторов',             unlock: (a) => isAdmin(a.username) },
-  { id: 'admin',   name: 'АДМИН',   emoji: '🖤', desc: 'Чёрная · только для администраторов',                 unlock: (a) => isAdmin(a.username) },
-  { id: 'old',     name: 'ОЛД',       emoji: '🏛️', desc: 'Тёмно-золотая · выдаётся только первым 10 пользователям', unlock: (a) => {
+  { id: 'crown',   name: 'РљРћР РћРќРђ',   emoji: 'рџ‘‘', desc: 'РљРѕСЂРѕР»РµРІСЃРєР°СЏ В· С‚РѕР»СЊРєРѕ РґР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ',            unlock: (a) => isAdmin(a.username) },
+  { id: 'vip',     name: 'Р’РРџ',      emoji: 'рџЋ©', desc: 'Р§С‘СЂРЅРѕ-Р·РѕР»РѕС‚Р°СЏ В· С‚РѕР»СЊРєРѕ РґР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ',           unlock: (a) => isAdmin(a.username) },
+  { id: 'nebula',  name: 'РќР•Р‘РЈР›Рђ',   emoji: 'рџЊЊ', desc: 'РљРѕСЃРјРёС‡РµСЃРєР°СЏ В· С‚РѕР»СЊРєРѕ РґР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ',             unlock: (a) => isAdmin(a.username) },
+  { id: 'admin',   name: 'РђР”РњРРќ',   emoji: 'рџ–¤', desc: 'Р§С‘СЂРЅР°СЏ В· С‚РѕР»СЊРєРѕ РґР»СЏ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ',                 unlock: (a) => isAdmin(a.username) },
+  { id: 'old',     name: 'РћР›Р”',       emoji: 'рџЏ›пёЏ', desc: 'РўС‘РјРЅРѕ-Р·РѕР»РѕС‚Р°СЏ В· РІС‹РґР°С‘С‚СЃСЏ С‚РѕР»СЊРєРѕ РїРµСЂРІС‹Рј 10 РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј', unlock: (a) => {
       const first10 = accountsList().filter(u => !u.isBot).sort((x, y) => (x.created || 0) - (y.created || 0)).slice(0, 10);
       return first10.some(u => u.username === a.username);
     } },
-  { id: 'dolphin', name: 'Дельфин',   emoji: '🐬', desc: 'Синяя · достигните 100 уровня дельфина в любом чате',      unlock: (a) => dolphinsMaxLevelFor(a.username) >= 100 },
-  { id: 'tester',  name: 'ТЕСТЕР',    emoji: '🧪', desc: 'Бирюзовая · только для тестеров',                          unlock: (a) => isTester(a) || isAdmin(a.username) },
-  { id: '1h',      name: '1 час',     emoji: '⏱️', desc: 'Белая · за 1 час в мессенджере',                             unlock: (a) => hoursInApp(a) >= 1 },
-  { id: '5h',      name: '5 часов',   emoji: '🌫️', desc: 'Серая · за 5 часов в мессенджере',                          unlock: (a) => hoursInApp(a) >= 5 },
-  { id: '10h',     name: '10 часов',  emoji: '🥈', desc: 'Серебряная · за 10 часов в мессенджере',                    unlock: (a) => hoursInApp(a) >= 10 },
-  { id: '50h',     name: '50 часов',  emoji: '🥇', desc: 'Золотая · за 50 часов в мессенджере',                       unlock: (a) => hoursInApp(a) >= 50 },
-  { id: '100h',    name: '100 часов', emoji: '💎', desc: 'Бриллиантовая · за 100 часов в мессенджере',                unlock: (a) => hoursInApp(a) >= 100 },
+  { id: 'dolphin', name: 'Р”РµР»СЊС„РёРЅ',   emoji: 'рџђ¬', desc: 'РЎРёРЅСЏСЏ В· РґРѕСЃС‚РёРіРЅРёС‚Рµ 100 СѓСЂРѕРІРЅСЏ РґРµР»СЊС„РёРЅР° РІ Р»СЋР±РѕРј С‡Р°С‚Рµ',      unlock: (a) => dolphinsMaxLevelFor(a.username) >= 100 },
+  { id: 'tester',  name: 'РўР•РЎРўР•Р ',    emoji: 'рџ§Є', desc: 'Р‘РёСЂСЋР·РѕРІР°СЏ В· С‚РѕР»СЊРєРѕ РґР»СЏ С‚РµСЃС‚РµСЂРѕРІ',                          unlock: (a) => isTester(a) || isAdmin(a.username) },
+  { id: '1h',      name: '1 С‡Р°СЃ',     emoji: 'вЏ±пёЏ', desc: 'Р‘РµР»Р°СЏ В· Р·Р° 1 С‡Р°СЃ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ',                             unlock: (a) => hoursInApp(a) >= 1 },
+  { id: '5h',      name: '5 С‡Р°СЃРѕРІ',   emoji: 'рџЊ«пёЏ', desc: 'РЎРµСЂР°СЏ В· Р·Р° 5 С‡Р°СЃРѕРІ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ',                          unlock: (a) => hoursInApp(a) >= 5 },
+  { id: '10h',     name: '10 С‡Р°СЃРѕРІ',  emoji: 'рџҐ€', desc: 'РЎРµСЂРµР±СЂСЏРЅР°СЏ В· Р·Р° 10 С‡Р°СЃРѕРІ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ',                    unlock: (a) => hoursInApp(a) >= 10 },
+  { id: '50h',     name: '50 С‡Р°СЃРѕРІ',  emoji: 'рџҐ‡', desc: 'Р—РѕР»РѕС‚Р°СЏ В· Р·Р° 50 С‡Р°СЃРѕРІ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ',                       unlock: (a) => hoursInApp(a) >= 50 },
+  { id: '100h',    name: '100 С‡Р°СЃРѕРІ', emoji: 'рџ’Ћ', desc: 'Р‘СЂРёР»Р»РёР°РЅС‚РѕРІР°СЏ В· Р·Р° 100 С‡Р°СЃРѕРІ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ',                unlock: (a) => hoursInApp(a) >= 100 },
 ];
 const FRAME_ORDER = ['crown', 'vip', 'nebula', 'admin', 'tester', '100h', '50h', '10h', '5h', '1h', 'dolphin', 'old'];
 
 const FLAG_EMOJIS = [
-  '🇷🇺','🇺🇦','🇧🇾','🇰🇿','🇺🇿','🇦🇲','🇦🇿','🇬🇪','🇲🇩','🇱🇹','🇱🇻','🇪🇪','🇵🇱','🇨🇿','🇸🇰','🇭🇺','🇷🇴','🇧🇬','🇷🇸','🇭🇷','🇸🇮','🇬🇷','🇹🇷','🇮🇷','🇮🇱','🇦🇪','🇸🇦','🇶🇦','🇰🇼','🇧🇭','🇴🇲','🇾🇪','🇮🇶','🇸🇾','🇱🇧','🇯🇴','🇪🇬','🇲🇦','🇩🇿','🇹🇳','🇱🇾','🇸🇩','🇪🇹','🇰🇪','🇹🇿','🇳🇬','🇬🇭','🇿🇦','🇪🇸','🇵🇹','🇮🇹','🇫🇷','🇩🇪','🇬🇧','🇮🇪','🇳🇱','🇧🇪','🇨🇭','🇦🇹','🇸🇪','🇳🇴','🇩🇰','🇫🇮','🇮🇸','🇺🇸','🇨🇦','🇲🇽','🇧🇷','🇦🇷','🇨🇱','🇵🇪','🇨🇴','🇻🇪','🇨🇺','🇯🇲','🇦🇺','🇳🇿','🇨🇳','🇭🇰','🇹🇼','🇰🇷','🇯🇵','🇹🇭','🇻🇳','🇮🇳','🇵🇰','🇧🇩','🇱🇰','🇲🇾','🇸🇬','🇮🇩','🇵🇭','🇰🇭','🇲🇳','🇰🇵','🇳🇵','🇦🇫','🇺🇳','🇪🇺',
+  'рџ‡·рџ‡є','рџ‡єрџ‡¦','рџ‡§рџ‡ѕ','рџ‡°рџ‡ї','рџ‡єрџ‡ї','рџ‡¦рџ‡І','рџ‡¦рџ‡ї','рџ‡¬рџ‡Є','рџ‡Ірџ‡©','рџ‡±рџ‡№','рџ‡±рџ‡»','рџ‡Єрџ‡Є','рџ‡µрџ‡±','рџ‡Ёрџ‡ї','рџ‡ёрџ‡°','рџ‡­рџ‡є','рџ‡·рџ‡ґ','рџ‡§рџ‡¬','рџ‡·рџ‡ё','рџ‡­рџ‡·','рџ‡ёрџ‡®','рџ‡¬рџ‡·','рџ‡№рџ‡·','рџ‡®рџ‡·','рџ‡®рџ‡±','рџ‡¦рџ‡Є','рџ‡ёрџ‡¦','рџ‡¶рџ‡¦','рџ‡°рџ‡ј','рџ‡§рџ‡­','рџ‡ґрџ‡І','рџ‡ѕрџ‡Є','рџ‡®рџ‡¶','рџ‡ёрџ‡ѕ','рџ‡±рџ‡§','рџ‡Їрџ‡ґ','рџ‡Єрџ‡¬','рџ‡Ірџ‡¦','рџ‡©рџ‡ї','рџ‡№рџ‡і','рџ‡±рџ‡ѕ','рџ‡ёрџ‡©','рџ‡Єрџ‡№','рџ‡°рџ‡Є','рџ‡№рџ‡ї','рџ‡ірџ‡¬','рџ‡¬рџ‡­','рџ‡їрџ‡¦','рџ‡Єрџ‡ё','рџ‡µрџ‡№','рџ‡®рџ‡№','рџ‡«рџ‡·','рџ‡©рџ‡Є','рџ‡¬рџ‡§','рџ‡®рџ‡Є','рџ‡ірџ‡±','рџ‡§рџ‡Є','рџ‡Ёрџ‡­','рџ‡¦рџ‡№','рџ‡ёрџ‡Є','рџ‡ірџ‡ґ','рџ‡©рџ‡°','рџ‡«рџ‡®','рџ‡®рџ‡ё','рџ‡єрџ‡ё','рџ‡Ёрџ‡¦','рџ‡Ірџ‡Ѕ','рџ‡§рџ‡·','рџ‡¦рџ‡·','рџ‡Ёрџ‡±','рџ‡µрџ‡Є','рџ‡Ёрџ‡ґ','рџ‡»рџ‡Є','рџ‡Ёрџ‡є','рџ‡Їрџ‡І','рџ‡¦рџ‡є','рџ‡ірџ‡ї','рџ‡Ёрџ‡і','рџ‡­рџ‡°','рџ‡№рџ‡ј','рџ‡°рџ‡·','рџ‡Їрџ‡µ','рџ‡№рџ‡­','рџ‡»рџ‡і','рџ‡®рџ‡і','рџ‡µрџ‡°','рџ‡§рџ‡©','рџ‡±рџ‡°','рџ‡Ірџ‡ѕ','рџ‡ёрџ‡¬','рџ‡®рџ‡©','рџ‡µрџ‡­','рџ‡°рџ‡­','рџ‡Ірџ‡і','рџ‡°рџ‡µ','рџ‡ірџ‡µ','рџ‡¦рџ‡«','рџ‡єрџ‡і','рџ‡Єрџ‡є',
 ];
 const EMOJIS = [
-  '😀','😁','😂','🤣','😊','😍','😘','😎','🤩','🥳','😉','🙂','😅','🤔','😴','😭','😤','😱','🤯','🥺','😇','🤗','🙄','😋','🤐','😷','🤒','🥶','🥵','😈','🤠','🤡','👻','💀','👽','🤖','🎃','😺','😸','😹','😻','😼','🙀','😿','😾',
-  '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💖','💘','💝','💞','💓','💗','💕','💟','💌','💋','💯','💢','💥','💫','💦','💨','🕳️','💬','💭','🗯️',
-  '👍','👎','👏','🙌','🤝','✌️','🤞','🤟','🤙','👌','👈','👉','👆','👇','☝️','👋','🤚','🖐️','✋','🖖','👊','✊','🤛','🤜','💪','🦾','🦵','🦶','👀','👁️','🧠','🦷','👅','👄','🫡','💋',
-  '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦂','🦀','🦞','🦈','🐙','🦑','🐠','🐟','🐡','🐬','🐳','🐋','🐊','🐢','🦎','🐍','🦖','🦕',
-  '🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🍆','🥔','🥕','🌽','🌶️','🥒','🥬','🥦','🧄','🧅','🍄','🥜','🌰','🍞','🥐','🥖','🥨','🥯','🥞','🧇','🧀','🍖','🍗','🥩','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🥙','🍳','🥘','🍲','🥣','🥗','🍿','🍱','🍘','🍙','🍚','🍛','🍜','🍝','🍠','🍣','🍤','🍥','🍡','🥟','🥠','🥡','🍦','🍧','🍨','🍩','🍪','🎂','🍰','🧁','🥧','🍫','🍬','🍭','🍮','🍯','🍼','🥛','☕','🫖','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾',
-  '⚽','⚾','🥎','🏀','🏐','🏈','🏉','🎾','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎯','🎳','🎮','🕹️','🎲','🧩','♟️','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🪕','🎻',
-  '💰','💴','💶','💷','💳','🧾','✉️','📧','📨','📩','📤','📥','📦','📫','📪','📬','📭','📮','🗳️','🪙','💎','🔮','🧿','📿','🧲','🧨','🧸','🎀','🎁','🎗️','🎟️','🎫','🎖️','🏅','🥇','🥈','🥉','⚓','🚀','🛸','✈️','🚁','🛟','🚲','🛵','🏍️','🚗','🚕','🚓','🚑','🚒','🚙','🛻','🚚','🚛','🚜','🏎️','🛴','🛹','🚦','🚧','⛽','🛑','🗺️','🗿','🏝️','🏜️','🏔️','🗻','🌋','🏟️','🏛️','🕌','🕍','⛪','🕋','🏠','🏡','🏘️','🏚️','🏗️','🏭','🏢','🏬','🏣','🏤','🏥','🏦','🏨','🏪','🏫','🏩','💒',
-  '🌍','🌎','🌏','🌕','🌖','🌗','🌘','🌑','🌒','🌓','🌔','🌙','☀️','🌟','⭐','🌤️','⛅','🌥️','☁️','🌦️','🌧️','⛈️','🌩️','🌨️','❄️','☃️','⛄','🌬️','💨','🌪️','🌫️','🌊','💧','☔','💦','🌈','☂️','🧊','🌋','⚡','🔥',
+  'рџЂ','рџЃ','рџ‚','рџ¤Ј','рџЉ','рџЌ','рџ','рџЋ','рџ¤©','рџҐі','рџ‰','рџ™‚','рџ…','рџ¤”','рџґ','рџ­','рџ¤','рџ±','рџ¤Ї','рџҐє','рџ‡','рџ¤—','рџ™„','рџ‹','рџ¤ђ','рџ·','рџ¤’','рџҐ¶','рџҐµ','рџ€','рџ¤ ','рџ¤Ў','рџ‘»','рџ’Ђ','рџ‘Ѕ','рџ¤–','рџЋѓ','рџє','рџё','рџ№','рџ»','рџј','рџ™Ђ','рџї','рџѕ',
+  'вќ¤пёЏ','рџ§Ў','рџ’›','рџ’љ','рџ’™','рџ’њ','рџ–¤','рџ¤Ќ','рџ¤Ћ','рџ’”','рџ’–','рџ’','рџ’ќ','рџ’ћ','рџ’“','рџ’—','рџ’•','рџ’џ','рџ’Њ','рџ’‹','рџ’Ї','рџ’ў','рџ’Ґ','рџ’«','рџ’¦','рџ’Ё','рџ•іпёЏ','рџ’¬','рџ’­','рџ—ЇпёЏ',
+  'рџ‘Ќ','рџ‘Ћ','рџ‘Џ','рџ™Њ','рџ¤ќ','вњЊпёЏ','рџ¤ћ','рџ¤џ','рџ¤™','рџ‘Њ','рџ‘€','рџ‘‰','рџ‘†','рџ‘‡','вќпёЏ','рџ‘‹','рџ¤љ','рџ–ђпёЏ','вњ‹','рџ––','рџ‘Љ','вњЉ','рџ¤›','рџ¤њ','рџ’Є','рџ¦ѕ','рџ¦µ','рџ¦¶','рџ‘Ђ','рџ‘ЃпёЏ','рџ§ ','рџ¦·','рџ‘…','рџ‘„','рџ«Ў','рџ’‹',
+  'рџђ¶','рџђ±','рџђ­','рџђ№','рџђ°','рџ¦Љ','рџђ»','рџђј','рџђЁ','рџђЇ','рџ¦Ѓ','рџђ®','рџђ·','рџђё','рџђµ','рџђ”','рџђ§','рџђ¦','рџђ¤','рџ¦†','рџ¦…','рџ¦‰','рџ¦‡','рџђє','рџђ—','рџђґ','рџ¦„','рџђќ','рџђ›','рџ¦‹','рџђЊ','рџђћ','рџђњ','рџ¦‚','рџ¦Ђ','рџ¦ћ','рџ¦€','рџђ™','рџ¦‘','рџђ ','рџђџ','рџђЎ','рџђ¬','рџђі','рџђ‹','рџђЉ','рџђў','рџ¦Ћ','рџђЌ','рџ¦–','рџ¦•',
+  'рџЌЋ','рџЌђ','рџЌЉ','рџЌ‹','рџЌЊ','рџЌ‰','рџЌ‡','рџЌ“','рџ«ђ','рџЌ’','рџЌ‘','рџҐ­','рџЌЌ','рџҐҐ','рџҐќ','рџЌ…','рџҐ‘','рџЌ†','рџҐ”','рџҐ•','рџЊЅ','рџЊ¶пёЏ','рџҐ’','рџҐ¬','рџҐ¦','рџ§„','рџ§…','рџЌ„','рџҐњ','рџЊ°','рџЌћ','рџҐђ','рџҐ–','рџҐЁ','рџҐЇ','рџҐћ','рџ§‡','рџ§Ђ','рџЌ–','рџЌ—','рџҐ©','рџҐ“','рџЌ”','рџЌџ','рџЌ•','рџЊ­','рџҐЄ','рџЊ®','рџЊЇ','рџҐ™','рџЌі','рџҐ','рџЌІ','рџҐЈ','рџҐ—','рџЌї','рџЌ±','рџЌ','рџЌ™','рџЌљ','рџЌ›','рџЌњ','рџЌќ','рџЌ ','рџЌЈ','рџЌ¤','рџЌҐ','рџЌЎ','рџҐџ','рџҐ ','рџҐЎ','рџЌ¦','рџЌ§','рџЌЁ','рџЌ©','рџЌЄ','рџЋ‚','рџЌ°','рџ§Ѓ','рџҐ§','рџЌ«','рџЌ¬','рџЌ­','рџЌ®','рџЌЇ','рџЌј','рџҐ›','в•','рџ«–','рџЌµ','рџ§ѓ','рџҐ¤','рџ§‹','рџЌ¶','рџЌє','рџЌ»','рџҐ‚','рџЌ·','рџҐѓ','рџЌё','рџЌ№','рџ§‰','рџЌѕ',
+  'вљЅ','вљѕ','рџҐЋ','рџЏЂ','рџЏђ','рџЏ€','рџЏ‰','рџЋѕ','рџҐЏ','рџЋ±','рџЄЂ','рџЏ“','рџЏё','рџЏ’','рџЏ‘','рџҐЌ','рџЏЏ','рџҐ…','в›і','рџЄЃ','рџЏ№','рџЋЈ','рџ¤ї','рџҐЉ','рџҐ‹','рџЋЅ','рџ›№','рџ›ј','рџ›·','в›ёпёЏ','рџҐЊ','рџЋЇ','рџЋі','рџЋ®','рџ•№пёЏ','рџЋІ','рџ§©','в™џпёЏ','рџЋ­','рџЋЁ','рџЋ¬','рџЋ¤','рџЋ§','рџЋј','рџЋ№','рџҐЃ','рџЋ·','рџЋє','рџЋё','рџЄ•','рџЋ»',
+  'рџ’°','рџ’ґ','рџ’¶','рџ’·','рџ’і','рџ§ѕ','вњ‰пёЏ','рџ“§','рџ“Ё','рџ“©','рџ“¤','рџ“Ґ','рџ“¦','рџ“«','рџ“Є','рџ“¬','рџ“­','рџ“®','рџ—іпёЏ','рџЄ™','рџ’Ћ','рџ”®','рџ§ї','рџ“ї','рџ§І','рџ§Ё','рџ§ё','рџЋЂ','рџЋЃ','рџЋ—пёЏ','рџЋџпёЏ','рџЋ«','рџЋ–пёЏ','рџЏ…','рџҐ‡','рџҐ€','рџҐ‰','вљ“','рџљЂ','рџ›ё','вњ€пёЏ','рџљЃ','рџ›џ','рџљІ','рџ›µ','рџЏЌпёЏ','рџљ—','рџљ•','рџљ“','рџљ‘','рџљ’','рџљ™','рџ›»','рџљљ','рџљ›','рџљњ','рџЏЋпёЏ','рџ›ґ','рџ›№','рџљ¦','рџљ§','в›Ѕ','рџ›‘','рџ—єпёЏ','рџ—ї','рџЏќпёЏ','рџЏњпёЏ','рџЏ”пёЏ','рџ—»','рџЊ‹','рџЏџпёЏ','рџЏ›пёЏ','рџ•Њ','рџ•Ќ','в›Є','рџ•‹','рџЏ ','рџЏЎ','рџЏпёЏ','рџЏљпёЏ','рџЏ—пёЏ','рџЏ­','рџЏў','рџЏ¬','рџЏЈ','рџЏ¤','рџЏҐ','рџЏ¦','рџЏЁ','рџЏЄ','рџЏ«','рџЏ©','рџ’’',
+  'рџЊЌ','рџЊЋ','рџЊЏ','рџЊ•','рџЊ–','рџЊ—','рџЊ','рџЊ‘','рџЊ’','рџЊ“','рџЊ”','рџЊ™','вЂпёЏ','рџЊџ','в­ђ','рџЊ¤пёЏ','в›…','рџЊҐпёЏ','вЃпёЏ','рџЊ¦пёЏ','рџЊ§пёЏ','в›€пёЏ','рџЊ©пёЏ','рџЊЁпёЏ','вќ„пёЏ','вѓпёЏ','в›„','рџЊ¬пёЏ','рџ’Ё','рџЊЄпёЏ','рџЊ«пёЏ','рџЊЉ','рџ’§','в”','рџ’¦','рџЊ€','в‚пёЏ','рџ§Љ','рџЊ‹','вљЎ','рџ”Ґ',
 ];
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
+
+/* Р—Р°РјРѕСЂРѕР·РєР° СЌРєСЂР°РЅР° РЅР° РјРѕР±РёР»СЊРЅС‹С…: РЅРёРєР°РєРѕРіРѕ Р·СѓРјР°, СЂР°СЃС‚СЏРіРёРІР°РЅРёСЏ Рё РІС‹РµР·РґР° СЃС‚СЂР°РЅРёС†С‹.
+   Р’РЅСѓС‚СЂРµРЅРЅСЏСЏ РїСЂРѕРєСЂСѓС‚РєР° С‡Р°С‚РѕРІ/СЃРїРёСЃРєРѕРІ РѕСЃС‚Р°С‘С‚СЃСЏ (touch-action: pan-x pan-y). */
+if (/Android|iPhone|iPad|Mobile/i.test(typeof navigator !== 'undefined' && navigator.userAgent || '')) {
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  document.addEventListener('dblclick', (e) => e.preventDefault());
+}
 
 function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -141,14 +149,14 @@ function escapeHtml(s) {
 
 const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>';
 
-/* ---------- ХРАНИЛИЩЕ ---------- */
+/* ---------- РҐР РђРќРР›РР©Р• ---------- */
 let storageWarnedAt = 0;
 function safeSet(key, val) {
   try { localStorage.setItem(key, val); return true; }
   catch (e) {
     if (Date.now() - storageWarnedAt > 30000) {
       storageWarnedAt = Date.now();
-      toast('Хранилище переполнено', 'Удалите старые стикеры или фотосообщения', 4000);
+      toast('РҐСЂР°РЅРёР»РёС‰Рµ РїРµСЂРµРїРѕР»РЅРµРЅРѕ', 'РЈРґР°Р»РёС‚Рµ СЃС‚Р°СЂС‹Рµ СЃС‚РёРєРµСЂС‹ РёР»Рё С„РѕС‚РѕСЃРѕРѕР±С‰РµРЅРёСЏ', 4000);
     }
     return false;
   }
@@ -163,16 +171,16 @@ function saveAccounts(d) { if (safeSet(ACCOUNTS_KEY, JSON.stringify(d))) schedul
 function accountByUsername(u) { return loadAccounts().users[u] || null; }
 function accountsList() { return Object.values(loadAccounts().users); }
 
-/* ---------- ОБЛАЧНЫЙ БЭКАП (Cloudflare KV) ---------- */
+/* ---------- РћР‘Р›РђР§РќР«Р™ Р‘Р­РљРђРџ (Cloudflare KV) ---------- */
 let cloudQueue = null;
 let cloudBackupTimer = null;
 const CLOUD_META_KEY = 'nebula_cloud_meta';
 
 function cloudUrl(key) { return MAIL_RELAY_URL + '/store?key=' + encodeURIComponent(key); }
 
-/* Значение хранится в облаке вместе с версией (v) — чтобы при восстановлении
-   не затирать более свежие локальные данные. Старые записи без версии
-   считаются v=0. */
+/* Р—РЅР°С‡РµРЅРёРµ С…СЂР°РЅРёС‚СЃСЏ РІ РѕР±Р»Р°РєРµ РІРјРµСЃС‚Рµ СЃ РІРµСЂСЃРёРµР№ (v) вЂ” С‡С‚РѕР±С‹ РїСЂРё РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРё
+   РЅРµ Р·Р°С‚РёСЂР°С‚СЊ Р±РѕР»РµРµ СЃРІРµР¶РёРµ Р»РѕРєР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ. РЎС‚Р°СЂС‹Рµ Р·Р°РїРёСЃРё Р±РµР· РІРµСЂСЃРёРё
+   СЃС‡РёС‚Р°СЋС‚СЃСЏ v=0. */
 function cloudWrap(value) {
   return JSON.stringify({ v: Date.now(), d: value });
 }
@@ -190,17 +198,17 @@ function saveCloudMeta(m) {
   try { localStorage.setItem(CLOUD_META_KEY, JSON.stringify(m)); } catch (e) {}
 }
 
-/* ---------- Вторая база: Firestore-зеркало ----------
-   Cloudflare KV (бесплатный лимит ~1000 записей/день) часто исчерпывается,
-   и синхронизация встаёт. Firestore (бесплатно ~20000 записей/день) —
-   надёжный дубль. Чтобы включить:
-   1) консоль Firebase → проект nebula-1337 → Build → Firestore Database →
-      Create database (режим production или test);
-   2) Project settings → Your apps → Web app → скопируйте apiKey и projectId;
-   3) ключ уже встроен в приложение по умолчанию — база включается сама;
-      если позже сменишь ключ, можно переопределить в консоли браузера (F12):
-      localStorage.setItem('nebula_firebase_cfg', JSON.stringify({ apiKey: 'НОВЫЙ_КЛЮЧ', projectId: 'nebula-1337' }))
-      затем перезагрузите страницу. */
+/* ---------- Р’С‚РѕСЂР°СЏ Р±Р°Р·Р°: Firestore-Р·РµСЂРєР°Р»Рѕ ----------
+   Cloudflare KV (Р±РµСЃРїР»Р°С‚РЅС‹Р№ Р»РёРјРёС‚ ~1000 Р·Р°РїРёСЃРµР№/РґРµРЅСЊ) С‡Р°СЃС‚Рѕ РёСЃС‡РµСЂРїС‹РІР°РµС‚СЃСЏ,
+   Рё СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РІСЃС‚Р°С‘С‚. Firestore (Р±РµСЃРїР»Р°С‚РЅРѕ ~20000 Р·Р°РїРёСЃРµР№/РґРµРЅСЊ) вЂ”
+   РЅР°РґС‘Р¶РЅС‹Р№ РґСѓР±Р»СЊ. Р§С‚РѕР±С‹ РІРєР»СЋС‡РёС‚СЊ:
+   1) РєРѕРЅСЃРѕР»СЊ Firebase в†’ РїСЂРѕРµРєС‚ nebula-1337 в†’ Build в†’ Firestore Database в†’
+      Create database (СЂРµР¶РёРј production РёР»Рё test);
+   2) Project settings в†’ Your apps в†’ Web app в†’ СЃРєРѕРїРёСЂСѓР№С‚Рµ apiKey Рё projectId;
+   3) РєР»СЋС‡ СѓР¶Рµ РІСЃС‚СЂРѕРµРЅ РІ РїСЂРёР»РѕР¶РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ вЂ” Р±Р°Р·Р° РІРєР»СЋС‡Р°РµС‚СЃСЏ СЃР°РјР°;
+      РµСЃР»Рё РїРѕР·Р¶Рµ СЃРјРµРЅРёС€СЊ РєР»СЋС‡, РјРѕР¶РЅРѕ РїРµСЂРµРѕРїСЂРµРґРµР»РёС‚СЊ РІ РєРѕРЅСЃРѕР»Рё Р±СЂР°СѓР·РµСЂР° (F12):
+      localStorage.setItem('nebula_firebase_cfg', JSON.stringify({ apiKey: 'РќРћР’Р«Р™_РљР›Р®Р§', projectId: 'nebula-1337' }))
+      Р·Р°С‚РµРј РїРµСЂРµР·Р°РіСЂСѓР·РёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ. */
 const NEBULA_FIREBASE_DEFAULT = { apiKey: 'AIzaSyCTLMsslePFNCp2leerUBx2ascBrITAz6Y', projectId: 'nebula-1337' };
 let NEBULA_FIREBASE = NEBULA_FIREBASE_DEFAULT;
 try {
@@ -295,8 +303,8 @@ function cloudFailedRecently(ms) {
   const m = loadCloudMeta();
   return !!(m.failAt && Date.now() - m.failAt < (ms || 20000));
 }
-/* Быстрая запись только при изменении содержимого — экономит квоту KV:
-   повторные бэкапы неизменных ключей не пишутся в облако */
+/* Р‘С‹СЃС‚СЂР°СЏ Р·Р°РїРёСЃСЊ С‚РѕР»СЊРєРѕ РїСЂРё РёР·РјРµРЅРµРЅРёРё СЃРѕРґРµСЂР¶РёРјРѕРіРѕ вЂ” СЌРєРѕРЅРѕРјРёС‚ РєРІРѕС‚Сѓ KV:
+   РїРѕРІС‚РѕСЂРЅС‹Рµ Р±СЌРєР°РїС‹ РЅРµРёР·РјРµРЅРЅС‹С… РєР»СЋС‡РµР№ РЅРµ РїРёС€СѓС‚СЃСЏ РІ РѕР±Р»Р°РєРѕ */
 function qhash(s) {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
@@ -348,9 +356,9 @@ function scheduleCloudBackup() {
   if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
   cloudBackupTimer = setTimeout(() => { cloudBackupTimer = null; runCloudBackup(); }, 3000);
 }
-/* Слияние аккаунтов при отправке в облако: чужие пользователи из облака
-   не теряются, даже если локальная копия старше (устройство с другого
-   компьютера не перезаписывает облачную базу) */
+/* РЎР»РёСЏРЅРёРµ Р°РєРєР°СѓРЅС‚РѕРІ РїСЂРё РѕС‚РїСЂР°РІРєРµ РІ РѕР±Р»Р°РєРѕ: С‡СѓР¶РёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»Рё РёР· РѕР±Р»Р°РєР°
+   РЅРµ С‚РµСЂСЏСЋС‚СЃСЏ, РґР°Р¶Рµ РµСЃР»Рё Р»РѕРєР°Р»СЊРЅР°СЏ РєРѕРїРёСЏ СЃС‚Р°СЂС€Рµ (СѓСЃС‚СЂРѕР№СЃС‚РІРѕ СЃ РґСЂСѓРіРѕРіРѕ
+   РєРѕРјРїСЊСЋС‚РµСЂР° РЅРµ РїРµСЂРµР·Р°РїРёСЃС‹РІР°РµС‚ РѕР±Р»Р°С‡РЅСѓСЋ Р±Р°Р·Сѓ) */
 function mergeAccountsWithCloud(raw) {
   if (!MAIL_RELAY_URL) return Promise.resolve(raw);
   return cloudLoad(ACCOUNTS_KEY).then(cur => {
@@ -365,11 +373,11 @@ function mergeAccountsWithCloud(raw) {
     } catch (e) { return raw; }
   }).catch(() => raw);
 }
-/* Свежая загрузка аккаунтов из облака + слияние с локальными.
-   Используется при входе и регистрации, чтобы на любом устройстве
-   было видно всех уже зарегистрированных пользователей */
-/* Выравнивание баз при каждом открытии: локальная база пушит объединение,
-   если в ней аккаунтов больше, чем в облаке; и наоборот — тянет из облака */
+/* РЎРІРµР¶Р°СЏ Р·Р°РіСЂСѓР·РєР° Р°РєРєР°СѓРЅС‚РѕРІ РёР· РѕР±Р»Р°РєР° + СЃР»РёСЏРЅРёРµ СЃ Р»РѕРєР°Р»СЊРЅС‹РјРё.
+   РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РІС…РѕРґРµ Рё СЂРµРіРёСЃС‚СЂР°С†РёРё, С‡С‚РѕР±С‹ РЅР° Р»СЋР±РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ
+   Р±С‹Р»Рѕ РІРёРґРЅРѕ РІСЃРµС… СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ */
+/* Р’С‹СЂР°РІРЅРёРІР°РЅРёРµ Р±Р°Р· РїСЂРё РєР°Р¶РґРѕРј РѕС‚РєСЂС‹С‚РёРё: Р»РѕРєР°Р»СЊРЅР°СЏ Р±Р°Р·Р° РїСѓС€РёС‚ РѕР±СЉРµРґРёРЅРµРЅРёРµ,
+   РµСЃР»Рё РІ РЅРµР№ Р°РєРєР°СѓРЅС‚РѕРІ Р±РѕР»СЊС€Рµ, С‡РµРј РІ РѕР±Р»Р°РєРµ; Рё РЅР°РѕР±РѕСЂРѕС‚ вЂ” С‚СЏРЅРµС‚ РёР· РѕР±Р»Р°РєР° */
 function reconcileAccountsNow() {
   if (!MAIL_RELAY_URL) return Promise.resolve();
   return cloudLoad(ACCOUNTS_KEY).then(r => {
@@ -428,9 +436,9 @@ function findAccountInCloud(username, email) {
   }).catch(() => null);
 }
 let cloudSearchTimer = null;
-/* Облачный поиск пользователя по @юзернейму/ID с авто-регистрацией в
-   локальную базу — чтобы на любом устройстве можно было найти и написать
-   любому зарегистрированному пользователю (единая база) */
+/* РћР±Р»Р°С‡РЅС‹Р№ РїРѕРёСЃРє РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ @СЋР·РµСЂРЅРµР№РјСѓ/ID СЃ Р°РІС‚Рѕ-СЂРµРіРёСЃС‚СЂР°С†РёРµР№ РІ
+   Р»РѕРєР°Р»СЊРЅСѓСЋ Р±Р°Р·Сѓ вЂ” С‡С‚РѕР±С‹ РЅР° Р»СЋР±РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РЅР°Р№С‚Рё Рё РЅР°РїРёСЃР°С‚СЊ
+   Р»СЋР±РѕРјСѓ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅРЅРѕРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ (РµРґРёРЅР°СЏ Р±Р°Р·Р°) */
 function cloudSearchAndMerge(q) {
   if (!MAIL_RELAY_URL || !currentUser || !q) return Promise.resolve(null);
   if (cloudSearchTimer) clearTimeout(cloudSearchTimer);
@@ -515,9 +523,9 @@ function runCloudBackup() {
   return cloudQueue;
 }
 
-/* Восстановление из облака: аккаунты + состояние каждого пользователя
-   (чаты, сообщения) + админы + логи + объявление. Для каждого ключа берётся
-   более свежая версия; чужие аккаунты из облака всегда добавляются. */
+/* Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РёР· РѕР±Р»Р°РєР°: Р°РєРєР°СѓРЅС‚С‹ + СЃРѕСЃС‚РѕСЏРЅРёРµ РєР°Р¶РґРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+   (С‡Р°С‚С‹, СЃРѕРѕР±С‰РµРЅРёСЏ) + Р°РґРјРёРЅС‹ + Р»РѕРіРё + РѕР±СЉСЏРІР»РµРЅРёРµ. Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РєР»СЋС‡Р° Р±РµСЂС‘С‚СЃСЏ
+   Р±РѕР»РµРµ СЃРІРµР¶Р°СЏ РІРµСЂСЃРёСЏ; С‡СѓР¶РёРµ Р°РєРєР°СѓРЅС‚С‹ РёР· РѕР±Р»Р°РєР° РІСЃРµРіРґР° РґРѕР±Р°РІР»СЏСЋС‚СЃСЏ. */
 function restoreMyStateFromCloud(uname) {
   if (!MAIL_RELAY_URL) return;
   const k = stateKey(uname);
@@ -537,7 +545,7 @@ try {
       saveState();
       renderChatList();
       renderChat();
-      toast('База восстановлена из облака');
+      toast('Р‘Р°Р·Р° РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅР° РёР· РѕР±Р»Р°РєР°');
     } catch (e) {}
   }).catch(() => {});
 }
@@ -620,11 +628,11 @@ function tryRestoreFromCloud() {
   return Promise.race([done, new Promise(res => setTimeout(res, 4000))]);
 }
 
-/* ---------- ОБЛАЧНАЯ СИНХРОНИЗАЦИЯ ЧАТОВ (переписка между браузерами) ----------
-   Каждое сообщение пишется в облако ключом msg:<chatId>:<msgId>, мета-данные
-   чата — chat:<chatId>, удалённые сообщения — mdel:<chatId>:<msgId>.
-   Пока пользователь в сети, клиент раз в 4 секунды опрашивает облако
-   и подтягивает новые чаты и сообщения. */
+/* ---------- РћР‘Р›РђР§РќРђРЇ РЎРРќРҐР РћРќРР—РђР¦РРЇ Р§РђРўРћР’ (РїРµСЂРµРїРёСЃРєР° РјРµР¶РґСѓ Р±СЂР°СѓР·РµСЂР°РјРё) ----------
+   РљР°Р¶РґРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РїРёС€РµС‚СЃСЏ РІ РѕР±Р»Р°РєРѕ РєР»СЋС‡РѕРј msg:<chatId>:<msgId>, РјРµС‚Р°-РґР°РЅРЅС‹Рµ
+   С‡Р°С‚Р° вЂ” chat:<chatId>, СѓРґР°Р»С‘РЅРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ вЂ” mdel:<chatId>:<msgId>.
+   РџРѕРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РІ СЃРµС‚Рё, РєР»РёРµРЅС‚ СЂР°Р· РІ 4 СЃРµРєСѓРЅРґС‹ РѕРїСЂР°С€РёРІР°РµС‚ РѕР±Р»Р°РєРѕ
+   Рё РїРѕРґС‚СЏРіРёРІР°РµС‚ РЅРѕРІС‹Рµ С‡Р°С‚С‹ Рё СЃРѕРѕР±С‰РµРЅРёСЏ. */
 const CLOUD_CHAT_PREFIX = 'chat:';
 const CLOUD_MSG_PREFIX = 'msg:';
 const CLOUD_MDEL_PREFIX = 'mdel:';
@@ -653,7 +661,7 @@ function stripMediaForCloud(msg) {
   });
   if (out.voice && out.voice.dataUrl && out.voice.dataUrl.length > 700000) out.voice = { dur: out.voice.dur || 0, dataUrl: null };
   if (out.video) out.video = { dur: out.video.dur || 0 };
-  if (out.sticker && out.sticker.dataUrl && out.sticker.dataUrl.length > 700000) out.sticker = { name: out.sticker.name || 'Стикер', dataUrl: null };
+  if (out.sticker && out.sticker.dataUrl && out.sticker.dataUrl.length > 700000) out.sticker = { name: out.sticker.name || 'РЎС‚РёРєРµСЂ', dataUrl: null };
   return out;
 }
 function sanitizeForCloud(obj) {
@@ -926,8 +934,8 @@ function syncCloudUsers() {
     tryAutoLogin();
   }).catch(e => console.error('Cloud users sync failed:', e));
 }
-/* Лёгкие «присутствия» (кто онлайн) — отдельный канал, чтобы не жечь квоту KV:
-   пишутся только в Firestore, читаются раз в минуту для открытых чатов */
+/* Р›С‘РіРєРёРµ В«РїСЂРёСЃСѓС‚СЃС‚РІРёСЏВ» (РєС‚Рѕ РѕРЅР»Р°Р№РЅ) вЂ” РѕС‚РґРµР»СЊРЅС‹Р№ РєР°РЅР°Р», С‡С‚РѕР±С‹ РЅРµ Р¶РµС‡СЊ РєРІРѕС‚Сѓ KV:
+   РїРёС€СѓС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ Firestore, С‡РёС‚Р°СЋС‚СЃСЏ СЂР°Р· РІ РјРёРЅСѓС‚Сѓ РґР»СЏ РѕС‚РєСЂС‹С‚С‹С… С‡Р°С‚РѕРІ */
 const PRESENCE_KEY = 'presence:';
 function pushPresence() {
   if (!currentUser || !fsEnabled()) return;
@@ -955,9 +963,9 @@ function applyPresence(list) {
     renderChat();
   }
 }
-/* Слияние облачной копии состояния с локальной: чаты из облака добавляются,
-   но локальные чаты НЕ удаляются (иначе копия с другого устройства, в которой
-   ещё нет свежесозданного чата, стирала бы его из списка) */
+/* РЎР»РёСЏРЅРёРµ РѕР±Р»Р°С‡РЅРѕР№ РєРѕРїРёРё СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃ Р»РѕРєР°Р»СЊРЅРѕР№: С‡Р°С‚С‹ РёР· РѕР±Р»Р°РєР° РґРѕР±Р°РІР»СЏСЋС‚СЃСЏ,
+   РЅРѕ Р»РѕРєР°Р»СЊРЅС‹Рµ С‡Р°С‚С‹ РќР• СѓРґР°Р»СЏСЋС‚СЃСЏ (РёРЅР°С‡Рµ РєРѕРїРёСЏ СЃ РґСЂСѓРіРѕРіРѕ СѓСЃС‚СЂРѕР№СЃС‚РІР°, РІ РєРѕС‚РѕСЂРѕР№
+   РµС‰С‘ РЅРµС‚ СЃРІРµР¶РµСЃРѕР·РґР°РЅРЅРѕРіРѕ С‡Р°С‚Р°, СЃС‚РёСЂР°Р»Р° Р±С‹ РµРіРѕ РёР· СЃРїРёСЃРєР°) */
 function mergeStateWithCloud(raw, cloudRaw) {
   try {
     const a = JSON.parse(raw), b = JSON.parse(cloudRaw);
@@ -1040,7 +1048,7 @@ function saveStateFor(u, s) {
   if (safeSet(stateKey(u), JSON.stringify(s))) scheduleCloudBackup();
 }
 
-/* ---------- АДМИНКА / ЛОГИ ---------- */
+/* ---------- РђР”РњРРќРљРђ / Р›РћР“Р ---------- */
 function adminList() {
   try { return JSON.parse(localStorage.getItem(ADMIN_KEY)) || []; } catch (e) { return []; }
 }
@@ -1087,7 +1095,7 @@ function fmtLogTime(ts) {
   return new Date(ts).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-/* ---------- УВЕДОМЛЕНИЯ О БЛОКИРОВКЕ / УДАЛЕНИИ ---------- */
+/* ---------- РЈР’Р•Р”РћРњР›Р•РќРРЇ Рћ Р‘Р›РћРљРР РћР’РљР• / РЈР”РђР›Р•РќРР ---------- */
 const NOTICE_KEY = 'nebula_ban_notices';
 function loadNotices() {
   try { return JSON.parse(localStorage.getItem(NOTICE_KEY)) || {}; } catch (e) { return {}; }
@@ -1098,7 +1106,7 @@ function clearNotice(username) {
   if (n[username]) { delete n[username]; saveNotices(n); }
 }
 function fmtNoticeDate(ts) {
-  if (!ts) return '—';
+  if (!ts) return 'вЂ”';
   return new Date(ts).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 function closeBanNotices() {
@@ -1115,7 +1123,7 @@ function showAccountNotice(username) {
     const acc = accountByUsername(username);
     if (acc && acc.banned) {
       const bi = acc.banInfo || {};
-      n = { type: 'ban', admin: bi.admin || '—', reason: bi.reason || '—', bannedAt: bi.bannedAt || 0, unbanAt: bi.unbanAt || null };
+      n = { type: 'ban', admin: bi.admin || 'вЂ”', reason: bi.reason || 'вЂ”', bannedAt: bi.bannedAt || 0, unbanAt: bi.unbanAt || null };
     } else return;
   }
   const isDel = n.type === 'delete';
@@ -1123,13 +1131,13 @@ function showAccountNotice(username) {
   ov.className = 'status-editor-overlay';
   ov.innerHTML = `
     <div class="modal-box stickers-modal ban-notice">
-      <h3>${isDel ? '⛔ Ваш аккаунт был удалён администрацией' : '⛔ Ваш аккаунт был заблокирован администрацией'}</h3>
-      <div class="bn-row"><span>Администратор:</span><b>@${escapeHtml(n.admin || '—')}</b></div>
-      <div class="bn-row"><span>Причина блокировки:</span><b>${escapeHtml(n.reason || '—')}</b></div>
-      <div class="bn-row"><span>Дата разбана:</span><b>${isDel ? '—' : (n.unbanAt ? fmtNoticeDate(n.unbanAt) : 'Навсегда')}</b></div>
-      <div class="bn-row"><span>Дата блокировки:</span><b>${fmtNoticeDate(n.bannedAt)}</b></div>
+      <h3>${isDel ? 'в›” Р’Р°С€ Р°РєРєР°СѓРЅС‚ Р±С‹Р» СѓРґР°Р»С‘РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С†РёРµР№' : 'в›” Р’Р°С€ Р°РєРєР°СѓРЅС‚ Р±С‹Р» Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ Р°РґРјРёРЅРёСЃС‚СЂР°С†РёРµР№'}</h3>
+      <div class="bn-row"><span>РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ:</span><b>@${escapeHtml(n.admin || 'вЂ”')}</b></div>
+      <div class="bn-row"><span>РџСЂРёС‡РёРЅР° Р±Р»РѕРєРёСЂРѕРІРєРё:</span><b>${escapeHtml(n.reason || 'вЂ”')}</b></div>
+      <div class="bn-row"><span>Р”Р°С‚Р° СЂР°Р·Р±Р°РЅР°:</span><b>${isDel ? 'вЂ”' : (n.unbanAt ? fmtNoticeDate(n.unbanAt) : 'РќР°РІСЃРµРіРґР°')}</b></div>
+      <div class="bn-row"><span>Р”Р°С‚Р° Р±Р»РѕРєРёСЂРѕРІРєРё:</span><b>${fmtNoticeDate(n.bannedAt)}</b></div>
       <div class="btn-row" style="justify-content:center;margin-top:6px">
-        <button class="btn btn-primary" id="bnOk">Понятно</button>
+        <button class="btn btn-primary" id="bnOk">РџРѕРЅСЏС‚РЅРѕ</button>
       </div>
     </div>`;
   document.body.appendChild(ov);
@@ -1156,7 +1164,7 @@ function kickUser(username) {
     $('#authOverlay').classList.add('open');
     renderChatList();
     renderChat();
-    toast('Вы были кикнуты администратором');
+    toast('Р’С‹ Р±С‹Р»Рё РєРёРєРЅСѓС‚С‹ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј');
   }
 }
 function normAcc(acc) {
@@ -1299,7 +1307,7 @@ function groupMemberEverywhere(chatId, action, username) {
 function renderAdminMembersPanel(panel, chat) {
   const members = adminChatMembers(chat).map(mid => accountByUsername(mid)).filter(Boolean);
   const ownerName = (chatOwnerFor(chat.id) || {}).username;
-  const label = chat.type === 'group' ? 'участников' : 'подписчиков';
+  const label = chat.type === 'group' ? 'СѓС‡Р°СЃС‚РЅРёРєРѕРІ' : 'РїРѕРґРїРёСЃС‡РёРєРѕРІ';
   panel.innerHTML = `
     <div class="am-head">${members.length} ${label}</div>
     ${members.map(u => {
@@ -1307,9 +1315,9 @@ function renderAdminMembersPanel(panel, chat) {
       const isAdmin = !isOwner && (chat.admins || []).includes(u.username);
       return `<div class="am-row">
         <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
-        <span class="am-name">${displayName(u)} ${isOwner ? '<span class="tag owner">владелец</span>' : isAdmin ? '<span class="tag admin">админ</span>' : ''}</span>
-        ${!isOwner ? `<button type="button" class="mini-btn" title="${isAdmin ? 'Снять с админов' : 'Сделать админом'}" data-am="admin" data-u="${u.username}"><svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></button>` : ''}
-        ${!isOwner ? `<button type="button" class="mini-btn" title="Удалить из ${chat.type === 'group' ? 'группы' : 'канала'}" data-am="kick" data-u="${u.username}"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
+        <span class="am-name">${displayName(u)} ${isOwner ? '<span class="tag owner">РІР»Р°РґРµР»РµС†</span>' : isAdmin ? '<span class="tag admin">Р°РґРјРёРЅ</span>' : ''}</span>
+        ${!isOwner ? `<button type="button" class="mini-btn" title="${isAdmin ? 'РЎРЅСЏС‚СЊ СЃ Р°РґРјРёРЅРѕРІ' : 'РЎРґРµР»Р°С‚СЊ Р°РґРјРёРЅРѕРј'}" data-am="admin" data-u="${u.username}"><svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></button>` : ''}
+        ${!isOwner ? `<button type="button" class="mini-btn" title="РЈРґР°Р»РёС‚СЊ РёР· ${chat.type === 'group' ? 'РіСЂСѓРїРїС‹' : 'РєР°РЅР°Р»Р°'}" data-am="kick" data-u="${u.username}"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
       </div>`;
     }).join('')}
     <div class="am-add"><div class="am-search"></div></div>`;
@@ -1318,14 +1326,14 @@ function renderAdminMembersPanel(panel, chat) {
     const fresh = adminChatCanonical(chat.id);
     if (!fresh) return;
     if (btn.dataset.am === 'kick') {
-      if (!confirm(`Удалить @${u} из «${fresh.name}» у всех пользователей?`)) return;
+      if (!confirm(`РЈРґР°Р»РёС‚СЊ @${u} РёР· В«${fresh.name}В» Сѓ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№?`)) return;
       groupMemberEverywhere(fresh.id, 'kick', u);
-      addLog(currentUser.username, `Удалил @${u} из «${fresh.name}»`);
-      toast('Удалён', '@' + u);
+      addLog(currentUser.username, `РЈРґР°Р»РёР» @${u} РёР· В«${fresh.name}В»`);
+      toast('РЈРґР°Р»С‘РЅ', '@' + u);
     } else {
       groupMemberEverywhere(fresh.id, 'admin', u);
-      addLog(currentUser.username, `Изменил права @${u} в «${fresh.name}»`);
-      toast('Права обновлены', '@' + u);
+      addLog(currentUser.username, `РР·РјРµРЅРёР» РїСЂР°РІР° @${u} РІ В«${fresh.name}В»`);
+      toast('РџСЂР°РІР° РѕР±РЅРѕРІР»РµРЅС‹', '@' + u);
     }
     renderChatList();
     renderChat();
@@ -1337,11 +1345,11 @@ function renderAdminMembersPanel(panel, chat) {
     const pickerOpts = {
       checkable: false,
       selected: [],
-      hint: 'Найдите пользователя, чтобы добавить',
+      hint: 'РќР°Р№РґРёС‚Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, С‡С‚РѕР±С‹ РґРѕР±Р°РІРёС‚СЊ',
       onPick: (uid) => {
         groupMemberEverywhere(chat.id, 'add', uid);
-        addLog(currentUser.username, `Добавил @${uid} в «${chat.name}»`);
-        toast('Добавлен', '@' + uid);
+        addLog(currentUser.username, `Р”РѕР±Р°РІРёР» @${uid} РІ В«${chat.name}В»`);
+        toast('Р”РѕР±Р°РІР»РµРЅ', '@' + uid);
         renderChatList();
         renderChat();
         renderAdminMembersPanel(panel, adminChatCanonical(chat.id) || chat);
@@ -1360,27 +1368,27 @@ function subscribeChannel(id) {
   const src = uniqueChatsAcrossUsers().find(c => c.id === id);
   if (!src) return;
   if (state.chats.some(c => c.id === id)) { selectChat(id); return; }
-  if (src.access === 'private') return toast('Ошибка', 'Это приватная группа — войти можно только по приглашению');
+  if (src.access === 'private') return toast('РћС€РёР±РєР°', 'Р­С‚Рѕ РїСЂРёРІР°С‚РЅР°СЏ РіСЂСѓРїРїР° вЂ” РІРѕР№С‚Рё РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ РїРѕ РїСЂРёРіР»Р°С€РµРЅРёСЋ');
   const copy = JSON.parse(JSON.stringify(src));
   copy.members = copy.members.includes('me') ? copy.members : ['me', ...copy.members];
   state.leftChats = state.leftChats || [];
   state.leftChats = state.leftChats.filter(x => x !== id);
   state.chats.push(copy);
   addLog(currentUser.username, src.type === 'channel'
-    ? `Подписался на канал «${copy.name}»${copy.handle ? ' @' + copy.handle : ''}`
-    : `Вступил в группу «${copy.name}»`);
+    ? `РџРѕРґРїРёСЃР°Р»СЃСЏ РЅР° РєР°РЅР°Р» В«${copy.name}В»${copy.handle ? ' @' + copy.handle : ''}`
+    : `Р’СЃС‚СѓРїРёР» РІ РіСЂСѓРїРїСѓ В«${copy.name}В»`);
   saveState();
   closeCreateModal();
   renderChatList();
   selectChat(id);
-  toast(src.type === 'channel' ? 'Подписка оформлена' : 'Вы в группе', copy.name);
+  toast(src.type === 'channel' ? 'РџРѕРґРїРёСЃРєР° РѕС„РѕСЂРјР»РµРЅР°' : 'Р’С‹ РІ РіСЂСѓРїРїРµ', copy.name);
 }
 
 function buildInitialState() {
   return { chats: [], filter: 'all', currentChatId: null, search: '', pinned: [], folders: [], hidden: [], activeFolder: null };
 }
 
-/* ---------- Nebula News (канал для всех) ---------- */
+/* ---------- Nebula News (РєР°РЅР°Р» РґР»СЏ РІСЃРµС…) ---------- */
 const NEWS_CHAT_ID = 'nebula-news';
 const NEWS_ACC = { id: 'NEBULA-NEWS000001', username: 'nebula-news', name: 'Nebula News', color: ['#6C5CE7', '#00CEC9'], avatar: { type: 'preset', index: 7 }, badges: {} };
 function newsOwnerUsername() {
@@ -1398,13 +1406,13 @@ function newsChannelData() {
     type: 'channel',
     name: 'Nebula News',
     handle: 'nebula-news',
-    desc: 'Официальные новости Nebula. Публикуют администраторы и создатель.',
+    desc: 'РћС„РёС†РёР°Р»СЊРЅС‹Рµ РЅРѕРІРѕСЃС‚Рё Nebula. РџСѓР±Р»РёРєСѓСЋС‚ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹ Рё СЃРѕР·РґР°С‚РµР»СЊ.',
     color: ['#6C5CE7', '#00CEC9'],
     owner: newsOwnerUsername(),
     admins: [newsOwnerUsername()],
     members: ['me'],
     protected: true,
-    messages: [{ id: 'm' + Date.now(), from: newsOwnerUsername(), text: '👋 Добро пожаловать в Nebula News! Здесь публикуются официальные новости мессенджера.', time: new Date().toISOString(), read: true }],
+    messages: [{ id: 'm' + Date.now(), from: newsOwnerUsername(), text: 'рџ‘‹ Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ РІ Nebula News! Р—РґРµСЃСЊ РїСѓР±Р»РёРєСѓСЋС‚СЃСЏ РѕС„РёС†РёР°Р»СЊРЅС‹Рµ РЅРѕРІРѕСЃС‚Рё РјРµСЃСЃРµРЅРґР¶РµСЂР°.', time: new Date().toISOString(), read: true }],
   };
 }
 function ensureGlobalChats() {
@@ -1448,7 +1456,7 @@ function ensureGlobalChats() {
         protected: true,
         members: ['me'],
         dolphin: { xp: 0, lastFeed: 0, lastPlay: 0, lastPet: 0 },
-        messages: [{ id: 'm' + Date.now(), from: 'nebula', text: 'Привет! Я Nebula AI — встроенный ИИ-ассистент мессенджера 🤖 Задай вопрос или введи /помощь.', time: new Date().toISOString(), read: true }],
+        messages: [{ id: 'm' + Date.now(), from: 'nebula', text: 'РџСЂРёРІРµС‚! РЇ Nebula AI вЂ” РІСЃС‚СЂРѕРµРЅРЅС‹Р№ РР-Р°СЃСЃРёСЃС‚РµРЅС‚ РјРµСЃСЃРµРЅРґР¶РµСЂР° рџ¤– Р—Р°РґР°Р№ РІРѕРїСЂРѕСЃ РёР»Рё РІРІРµРґРё /РїРѕРјРѕС‰СЊ.', time: new Date().toISOString(), read: true }],
       };
       st.chats.push(ai);
     }
@@ -1462,10 +1470,10 @@ function ensureGlobalChats() {
       saved = {
         id: 'saved_' + u.username,
         type: 'saved',
-        name: 'Избранное',
+        name: 'РР·Р±СЂР°РЅРЅРѕРµ',
         protected: true,
         members: ['me'],
-        messages: [{ id: 'm' + Date.now(), from: 'me', text: '💾 Это ваше избранное — личные заметки и закладки. Сообщения видны только вам.', time: new Date().toISOString(), read: true, sent: true }],
+        messages: [{ id: 'm' + Date.now(), from: 'me', text: 'рџ’ѕ Р­С‚Рѕ РІР°С€Рµ РёР·Р±СЂР°РЅРЅРѕРµ вЂ” Р»РёС‡РЅС‹Рµ Р·Р°РјРµС‚РєРё Рё Р·Р°РєР»Р°РґРєРё. РЎРѕРѕР±С‰РµРЅРёСЏ РІРёРґРЅС‹ С‚РѕР»СЊРєРѕ РІР°Рј.', time: new Date().toISOString(), read: true, sent: true }],
       };
       st.chats.unshift(saved);
     }
@@ -1511,12 +1519,12 @@ function syncNewsDeleteEverywhere(msgId) {
   });
 }
 
-/* ---------- ТЕХ ПОДДЕРЖКА (тикеты) ---------- */
+/* ---------- РўР•РҐ РџРћР”Р”Р•Р Р–РљРђ (С‚РёРєРµС‚С‹) ---------- */
 const TICKETS_KEY = 'nebula_tickets_v1';
 const TICKETS_CLOUD_KEY = 'tickets';
-const TICKET_TOPICS = ['Проблема с аккаунтом', 'Синхронизация и облако', 'Жалоба на пользователя', 'Ошибка в работе', 'Другое'];
-const TICKET_TOPIC_ICONS = { 'Проблема с аккаунтом': '👤', 'Синхронизация и облако': '☁️', 'Жалоба на пользователя': '🚨', 'Ошибка в работе': '🐞', 'Другое': '💬' };
-const TICKET_STATUS = { open: 'Открыт', work: 'В работе', done: 'Решён', closed: 'Закрыт' };
+const TICKET_TOPICS = ['РџСЂРѕР±Р»РµРјР° СЃ Р°РєРєР°СѓРЅС‚РѕРј', 'РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ Рё РѕР±Р»Р°РєРѕ', 'Р–Р°Р»РѕР±Р° РЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ', 'РћС€РёР±РєР° РІ СЂР°Р±РѕС‚Рµ', 'Р”СЂСѓРіРѕРµ'];
+const TICKET_TOPIC_ICONS = { 'РџСЂРѕР±Р»РµРјР° СЃ Р°РєРєР°СѓРЅС‚РѕРј': 'рџ‘¤', 'РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ Рё РѕР±Р»Р°РєРѕ': 'вЃпёЏ', 'Р–Р°Р»РѕР±Р° РЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ': 'рџљЁ', 'РћС€РёР±РєР° РІ СЂР°Р±РѕС‚Рµ': 'рџђћ', 'Р”СЂСѓРіРѕРµ': 'рџ’¬' };
+const TICKET_STATUS = { open: 'РћС‚РєСЂС‹С‚', work: 'Р’ СЂР°Р±РѕС‚Рµ', done: 'Р РµС€С‘РЅ', closed: 'Р—Р°РєСЂС‹С‚' };
 const MAX_ACTIVE_TICKETS = 5;
 const TRACKS_MAX = 20;
 const TRACK_MAX_BYTES = 3670016;
@@ -1527,7 +1535,7 @@ let supportView = 'list';
 let supportTicketId = null;
 let supportFilter = 'all';
 
-function ticketStatusLabel(s) { return TICKET_STATUS[s] || 'Открыт'; }
+function ticketStatusLabel(s) { return TICKET_STATUS[s] || 'РћС‚РєСЂС‹С‚'; }
 function loadTickets() {
   try { return JSON.parse(localStorage.getItem(TICKETS_KEY)) || {}; } catch (e) { return {}; }
 }
@@ -1579,11 +1587,11 @@ function supportCreateFormHtml() {
   const locked = remaining === 0;
   return `
     <div class="manage-section">
-      <h4>Создать тикет <span class="ticket-limit ${locked ? 'ticket-limit-full' : ''}">${locked ? 'Лимит на сегодня исчерпан' : 'Сегодня осталось: ' + remaining + ' из ' + MAX_ACTIVE_TICKETS}</span></h4>
-      <div class="admin-hint">Можно создать не больше ${MAX_ACTIVE_TICKETS} тикетов в день — счётчик сбрасывается каждый день в полночь</div>
+      <h4>РЎРѕР·РґР°С‚СЊ С‚РёРєРµС‚ <span class="ticket-limit ${locked ? 'ticket-limit-full' : ''}">${locked ? 'Р›РёРјРёС‚ РЅР° СЃРµРіРѕРґРЅСЏ РёСЃС‡РµСЂРїР°РЅ' : 'РЎРµРіРѕРґРЅСЏ РѕСЃС‚Р°Р»РѕСЃСЊ: ' + remaining + ' РёР· ' + MAX_ACTIVE_TICKETS}</span></h4>
+      <div class="admin-hint">РњРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РЅРµ Р±РѕР»СЊС€Рµ ${MAX_ACTIVE_TICKETS} С‚РёРєРµС‚РѕРІ РІ РґРµРЅСЊ вЂ” СЃС‡С‘С‚С‡РёРє СЃР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РєР°Р¶РґС‹Р№ РґРµРЅСЊ РІ РїРѕР»РЅРѕС‡СЊ</div>
       <select class="support-topic" ${locked ? 'disabled' : ''}>${TICKET_TOPICS.map(x => `<option>${x}</option>`).join('')}</select>
-      <textarea class="support-text" rows="3" maxlength="500" placeholder="Опишите вашу проблему..." ${locked ? 'disabled' : ''}></textarea>
-      <button type="button" class="btn btn-primary support-create" ${locked ? 'disabled style="opacity:.5"' : ''}>${locked ? 'Лимит тикетов достигнут' : 'Отправить тикет'}</button>
+      <textarea class="support-text" rows="3" maxlength="500" placeholder="РћРїРёС€РёС‚Рµ РІР°С€Сѓ РїСЂРѕР±Р»РµРјСѓ..." ${locked ? 'disabled' : ''}></textarea>
+      <button type="button" class="btn btn-primary support-create" ${locked ? 'disabled style="opacity:.5"' : ''}>${locked ? 'Р›РёРјРёС‚ С‚РёРєРµС‚РѕРІ РґРѕСЃС‚РёРіРЅСѓС‚' : 'РћС‚РїСЂР°РІРёС‚СЊ С‚РёРєРµС‚'}</button>
     </div>`;
 }
 function supportTicketListHtml() {
@@ -1595,11 +1603,11 @@ function supportTicketListHtml() {
   const form = supportCreateFormHtml();
   const chips = `
     <div class="st-chips">
-      <span class="st-chip">Открыт: ${cnt('open')}</span>
-      <span class="st-chip">В работе: ${cnt('work')}</span>
-      <span class="st-chip">Решён: ${cnt('done')}</span>
-      <span class="st-chip">Закрыт: ${cnt('closed')}</span>
-      <span class="st-chip st-chip-accent">Открыто сегодня: ${createdToday}/${MAX_ACTIVE_TICKETS}</span>
+      <span class="st-chip">РћС‚РєСЂС‹С‚: ${cnt('open')}</span>
+      <span class="st-chip">Р’ СЂР°Р±РѕС‚Рµ: ${cnt('work')}</span>
+      <span class="st-chip">Р РµС€С‘РЅ: ${cnt('done')}</span>
+      <span class="st-chip">Р—Р°РєСЂС‹С‚: ${cnt('closed')}</span>
+      <span class="st-chip st-chip-accent">РћС‚РєСЂС‹С‚Рѕ СЃРµРіРѕРґРЅСЏ: ${createdToday}/${MAX_ACTIVE_TICKETS}</span>
     </div>`;
   const list = mine.length ? mine.map(x => {
     const author = accountByUsername(x.author);
@@ -1608,28 +1616,28 @@ function supportTicketListHtml() {
       <div class="st-head">
         <span class="avatar" style="${avatarStyle(author)}">${avatarInnerHtml(author)}</span>
         <div class="st-info">
-          <div class="st-topic">${TICKET_TOPIC_ICONS[x.topic] || '💬'} ${escapeHtml(x.topic)}</div>
-          <div class="st-meta">${fmtTime(x.time)} · ${(x.messages || []).length} сообщ.${x.assignee ? ' · отвечает @' + escapeHtml(x.assignee) : ''}${x.doneBy ? ' · решил @' + escapeHtml(x.doneBy) : ''}</div>
+          <div class="st-topic">${TICKET_TOPIC_ICONS[x.topic] || 'рџ’¬'} ${escapeHtml(x.topic)}</div>
+          <div class="st-meta">${fmtTime(x.time)} В· ${(x.messages || []).length} СЃРѕРѕР±С‰.${x.assignee ? ' В· РѕС‚РІРµС‡Р°РµС‚ @' + escapeHtml(x.assignee) : ''}${x.doneBy ? ' В· СЂРµС€РёР» @' + escapeHtml(x.doneBy) : ''}</div>
         </div>
         <span class="support-status st-${x.status}">${ticketStatusLabel(x.status)}</span>
       </div>
       <div class="st-text">${escapeHtml(shortText(x.text, 90))}</div>
       <div class="st-actions">
-        <button type="button" class="btn btn-primary st-open">Открыть чат</button>
-        ${x.status === 'closed' ? '<button type="button" class="btn st-reopen">Открыть заново</button>' : ''}
+        <button type="button" class="btn btn-primary st-open">РћС‚РєСЂС‹С‚СЊ С‡Р°С‚</button>
+        ${x.status === 'closed' ? '<button type="button" class="btn st-reopen">РћС‚РєСЂС‹С‚СЊ Р·Р°РЅРѕРІРѕ</button>' : ''}
       </div>
     </div>`;
-  }).join('') : '<div class="empty-list">У вас пока нет тикетов</div>';
-  return form + `<div class="manage-section"><h4>Мои тикеты</h4>${chips}${list}</div>`;
+  }).join('') : '<div class="empty-list">РЈ РІР°СЃ РїРѕРєР° РЅРµС‚ С‚РёРєРµС‚РѕРІ</div>';
+  return form + `<div class="manage-section"><h4>РњРѕРё С‚РёРєРµС‚С‹</h4>${chips}${list}</div>`;
 }
 function supportStaffHtml() {
   const all = Object.values(loadTickets()).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   const counts = s => all.filter(x => x.status === s).length;
   const tabs = ['all', 'open', 'work', 'done', 'closed'].map(s => `
-    <button type="button" class="sf-tab ${supportFilter === s ? 'on' : ''}" data-f="${s}">${s === 'all' ? 'Все' : TICKET_STATUS[s]} ${s === 'all' ? all.length : counts(s)}</button>`).join('');
+    <button type="button" class="sf-tab ${supportFilter === s ? 'on' : ''}" data-f="${s}">${s === 'all' ? 'Р’СЃРµ' : TICKET_STATUS[s]} ${s === 'all' ? all.length : counts(s)}</button>`).join('');
   const form = supportCreateFormHtml();
   const tabsHtml = `<div class="sf-tabs">${tabs}</div>`;
-  if (!all.length) return form + tabsHtml + '<div class="empty-list">Пока нет ни одного тикета</div>';
+  if (!all.length) return form + tabsHtml + '<div class="empty-list">РџРѕРєР° РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ С‚РёРєРµС‚Р°</div>';
   const list = all.filter(x => supportFilter === 'all' || x.status === supportFilter).map(x => {
     const author = accountByUsername(x.author);
     return `
@@ -1637,27 +1645,27 @@ function supportStaffHtml() {
         <div class="st-head">
           <span class="avatar" style="${avatarStyle(author)}">${avatarInnerHtml(author)}</span>
           <div class="st-info">
-            <div class="st-topic">${TICKET_TOPIC_ICONS[x.topic] || '💬'} ${escapeHtml(x.topic)}</div>
-            <div class="st-meta">От @${escapeHtml(x.author)}${author ? ' · ' + escapeHtml(author.name) : ''} · ${fmtTime(x.time)}${x.assignee ? ' · в работе у @' + escapeHtml(x.assignee) : ''}${x.doneBy ? ' · решил @' + escapeHtml(x.doneBy) + ' · ' + fmtTime(x.doneAt) : ''}</div>
+            <div class="st-topic">${TICKET_TOPIC_ICONS[x.topic] || 'рџ’¬'} ${escapeHtml(x.topic)}</div>
+            <div class="st-meta">РћС‚ @${escapeHtml(x.author)}${author ? ' В· ' + escapeHtml(author.name) : ''} В· ${fmtTime(x.time)}${x.assignee ? ' В· РІ СЂР°Р±РѕС‚Рµ Сѓ @' + escapeHtml(x.assignee) : ''}${x.doneBy ? ' В· СЂРµС€РёР» @' + escapeHtml(x.doneBy) + ' В· ' + fmtTime(x.doneAt) : ''}</div>
           </div>
           <span class="support-status st-${x.status}">${ticketStatusLabel(x.status)}</span>
         </div>
         <div class="st-text">${escapeHtml(shortText(x.text, 100))}</div>
         <div class="st-actions">
-          <button type="button" class="btn btn-primary st-open">Открыть чат</button>
-          ${x.status === 'open' ? '<button type="button" class="btn st-work">Взять в работу</button>' : ''}
-          ${x.status === 'open' || x.status === 'work' ? '<button type="button" class="btn st-done">Решить</button>' : ''}
+          <button type="button" class="btn btn-primary st-open">РћС‚РєСЂС‹С‚СЊ С‡Р°С‚</button>
+          ${x.status === 'open' ? '<button type="button" class="btn st-work">Р’Р·СЏС‚СЊ РІ СЂР°Р±РѕС‚Сѓ</button>' : ''}
+          ${x.status === 'open' || x.status === 'work' ? '<button type="button" class="btn st-done">Р РµС€РёС‚СЊ</button>' : ''}
           ${x.status !== 'closed'
-            ? '<button type="button" class="btn btn-danger st-close">Закрыть</button>'
-            : '<button type="button" class="btn st-reopen">Открыть заново</button>'}
+            ? '<button type="button" class="btn btn-danger st-close">Р—Р°РєСЂС‹С‚СЊ</button>'
+            : '<button type="button" class="btn st-reopen">РћС‚РєСЂС‹С‚СЊ Р·Р°РЅРѕРІРѕ</button>'}
         </div>
       </div>`;
   }).join('');
-  return form + tabsHtml + (list || '<div class="empty-list">Нет тикетов с таким статусом</div>');
+  return form + tabsHtml + (list || '<div class="empty-list">РќРµС‚ С‚РёРєРµС‚РѕРІ СЃ С‚Р°РєРёРј СЃС‚Р°С‚СѓСЃРѕРј</div>');
 }
 function supportStatsHtml() {
   const t = Object.values(loadTickets()).filter(x => x.status === 'done' && x.doneBy && x.doneAt);
-  if (!t.length) return '<div class="empty-list">Пока никто не решил ни одного тикета</div>';
+  if (!t.length) return '<div class="empty-list">РџРѕРєР° РЅРёРєС‚Рѕ РЅРµ СЂРµС€РёР» РЅРё РѕРґРЅРѕРіРѕ С‚РёРєРµС‚Р°</div>';
   const now = new Date();
   const day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const week0 = day0 - ((now.getDay() + 6) % 7) * 86400000;
@@ -1676,7 +1684,7 @@ function supportStatsHtml() {
   return Object.keys(st).sort((a, b) => st[b].all - st[a].all).map(n => {
     const acc = accountByUsername(n);
     const s = st[n];
-    const cells = [['За день', s.day], ['За неделю', s.week], ['За месяц', s.month], ['За год', s.year], ['Всего', s.all]]
+    const cells = [['Р—Р° РґРµРЅСЊ', s.day], ['Р—Р° РЅРµРґРµР»СЋ', s.week], ['Р—Р° РјРµСЃСЏС†', s.month], ['Р—Р° РіРѕРґ', s.year], ['Р’СЃРµРіРѕ', s.all]]
       .map(([l, v]) => `<div class="sup-cell"><b>${v}</b><span>${l}</span></div>`).join('');
     return `
       <div class="sup-card">
@@ -1697,20 +1705,20 @@ function supportChatHtml(ticket) {
     if (m.from === 'system') return `<div class="support-sys">${escapeHtml(m.text)}</div>`;
     const isAuthor = m.from === ticket.author;
     return `<div class="support-msg ${isAuthor ? 'auth' : 'sup'}">
-      <span class="sm-name">${isAuthor ? escapeHtml(author ? author.name : ticket.author) : 'Тех поддержка'}</span>
+      <span class="sm-name">${isAuthor ? escapeHtml(author ? author.name : ticket.author) : 'РўРµС… РїРѕРґРґРµСЂР¶РєР°'}</span>
       <div class="sm-text">${linkifyChannels(escapeHtml(m.text))}</div>
       <span class="sm-time">${fmtTime(m.time)}</span>
     </div>`;
   }).join('');
   return `
     <div class="support-chat-head">
-      <button type="button" class="btn st-back">← К тикетам</button>
+      <button type="button" class="btn st-back">в†ђ Рљ С‚РёРєРµС‚Р°Рј</button>
       <div class="sch-info"><b>${escapeHtml(ticket.topic)}</b><span class="support-status st-${ticket.status}">${ticketStatusLabel(ticket.status)}</span></div>
     </div>
-    <div class="support-chat-msgs">${msgs || '<div class="empty-list">Сообщений пока нет</div>'}</div>
+    <div class="support-chat-msgs">${msgs || '<div class="empty-list">РЎРѕРѕР±С‰РµРЅРёР№ РїРѕРєР° РЅРµС‚</div>'}</div>
     <div class="support-chat-input">
-      <input type="text" class="support-input" maxlength="500" placeholder="Напишите сообщение..." autocomplete="off">
-      <button type="button" class="btn btn-primary support-send">Отправить</button>
+      <input type="text" class="support-input" maxlength="500" placeholder="РќР°РїРёС€РёС‚Рµ СЃРѕРѕР±С‰РµРЅРёРµ..." autocomplete="off">
+      <button type="button" class="btn btn-primary support-send">РћС‚РїСЂР°РІРёС‚СЊ</button>
     </div>`;
 }
 function renderSupportModal(ov) {
@@ -1719,19 +1727,19 @@ function renderSupportModal(ov) {
   let bodyHtml;
   if (supportView === 'chat' && supportTicketId) {
     const t = loadTickets()[supportTicketId];
-    bodyHtml = t ? supportChatHtml(t) : '<div class="empty-list">Тикет не найден</div>';
+    bodyHtml = t ? supportChatHtml(t) : '<div class="empty-list">РўРёРєРµС‚ РЅРµ РЅР°Р№РґРµРЅ</div>';
   } else {
     bodyHtml = staff ? supportStaffHtml() : supportTicketListHtml();
   }
   ov.innerHTML = `
     <div class="modal-box support-modal">
       <div class="support-hero">
-        <span class="support-hero-ico">🎧</span>
+        <span class="support-hero-ico">рџЋ§</span>
         <div class="support-hero-txt">
-          <h3>Тех поддержка</h3>
-          <p>${staff ? 'Вы — сотрудник тех поддержки. Вам доступны все тикеты' : 'Опишите проблему — мы ответим в чате тикета'}</p>
+          <h3>РўРµС… РїРѕРґРґРµСЂР¶РєР°</h3>
+          <p>${staff ? 'Р’С‹ вЂ” СЃРѕС‚СЂСѓРґРЅРёРє С‚РµС… РїРѕРґРґРµСЂР¶РєРё. Р’Р°Рј РґРѕСЃС‚СѓРїРЅС‹ РІСЃРµ С‚РёРєРµС‚С‹' : 'РћРїРёС€РёС‚Рµ РїСЂРѕР±Р»РµРјСѓ вЂ” РјС‹ РѕС‚РІРµС‚РёРј РІ С‡Р°С‚Рµ С‚РёРєРµС‚Р°'}</p>
         </div>
-        <button type="button" class="pm-x support-hero-x" title="Закрыть">✕</button>
+        <button type="button" class="pm-x support-hero-x" title="Р—Р°РєСЂС‹С‚СЊ">вњ•</button>
       </div>
       ${bodyHtml}
     </div>`;
@@ -1772,11 +1780,11 @@ function setTicketStatus(id, status, actionText) {
   if (status === 'work') ticket.assignee = currentUser.username;
   if (status === 'done') { ticket.doneBy = currentUser.username; ticket.doneAt = Date.now(); }
   ticket.messages = ticket.messages || [];
-  ticket.messages.push({ from: 'system', text: `${actionText} — @${currentUser.username}`, time: new Date().toISOString() });
+  ticket.messages.push({ from: 'system', text: `${actionText} вЂ” @${currentUser.username}`, time: new Date().toISOString() });
   ticket.updatedAt = Date.now();
   saveTickets(t);
-  addLog(currentUser.username, `${actionText} — тикет «${ticket.topic}» (@${ticket.author})`);
-  toast('Статус обновлён', ticketStatusLabel(status));
+  addLog(currentUser.username, `${actionText} вЂ” С‚РёРєРµС‚ В«${ticket.topic}В» (@${ticket.author})`);
+  toast('РЎС‚Р°С‚СѓСЃ РѕР±РЅРѕРІР»С‘РЅ', ticketStatusLabel(status));
 }
 function supportModalClick(e) {
   const ov = $('#supportModal');
@@ -1785,19 +1793,19 @@ function supportModalClick(e) {
   if (create) {
     const topic = ov.querySelector('.support-topic').value;
     const text = ov.querySelector('.support-text').value.trim();
-    if (!text) return toast('Ошибка', 'Опишите вашу проблему');
+    if (!text) return toast('РћС€РёР±РєР°', 'РћРїРёС€РёС‚Рµ РІР°С€Сѓ РїСЂРѕР±Р»РµРјСѓ');
     const t = loadTickets();
-    if (createdTodayCount(t) >= MAX_ACTIVE_TICKETS) return toast('Лимит', `Максимум ${MAX_ACTIVE_TICKETS} тикетов в день — лимит обновится завтра в полночь`);
+    if (createdTodayCount(t) >= MAX_ACTIVE_TICKETS) return toast('Р›РёРјРёС‚', `РњР°РєСЃРёРјСѓРј ${MAX_ACTIVE_TICKETS} С‚РёРєРµС‚РѕРІ РІ РґРµРЅСЊ вЂ” Р»РёРјРёС‚ РѕР±РЅРѕРІРёС‚СЃСЏ Р·Р°РІС‚СЂР° РІ РїРѕР»РЅРѕС‡СЊ`);
     const id = 't' + Date.now() + Math.random().toString(36).slice(2, 5);
     t[id] = {
       id, author: currentUser.username, topic, text,
       time: new Date().toISOString(), status: 'open', assignee: null,
-      messages: [{ from: 'system', text: 'Тикет создан', time: new Date().toISOString() }],
+      messages: [{ from: 'system', text: 'РўРёРєРµС‚ СЃРѕР·РґР°РЅ', time: new Date().toISOString() }],
       updatedAt: Date.now(),
     };
     saveTickets(t);
-    addLog(currentUser.username, `Создал тикет в тех поддержку: «${topic}»`);
-    toast('Тикет создан', 'Тех поддержка ответит в чате тикета');
+    addLog(currentUser.username, `РЎРѕР·РґР°Р» С‚РёРєРµС‚ РІ С‚РµС… РїРѕРґРґРµСЂР¶РєСѓ: В«${topic}В»`);
+    toast('РўРёРєРµС‚ СЃРѕР·РґР°РЅ', 'РўРµС… РїРѕРґРґРµСЂР¶РєР° РѕС‚РІРµС‚РёС‚ РІ С‡Р°С‚Рµ С‚РёРєРµС‚Р°');
     renderSupportModal(ov);
     return;
   }
@@ -1821,7 +1829,7 @@ function supportModalClick(e) {
     ticket.messages.push({ from: currentUser.username, text, time: new Date().toISOString() });
     if (ticket.status === 'closed' && currentUser.username === ticket.author) {
       ticket.status = 'open';
-      ticket.messages.push({ from: 'system', text: 'Тикет открыт заново автором', time: new Date().toISOString() });
+      ticket.messages.push({ from: 'system', text: 'РўРёРєРµС‚ РѕС‚РєСЂС‹С‚ Р·Р°РЅРѕРІРѕ Р°РІС‚РѕСЂРѕРј', time: new Date().toISOString() });
     }
     ticket.updatedAt = Date.now();
     saveTickets(t);
@@ -1829,18 +1837,18 @@ function supportModalClick(e) {
     return;
   }
   const work = e.target.closest('.st-work');
-  if (work) { setTicketStatus(work.closest('.support-ticket').dataset.tid, 'work', 'Взял тикет в работу'); renderSupportModal(ov); return; }
+  if (work) { setTicketStatus(work.closest('.support-ticket').dataset.tid, 'work', 'Р’Р·СЏР» С‚РёРєРµС‚ РІ СЂР°Р±РѕС‚Сѓ'); renderSupportModal(ov); return; }
   const tab = e.target.closest('.sf-tab');
   if (tab) { supportFilter = tab.dataset.f; renderSupportModal(ov); return; }
   const done = e.target.closest('.st-done');
-  if (done) { setTicketStatus(done.closest('.support-ticket').dataset.tid, 'done', 'Тикет решён'); renderSupportModal(ov); return; }
+  if (done) { setTicketStatus(done.closest('.support-ticket').dataset.tid, 'done', 'РўРёРєРµС‚ СЂРµС€С‘РЅ'); renderSupportModal(ov); return; }
   const closeT = e.target.closest('.st-close');
-  if (closeT) { setTicketStatus(closeT.closest('.support-ticket').dataset.tid, 'closed', 'Тикет закрыт'); renderSupportModal(ov); return; }
+  if (closeT) { setTicketStatus(closeT.closest('.support-ticket').dataset.tid, 'closed', 'РўРёРєРµС‚ Р·Р°РєСЂС‹С‚'); renderSupportModal(ov); return; }
   const reopen = e.target.closest('.st-reopen');
-  if (reopen) { setTicketStatus(reopen.closest('.support-ticket').dataset.tid, 'open', 'Тикет открыт заново'); renderSupportModal(ov); return; }
+  if (reopen) { setTicketStatus(reopen.closest('.support-ticket').dataset.tid, 'open', 'РўРёРєРµС‚ РѕС‚РєСЂС‹С‚ Р·Р°РЅРѕРІРѕ'); renderSupportModal(ov); return; }
 }
 
-/* ---------- МОИ ТРЕКИ (MP3) ---------- */
+/* ---------- РњРћР РўР Р•РљР (MP3) ---------- */
 function loadTracks(u) {
   try { return JSON.parse(localStorage.getItem('nebula_tracks_' + u)) || []; } catch (e) { return []; }
 }
@@ -1885,35 +1893,35 @@ function tracksListHtml() {
       <span class="track-num">${i + 1}</span>
       <div class="track-info">
         <div class="track-name">${escapeHtml(t.name)}</div>
-        <div class="track-meta">${fmtBytes(t.size)} · ${new Date(t.added).toLocaleDateString('ru-RU')}</div>
+        <div class="track-meta">${fmtBytes(t.size)} В· ${new Date(t.added).toLocaleDateString('ru-RU')}</div>
         <audio controls preload="none" src="${t.data}"></audio>
       </div>
-      <button type="button" class="btn btn-danger track-del" data-i="${i}">Удалить</button>
-    </div>`).join('') || '<div class="empty-list">Пока нет треков</div>';
+      <button type="button" class="btn btn-danger track-del" data-i="${i}">РЈРґР°Р»РёС‚СЊ</button>
+    </div>`).join('') || '<div class="empty-list">РџРѕРєР° РЅРµС‚ С‚СЂРµРєРѕРІ</div>';
 }
 function renderTracksModal(ov) {
   const list = loadTracks(currentUser.username);
   ov.innerHTML = `
     <div class="modal-box support-modal tracks-modal">
       <div class="pm-head">
-        <span class="pm-ico">🎵</span>
+        <span class="pm-ico">рџЋµ</span>
         <div class="pm-head-txt">
-          <h3>Мои треки (MP3)</h3>
-          <p>Показываются в вашей карточке у других пользователей</p>
+          <h3>РњРѕРё С‚СЂРµРєРё (MP3)</h3>
+          <p>РџРѕРєР°Р·С‹РІР°СЋС‚СЃСЏ РІ РІР°С€РµР№ РєР°СЂС‚РѕС‡РєРµ Сѓ РґСЂСѓРіРёС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</p>
         </div>
-        <button type="button" class="pm-x tr-close" title="Закрыть">✕</button>
+        <button type="button" class="pm-x tr-close" title="Р—Р°РєСЂС‹С‚СЊ">вњ•</button>
       </div>
       <div class="manage-section">
-        <h4>Добавить трек</h4>
-        <div class="admin-hint">Файл до ${fmtMb(TRACK_MAX_BYTES)} (песня до ~15 минут) · максимум ${TRACKS_MAX} треков · всего до ${fmtMb(TRACK_TOTAL_MAX)}</div>
+        <h4>Р”РѕР±Р°РІРёС‚СЊ С‚СЂРµРє</h4>
+        <div class="admin-hint">Р¤Р°Р№Р» РґРѕ ${fmtMb(TRACK_MAX_BYTES)} (РїРµСЃРЅСЏ РґРѕ ~15 РјРёРЅСѓС‚) В· РјР°РєСЃРёРјСѓРј ${TRACKS_MAX} С‚СЂРµРєРѕРІ В· РІСЃРµРіРѕ РґРѕ ${fmtMb(TRACK_TOTAL_MAX)}</div>
         <label class="track-upload">
           <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-          <span>Выбрать MP3-файл</span>
+          <span>Р’С‹Р±СЂР°С‚СЊ MP3-С„Р°Р№Р»</span>
           <input type="file" class="track-file" accept="audio/mpeg,audio/mp3,.mp3">
         </label>
       </div>
       <div class="manage-section">
-        <h4>Мои треки (${list.length}/${TRACKS_MAX})</h4>
+        <h4>РњРѕРё С‚СЂРµРєРё (${list.length}/${TRACKS_MAX})</h4>
         ${tracksListHtml()}
       </div>
     </div>`;
@@ -1928,21 +1936,21 @@ function renderTracksModal(ov) {
   if (fileInput) fileInput.addEventListener('change', (e) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
-    if (!/\.mp3$/i.test(f.name) && f.type !== 'audio/mpeg') return toast('Ошибка', 'Нужен файл MP3');
-    if (f.size > TRACK_MAX_BYTES) return toast('Лимит', 'Файл больше ' + fmtMb(TRACK_MAX_BYTES) + ' (примерно ' + Math.round(f.size / 1024 / 1024 * 10) / 10 + ' МБ)');
+    if (!/\.mp3$/i.test(f.name) && f.type !== 'audio/mpeg') return toast('РћС€РёР±РєР°', 'РќСѓР¶РµРЅ С„Р°Р№Р» MP3');
+    if (f.size > TRACK_MAX_BYTES) return toast('Р›РёРјРёС‚', 'Р¤Р°Р№Р» Р±РѕР»СЊС€Рµ ' + fmtMb(TRACK_MAX_BYTES) + ' (РїСЂРёРјРµСЂРЅРѕ ' + Math.round(f.size / 1024 / 1024 * 10) / 10 + ' РњР‘)');
     const list = loadTracks(currentUser.username);
-    if (list.length >= TRACKS_MAX) return toast('Лимит', 'Максимум ' + TRACKS_MAX + ' треков');
+    if (list.length >= TRACKS_MAX) return toast('Р›РёРјРёС‚', 'РњР°РєСЃРёРјСѓРј ' + TRACKS_MAX + ' С‚СЂРµРєРѕРІ');
     const total = list.reduce((n, x) => n + x.data.length, 0);
     const rd = new FileReader();
     rd.onload = () => {
       const data = String(rd.result);
-      if (total + data.length > TRACK_TOTAL_MAX) return toast('Лимит', 'Суммарный объём треков больше ' + fmtMb(TRACK_TOTAL_MAX) + ' — удалите старые треки');
+      if (total + data.length > TRACK_TOTAL_MAX) return toast('Р›РёРјРёС‚', 'РЎСѓРјРјР°СЂРЅС‹Р№ РѕР±СЉС‘Рј С‚СЂРµРєРѕРІ Р±РѕР»СЊС€Рµ ' + fmtMb(TRACK_TOTAL_MAX) + ' вЂ” СѓРґР°Р»РёС‚Рµ СЃС‚Р°СЂС‹Рµ С‚СЂРµРєРё');
       list.push({ name: f.name.replace(/\.mp3$/i, ''), size: f.size, data, added: Date.now() });
       saveTracks(currentUser.username, list);
       renderTracksModal(ov);
-      toast('Трек добавлен', f.name);
+      toast('РўСЂРµРє РґРѕР±Р°РІР»РµРЅ', f.name);
     };
-    rd.onerror = () => toast('Ошибка', 'Не удалось прочитать файл');
+    rd.onerror = () => toast('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ С„Р°Р№Р»');
     rd.readAsDataURL(f);
   });
 }
@@ -1966,7 +1974,7 @@ function openTracksModal() {
       list.splice(+del.dataset.i, 1);
       saveTracks(currentUser.username, list);
       renderTracksModal(ov);
-      toast('Трек удалён');
+      toast('РўСЂРµРє СѓРґР°Р»С‘РЅ');
     }
   });
 }
@@ -2057,7 +2065,7 @@ function syncPrivateMessageEverywhere(chat, msg, sender) {
   }
 }
 
-/* ---------- Пользователи / хелперы ---------- */
+/* ---------- РџРѕР»СЊР·РѕРІР°С‚РµР»Рё / С…РµР»РїРµСЂС‹ ---------- */
 function userById(id) {
   if (id === 'me') return currentUser;
   return accountByUsername(id);
@@ -2065,10 +2073,10 @@ function userById(id) {
 function chatTitle(chat) {
   if (chat.type === 'private') {
     const u = userById(chat.userId);
-    return u ? u.name : 'Пользователь';
+    return u ? u.name : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ';
   }
   if (chat.type === 'ai') return 'Nebula AI';
-  if (chat.type === 'saved') return 'Избранное';
+  if (chat.type === 'saved') return 'РР·Р±СЂР°РЅРЅРѕРµ';
   return chat.name;
 }
 function accFromChat(chat) {
@@ -2101,27 +2109,27 @@ function avatarHtml(acc, cls = '', frame = '') {
   return `<span class="avatar ${cls} ${frame ? 'framed frame-' + frame : ''}" style="${avatarStyle(acc)}">${avatarInnerHtml(acc)}</span>`;
 }
 
-/* ---------- БЕЙДЖИ ---------- */
+/* ---------- Р‘Р•Р™Р”Р–Р ---------- */
 function badgeHtml(acc) {
   if (!acc) return '';
   const b = acc.badges || {};
   let s = '';
   if (b.scam) s += '<span class="badge badge-scam">SCAM</span>';
-  if (b.admin) s += '<span class="badge badge-admin">АДМИН</span>';
-  if (b.owner) s += '<span class="badge badge-owner" title="Владелец мессенджера">ВЛАДЕЛЕЦ</span>';
-  if (b.tester) s += '<span class="badge badge-tester">ТЕСТЕР</span>';
-  if (b.blue) s += `<span class="badge badge-verify" title="Аккаунт верифицирован">${CHECK_ICON}</span>`;
-  if (b.gray) s += '<span class="badge badge-verify-gray" title="Аккаунт верифицирован">' + CHECK_ICON + '</span>';
-  if (b.clock) s += '<span class="badge badge-clock" title="Часы">🕐</span>';
+  if (b.admin) s += '<span class="badge badge-admin">РђР”РњРРќ</span>';
+  if (b.owner) s += '<span class="badge badge-owner" title="Р’Р»Р°РґРµР»РµС† РјРµСЃСЃРµРЅРґР¶РµСЂР°">Р’Р›РђР”Р•Р›Р•Р¦</span>';
+  if (b.tester) s += '<span class="badge badge-tester">РўР•РЎРўР•Р </span>';
+  if (b.blue) s += `<span class="badge badge-verify" title="РђРєРєР°СѓРЅС‚ РІРµСЂРёС„РёС†РёСЂРѕРІР°РЅ">${CHECK_ICON}</span>`;
+  if (b.gray) s += '<span class="badge badge-verify-gray" title="РђРєРєР°СѓРЅС‚ РІРµСЂРёС„РёС†РёСЂРѕРІР°РЅ">' + CHECK_ICON + '</span>';
+  if (b.clock) s += '<span class="badge badge-clock" title="Р§Р°СЃС‹">рџ•ђ</span>';
   return s;
 }
 function displayName(acc) {
-  return acc ? escapeHtml(acc.name) + badgeHtml(acc) : 'Пользователь';
+  return acc ? escapeHtml(acc.name) + badgeHtml(acc) : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ';
 }
 function chatTitleHtml(chat) {
   if (chat.type === 'private') {
     const u = userById(chat.userId);
-    return u ? displayName(u) : 'Пользователь';
+    return u ? displayName(u) : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ';
   }
   return escapeHtml(chatTitle(chat));
 }
@@ -2132,32 +2140,32 @@ function fmtTime(iso) {
   const hm = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   if (d.toDateString() === now.toDateString()) return hm;
   const yest = new Date(now.getTime() - 86400000);
-  if (d.toDateString() === yest.toDateString()) return 'вчера';
+  if (d.toDateString() === yest.toDateString()) return 'РІС‡РµСЂР°';
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' });
 }
 function fmtDateGroup(iso) {
   const d = new Date(iso);
   const now = new Date();
   const yest = new Date(now.getTime() - 86400000);
-  if (d.toDateString() === now.toDateString()) return 'Сегодня';
-  if (d.toDateString() === yest.toDateString()) return 'Вчера';
+  if (d.toDateString() === now.toDateString()) return 'РЎРµРіРѕРґРЅСЏ';
+  if (d.toDateString() === yest.toDateString()) return 'Р’С‡РµСЂР°';
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
 }
 function lastMessage(chat) { return chat.messages.length ? chat.messages[chat.messages.length - 1] : null; }
 function lastMessagePreview(chat) {
   const lm = lastMessage(chat);
-  if (!lm) return 'Нет сообщений';
+  if (!lm) return 'РќРµС‚ СЃРѕРѕР±С‰РµРЅРёР№';
   if (lm.from === 'system') {
-    if (lm.kind === 'call_missed') return '📵 Пропущенный звонок';
-    if (lm.kind === 'call_in') return '📞 Входящий звонок';
-    if (lm.kind === 'call_declined') return '❌ Вызов отклонён';
-    if (lm.kind === 'call_ended') return '✅ ' + lm.text;
+    if (lm.kind === 'call_missed') return 'рџ“µ РџСЂРѕРїСѓС‰РµРЅРЅС‹Р№ Р·РІРѕРЅРѕРє';
+    if (lm.kind === 'call_in') return 'рџ“ћ Р’С…РѕРґСЏС‰РёР№ Р·РІРѕРЅРѕРє';
+    if (lm.kind === 'call_declined') return 'вќЊ Р’С‹Р·РѕРІ РѕС‚РєР»РѕРЅС‘РЅ';
+    if (lm.kind === 'call_ended') return 'вњ… ' + lm.text;
     return lm.text;
   }
   const md = mediaLabel(lm);
-  const st = lm.sticker ? '[Стикер]' : lm.poll ? '[Опрос]' : lm.contact ? '[Контакт]' : '';
+  const st = lm.sticker ? '[РЎС‚РёРєРµСЂ]' : lm.poll ? '[РћРїСЂРѕСЃ]' : lm.contact ? '[РљРѕРЅС‚Р°РєС‚]' : '';
   const txt = st || (md ? (lm.text ? md + ' ' + lm.text : md) : lm.text);
-  return (lm.from === 'me' ? 'Вы: ' : '') + txt;
+  return (lm.from === 'me' ? 'Р’С‹: ' : '') + txt;
 }
 function unreadCount(chat) { return chat.unread || 0; }
 
@@ -2176,40 +2184,40 @@ const NEBULA_ACC = { id: 'NEBULA-NEBULA000001', username: 'nebula', name: 'Nebul
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const AI_FACTS = [
-  'дельфины спят с одним открытым глазом — одно полушарие мозга всегда бодрствует',
-  'у осьминога три сердца и голубая кровь',
-  'мёд никогда не портится — археологи находили съедобный мёд из древних гробниц',
-  'бананы — это ягоды, а клубника — нет',
-  'человеческое тело состоит примерно из 60% воды',
-  'в космосе можно увидеть китайскую стену только с очень низкой орбиты, это миф',
-  'скорость света — около 300 000 км/с, этого хватает, чтобы облететь Землю 7,5 раз за секунду',
-  'у улиток около 25 000 зубов, но они не умеют жевать',
-  'страусы не прячут голову в песок, но бегают быстрее 70 км/ч',
-  'за один вдох вы вдыхаете около 10^22 молекул, среди них почти наверняка есть молекулы, выдохнутые Юлием Цезарем',
-  'буква «ё» в русском алфавите появилась всего около 240 лет назад',
-  'Nebula — латинское слово, означающее «туман», а ещё это название мессенджера, в котором мы общаемся 🌌',
+  'РґРµР»СЊС„РёРЅС‹ СЃРїСЏС‚ СЃ РѕРґРЅРёРј РѕС‚РєСЂС‹С‚С‹Рј РіР»Р°Р·РѕРј вЂ” РѕРґРЅРѕ РїРѕР»СѓС€Р°СЂРёРµ РјРѕР·РіР° РІСЃРµРіРґР° Р±РѕРґСЂСЃС‚РІСѓРµС‚',
+  'Сѓ РѕСЃСЊРјРёРЅРѕРіР° С‚СЂРё СЃРµСЂРґС†Р° Рё РіРѕР»СѓР±Р°СЏ РєСЂРѕРІСЊ',
+  'РјС‘Рґ РЅРёРєРѕРіРґР° РЅРµ РїРѕСЂС‚РёС‚СЃСЏ вЂ” Р°СЂС…РµРѕР»РѕРіРё РЅР°С…РѕРґРёР»Рё СЃСЉРµРґРѕР±РЅС‹Р№ РјС‘Рґ РёР· РґСЂРµРІРЅРёС… РіСЂРѕР±РЅРёС†',
+  'Р±Р°РЅР°РЅС‹ вЂ” СЌС‚Рѕ СЏРіРѕРґС‹, Р° РєР»СѓР±РЅРёРєР° вЂ” РЅРµС‚',
+  'С‡РµР»РѕРІРµС‡РµСЃРєРѕРµ С‚РµР»Рѕ СЃРѕСЃС‚РѕРёС‚ РїСЂРёРјРµСЂРЅРѕ РёР· 60% РІРѕРґС‹',
+  'РІ РєРѕСЃРјРѕСЃРµ РјРѕР¶РЅРѕ СѓРІРёРґРµС‚СЊ РєРёС‚Р°Р№СЃРєСѓСЋ СЃС‚РµРЅСѓ С‚РѕР»СЊРєРѕ СЃ РѕС‡РµРЅСЊ РЅРёР·РєРѕР№ РѕСЂР±РёС‚С‹, СЌС‚Рѕ РјРёС„',
+  'СЃРєРѕСЂРѕСЃС‚СЊ СЃРІРµС‚Р° вЂ” РѕРєРѕР»Рѕ 300 000 РєРј/СЃ, СЌС‚РѕРіРѕ С…РІР°С‚Р°РµС‚, С‡С‚РѕР±С‹ РѕР±Р»РµС‚РµС‚СЊ Р—РµРјР»СЋ 7,5 СЂР°Р· Р·Р° СЃРµРєСѓРЅРґСѓ',
+  'Сѓ СѓР»РёС‚РѕРє РѕРєРѕР»Рѕ 25 000 Р·СѓР±РѕРІ, РЅРѕ РѕРЅРё РЅРµ СѓРјРµСЋС‚ Р¶РµРІР°С‚СЊ',
+  'СЃС‚СЂР°СѓСЃС‹ РЅРµ РїСЂСЏС‡СѓС‚ РіРѕР»РѕРІСѓ РІ РїРµСЃРѕРє, РЅРѕ Р±РµРіР°СЋС‚ Р±С‹СЃС‚СЂРµРµ 70 РєРј/С‡',
+  'Р·Р° РѕРґРёРЅ РІРґРѕС… РІС‹ РІРґС‹С…Р°РµС‚Рµ РѕРєРѕР»Рѕ 10^22 РјРѕР»РµРєСѓР», СЃСЂРµРґРё РЅРёС… РїРѕС‡С‚Рё РЅР°РІРµСЂРЅСЏРєР° РµСЃС‚СЊ РјРѕР»РµРєСѓР»С‹, РІС‹РґРѕС…РЅСѓС‚С‹Рµ Р®Р»РёРµРј Р¦РµР·Р°СЂРµРј',
+  'Р±СѓРєРІР° В«С‘В» РІ СЂСѓСЃСЃРєРѕРј Р°Р»С„Р°РІРёС‚Рµ РїРѕСЏРІРёР»Р°СЃСЊ РІСЃРµРіРѕ РѕРєРѕР»Рѕ 240 Р»РµС‚ РЅР°Р·Р°Рґ',
+  'Nebula вЂ” Р»Р°С‚РёРЅСЃРєРѕРµ СЃР»РѕРІРѕ, РѕР·РЅР°С‡Р°СЋС‰РµРµ В«С‚СѓРјР°РЅВ», Р° РµС‰С‘ СЌС‚Рѕ РЅР°Р·РІР°РЅРёРµ РјРµСЃСЃРµРЅРґР¶РµСЂР°, РІ РєРѕС‚РѕСЂРѕРј РјС‹ РѕР±С‰Р°РµРјСЃСЏ рџЊЊ',
 ];
 const AI_JOKES = [
-  'Программист попросил у библиотекаря книгу «Как научиться терпению». Библиотекарь сказал: «Она на месте через 2 недели».',
-  '— Почему программист не пошёл на работу? — Он удалил свою папку с причёской.',
-  '— Что такое идеальный брак? — Когда жена говорит мужу, что в доме кто-то есть, а муж отвечает: «а сколько их?»',
-  'Встречаются два нейросетевых чат-бота. Один другому: «Ты сегодня какой-то галлюцинирующий»',
-  '— Алло, это нейросеть? — Да. — Выпей стакан воды. У ИИ пока нет рта, но он оценил заботу.',
-  'Заходит байт в бар. Бармен говорит: «Извини, у нас по байтам не обслуживаем». Байт: «Ладно, я укушу себя и стану полубайтовым»',
+  'РџСЂРѕРіСЂР°РјРјРёСЃС‚ РїРѕРїСЂРѕСЃРёР» Сѓ Р±РёР±Р»РёРѕС‚РµРєР°СЂСЏ РєРЅРёРіСѓ В«РљР°Рє РЅР°СѓС‡РёС‚СЊСЃСЏ С‚РµСЂРїРµРЅРёСЋВ». Р‘РёР±Р»РёРѕС‚РµРєР°СЂСЊ СЃРєР°Р·Р°Р»: В«РћРЅР° РЅР° РјРµСЃС‚Рµ С‡РµСЂРµР· 2 РЅРµРґРµР»РёВ».',
+  'вЂ” РџРѕС‡РµРјСѓ РїСЂРѕРіСЂР°РјРјРёСЃС‚ РЅРµ РїРѕС€С‘Р» РЅР° СЂР°Р±РѕС‚Сѓ? вЂ” РћРЅ СѓРґР°Р»РёР» СЃРІРѕСЋ РїР°РїРєСѓ СЃ РїСЂРёС‡С‘СЃРєРѕР№.',
+  'вЂ” Р§С‚Рѕ С‚Р°РєРѕРµ РёРґРµР°Р»СЊРЅС‹Р№ Р±СЂР°Рє? вЂ” РљРѕРіРґР° Р¶РµРЅР° РіРѕРІРѕСЂРёС‚ РјСѓР¶Сѓ, С‡С‚Рѕ РІ РґРѕРјРµ РєС‚Рѕ-С‚Рѕ РµСЃС‚СЊ, Р° РјСѓР¶ РѕС‚РІРµС‡Р°РµС‚: В«Р° СЃРєРѕР»СЊРєРѕ РёС…?В»',
+  'Р’СЃС‚СЂРµС‡Р°СЋС‚СЃСЏ РґРІР° РЅРµР№СЂРѕСЃРµС‚РµРІС‹С… С‡Р°С‚-Р±РѕС‚Р°. РћРґРёРЅ РґСЂСѓРіРѕРјСѓ: В«РўС‹ СЃРµРіРѕРґРЅСЏ РєР°РєРѕР№-С‚Рѕ РіР°Р»Р»СЋС†РёРЅРёСЂСѓСЋС‰РёР№В»',
+  'вЂ” РђР»Р»Рѕ, СЌС‚Рѕ РЅРµР№СЂРѕСЃРµС‚СЊ? вЂ” Р”Р°. вЂ” Р’С‹РїРµР№ СЃС‚Р°РєР°РЅ РІРѕРґС‹. РЈ РР РїРѕРєР° РЅРµС‚ СЂС‚Р°, РЅРѕ РѕРЅ РѕС†РµРЅРёР» Р·Р°Р±РѕС‚Сѓ.',
+  'Р—Р°С…РѕРґРёС‚ Р±Р°Р№С‚ РІ Р±Р°СЂ. Р‘Р°СЂРјРµРЅ РіРѕРІРѕСЂРёС‚: В«РР·РІРёРЅРё, Сѓ РЅР°СЃ РїРѕ Р±Р°Р№С‚Р°Рј РЅРµ РѕР±СЃР»СѓР¶РёРІР°РµРјВ». Р‘Р°Р№С‚: В«Р›Р°РґРЅРѕ, СЏ СѓРєСѓС€Сѓ СЃРµР±СЏ Рё СЃС‚Р°РЅСѓ РїРѕР»СѓР±Р°Р№С‚РѕРІС‹РјВ»',
 ];
 const AI_QUOTES = [
-  'Лучший способ предсказать будущее — создать его. — Питер Друкер',
-  'Единственный способ делать великие дела — любить то, что вы делаете. — Стив Джобс',
-  'Если у вас нет ошибок, вы просто недостаточно стараетесь. — старая поговорка',
-  'Код — это как стихи: его надо писать с душой.',
-  'Чем больше я учусь, тем яснее понимаю, как мало я знаю. — Сократ',
-  'Не бойтесь идти медленно, бойтесь стоять на месте. — китайская поговорка',
+  'Р›СѓС‡С€РёР№ СЃРїРѕСЃРѕР± РїСЂРµРґСЃРєР°Р·Р°С‚СЊ Р±СѓРґСѓС‰РµРµ вЂ” СЃРѕР·РґР°С‚СЊ РµРіРѕ. вЂ” РџРёС‚РµСЂ Р”СЂСѓРєРµСЂ',
+  'Р•РґРёРЅСЃС‚РІРµРЅРЅС‹Р№ СЃРїРѕСЃРѕР± РґРµР»Р°С‚СЊ РІРµР»РёРєРёРµ РґРµР»Р° вЂ” Р»СЋР±РёС‚СЊ С‚Рѕ, С‡С‚Рѕ РІС‹ РґРµР»Р°РµС‚Рµ. вЂ” РЎС‚РёРІ Р”Р¶РѕР±СЃ',
+  'Р•СЃР»Рё Сѓ РІР°СЃ РЅРµС‚ РѕС€РёР±РѕРє, РІС‹ РїСЂРѕСЃС‚Рѕ РЅРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЃС‚Р°СЂР°РµС‚РµСЃСЊ. вЂ” СЃС‚Р°СЂР°СЏ РїРѕРіРѕРІРѕСЂРєР°',
+  'РљРѕРґ вЂ” СЌС‚Рѕ РєР°Рє СЃС‚РёС…Рё: РµРіРѕ РЅР°РґРѕ РїРёСЃР°С‚СЊ СЃ РґСѓС€РѕР№.',
+  'Р§РµРј Р±РѕР»СЊС€Рµ СЏ СѓС‡СѓСЃСЊ, С‚РµРј СЏСЃРЅРµРµ РїРѕРЅРёРјР°СЋ, РєР°Рє РјР°Р»Рѕ СЏ Р·РЅР°СЋ. вЂ” РЎРѕРєСЂР°С‚',
+  'РќРµ Р±РѕР№С‚РµСЃСЊ РёРґС‚Рё РјРµРґР»РµРЅРЅРѕ, Р±РѕР№С‚РµСЃСЊ СЃС‚РѕСЏС‚СЊ РЅР° РјРµСЃС‚Рµ. вЂ” РєРёС‚Р°Р№СЃРєР°СЏ РїРѕРіРѕРІРѕСЂРєР°',
 ];
 const AI_FALLBACKS = [
-  'Хм, интересный вопрос! Пока я учусь, но введи /помощь — там список моих команд 🤖',
-  'Я обработал твоё сообщение, но моих знаний пока маловато для точного ответа. Попробуй /факт или /шутка',
-  'Понял тебя. Если хочешь поговорить — спроси про погоду, время или попроси посчитать выражение 😉',
-  'Готов поболтать! Задай вопрос или напиши /помощь, чтобы узнать мои возможности.',
+  'РҐРј, РёРЅС‚РµСЂРµСЃРЅС‹Р№ РІРѕРїСЂРѕСЃ! РџРѕРєР° СЏ СѓС‡СѓСЃСЊ, РЅРѕ РІРІРµРґРё /РїРѕРјРѕС‰СЊ вЂ” С‚Р°Рј СЃРїРёСЃРѕРє РјРѕРёС… РєРѕРјР°РЅРґ рџ¤–',
+  'РЇ РѕР±СЂР°Р±РѕС‚Р°Р» С‚РІРѕС‘ СЃРѕРѕР±С‰РµРЅРёРµ, РЅРѕ РјРѕРёС… Р·РЅР°РЅРёР№ РїРѕРєР° РјР°Р»РѕРІР°С‚Рѕ РґР»СЏ С‚РѕС‡РЅРѕРіРѕ РѕС‚РІРµС‚Р°. РџРѕРїСЂРѕР±СѓР№ /С„Р°РєС‚ РёР»Рё /С€СѓС‚РєР°',
+  'РџРѕРЅСЏР» С‚РµР±СЏ. Р•СЃР»Рё С…РѕС‡РµС€СЊ РїРѕРіРѕРІРѕСЂРёС‚СЊ вЂ” СЃРїСЂРѕСЃРё РїСЂРѕ РїРѕРіРѕРґСѓ, РІСЂРµРјСЏ РёР»Рё РїРѕРїСЂРѕСЃРё РїРѕСЃС‡РёС‚Р°С‚СЊ РІС‹СЂР°Р¶РµРЅРёРµ рџ‰',
+  'Р“РѕС‚РѕРІ РїРѕР±РѕР»С‚Р°С‚СЊ! Р—Р°РґР°Р№ РІРѕРїСЂРѕСЃ РёР»Рё РЅР°РїРёС€Рё /РїРѕРјРѕС‰СЊ, С‡С‚РѕР±С‹ СѓР·РЅР°С‚СЊ РјРѕРё РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё.',
 ];
 
 function aiCompute(m) {
@@ -2219,15 +2227,15 @@ function aiCompute(m) {
   let r;
   if (op === '+') r = a + b;
   else if (op === '-') r = a - b;
-  else if (op === '*' || op === 'x' || op === '×') r = a * b;
-  else if (op === '/' || op === '÷') r = b === 0 ? NaN : a / b;
+  else if (op === '*' || op === 'x' || op === 'Г—') r = a * b;
+  else if (op === '/' || op === 'Г·') r = b === 0 ? NaN : a / b;
   else r = NaN;
-  if (isNaN(r)) return 'делить на ноль нельзя 🚫';
+  if (isNaN(r)) return 'РґРµР»РёС‚СЊ РЅР° РЅРѕР»СЊ РЅРµР»СЊР·СЏ рџљ«';
   return Number.isInteger(r) ? String(r) : String(Math.round(r * 1000) / 1000);
 }
 
 function aiCommandsHelp() {
-  return 'Вот что я умею:\n/помощь — этот список\n/время — текущее время\n/дата — сегодняшняя дата\n/факт — интересный факт\n/шутка — шутка\n/цитата — мудрая мысль\n/погода — погода сейчас\n/посчитай 2+2 — математика\n/дельфин — всё о дельфинах\n/группа — как создать группу\n/канал — как создать канал\n/настройки — где что настроить\n/бот — как создать бота\n/звонок — про звонки и игры\n/автор — обо мне\n\nИли просто спроси: «привет», «как дела», «кто ты», «сколько будет 6*7», «переведи слово привет» 🚀';
+  return 'Р’РѕС‚ С‡С‚Рѕ СЏ СѓРјРµСЋ:\n/РїРѕРјРѕС‰СЊ вЂ” СЌС‚РѕС‚ СЃРїРёСЃРѕРє\n/РІСЂРµРјСЏ вЂ” С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ\n/РґР°С‚Р° вЂ” СЃРµРіРѕРґРЅСЏС€РЅСЏСЏ РґР°С‚Р°\n/С„Р°РєС‚ вЂ” РёРЅС‚РµСЂРµСЃРЅС‹Р№ С„Р°РєС‚\n/С€СѓС‚РєР° вЂ” С€СѓС‚РєР°\n/С†РёС‚Р°С‚Р° вЂ” РјСѓРґСЂР°СЏ РјС‹СЃР»СЊ\n/РїРѕРіРѕРґР° вЂ” РїРѕРіРѕРґР° СЃРµР№С‡Р°СЃ\n/РїРѕСЃС‡РёС‚Р°Р№ 2+2 вЂ” РјР°С‚РµРјР°С‚РёРєР°\n/РґРµР»СЊС„РёРЅ вЂ” РІСЃС‘ Рѕ РґРµР»СЊС„РёРЅР°С…\n/РіСЂСѓРїРїР° вЂ” РєР°Рє СЃРѕР·РґР°С‚СЊ РіСЂСѓРїРїСѓ\n/РєР°РЅР°Р» вЂ” РєР°Рє СЃРѕР·РґР°С‚СЊ РєР°РЅР°Р»\n/РЅР°СЃС‚СЂРѕР№РєРё вЂ” РіРґРµ С‡С‚Рѕ РЅР°СЃС‚СЂРѕРёС‚СЊ\n/Р±РѕС‚ вЂ” РєР°Рє СЃРѕР·РґР°С‚СЊ Р±РѕС‚Р°\n/Р·РІРѕРЅРѕРє вЂ” РїСЂРѕ Р·РІРѕРЅРєРё Рё РёРіСЂС‹\n/Р°РІС‚РѕСЂ вЂ” РѕР±Рѕ РјРЅРµ\n\nРР»Рё РїСЂРѕСЃС‚Рѕ СЃРїСЂРѕСЃРё: В«РїСЂРёРІРµС‚В», В«РєР°Рє РґРµР»Р°В», В«РєС‚Рѕ С‚С‹В», В«СЃРєРѕР»СЊРєРѕ Р±СѓРґРµС‚ 6*7В», В«РїРµСЂРµРІРµРґРё СЃР»РѕРІРѕ РїСЂРёРІРµС‚В» рџљЂ';
 }
 
 function aiReplyFor(raw) {
@@ -2237,71 +2245,71 @@ function aiReplyFor(raw) {
   if (low.startsWith('/')) {
     const cmd = low.split(/\s+/)[0].slice(1);
     const rest = text.slice(text.indexOf(' ') + 1).trim();
-    if (['помощь', 'help', 'команды', 'справка'].includes(cmd)) return aiCommandsHelp();
-    if (cmd === 'время') return `Сейчас ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} ⏰`;
-    if (cmd === 'дата') return `Сегодня ${new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long', year: 'numeric' })} 📅`;
-    if (cmd === 'факт') return `💡 Интересный факт: ${pick(AI_FACTS)}`;
-    if (cmd === 'шутка') return `😄 ${pick(AI_JOKES)}`;
-    if (cmd === 'цитата') return `💭 ${pick(AI_QUOTES)}`;
-    if (cmd === 'погода') {
+    if (['РїРѕРјРѕС‰СЊ', 'help', 'РєРѕРјР°РЅРґС‹', 'СЃРїСЂР°РІРєР°'].includes(cmd)) return aiCommandsHelp();
+    if (cmd === 'РІСЂРµРјСЏ') return `РЎРµР№С‡Р°СЃ ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} вЏ°`;
+    if (cmd === 'РґР°С‚Р°') return `РЎРµРіРѕРґРЅСЏ ${new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long', year: 'numeric' })} рџ“…`;
+    if (cmd === 'С„Р°РєС‚') return `рџ’Ў РРЅС‚РµСЂРµСЃРЅС‹Р№ С„Р°РєС‚: ${pick(AI_FACTS)}`;
+    if (cmd === 'С€СѓС‚РєР°') return `рџ„ ${pick(AI_JOKES)}`;
+    if (cmd === 'С†РёС‚Р°С‚Р°') return `рџ’­ ${pick(AI_QUOTES)}`;
+    if (cmd === 'РїРѕРіРѕРґР°') {
       const tmp = Math.round(8 + Math.random() * 22);
-      return `Сейчас в вашем городе ${tmp}°C — ${tmp > 20 ? 'ясно и солнечно ☀️' : tmp > 12 ? 'переменная облачность ⛅' : 'прохладно 🌥️'}. Отличная погода, чтобы остаться в Nebula 😉`;
+      return `РЎРµР№С‡Р°СЃ РІ РІР°С€РµРј РіРѕСЂРѕРґРµ ${tmp}В°C вЂ” ${tmp > 20 ? 'СЏСЃРЅРѕ Рё СЃРѕР»РЅРµС‡РЅРѕ вЂпёЏ' : tmp > 12 ? 'РїРµСЂРµРјРµРЅРЅР°СЏ РѕР±Р»Р°С‡РЅРѕСЃС‚СЊ в›…' : 'РїСЂРѕС…Р»Р°РґРЅРѕ рџЊҐпёЏ'}. РћС‚Р»РёС‡РЅР°СЏ РїРѕРіРѕРґР°, С‡С‚РѕР±С‹ РѕСЃС‚Р°С‚СЊСЃСЏ РІ Nebula рџ‰`;
     }
-    if (cmd === 'посчитай') {
-      const m = rest.match(/(-?\d+(?:[.,]\d+)?)\s*([+\-*/x×÷])\s*(-?\d+(?:[.,]\d+)?)/);
-      if (!m) return 'Напишите выражение, например: /посчитай 2+2 или /посчитай 10/4';
-      return `🧮 ${m[0]} = ${aiCompute(m)}`;
+    if (cmd === 'РїРѕСЃС‡РёС‚Р°Р№') {
+      const m = rest.match(/(-?\d+(?:[.,]\d+)?)\s*([+\-*/xГ—Г·])\s*(-?\d+(?:[.,]\d+)?)/);
+      if (!m) return 'РќР°РїРёС€РёС‚Рµ РІС‹СЂР°Р¶РµРЅРёРµ, РЅР°РїСЂРёРјРµСЂ: /РїРѕСЃС‡РёС‚Р°Р№ 2+2 РёР»Рё /РїРѕСЃС‡РёС‚Р°Р№ 10/4';
+      return `рџ§® ${m[0]} = ${aiCompute(m)}`;
     }
-    if (cmd === 'дельфин') {
+    if (cmd === 'РґРµР»СЊС„РёРЅ') {
       const n = state.chats.filter(c => c.type === 'private' || c.type === 'group').length;
       const mx = dolphinsMaxLevelFor(currentUser.username);
-      return `🐬 Дельфины — любимцы Nebula! Заботьтесь о них в личных чатах и группах: кормите, играйте и гладьте, они растут до 1000 уровня. У вас сейчас ${n} дельфин(инов), максимальный уровень: ${mx}.`;
+      return `рџђ¬ Р”РµР»СЊС„РёРЅС‹ вЂ” Р»СЋР±РёРјС†С‹ Nebula! Р—Р°Р±РѕС‚СЊС‚РµСЃСЊ Рѕ РЅРёС… РІ Р»РёС‡РЅС‹С… С‡Р°С‚Р°С… Рё РіСЂСѓРїРїР°С…: РєРѕСЂРјРёС‚Рµ, РёРіСЂР°Р№С‚Рµ Рё РіР»Р°РґСЊС‚Рµ, РѕРЅРё СЂР°СЃС‚СѓС‚ РґРѕ 1000 СѓСЂРѕРІРЅСЏ. РЈ РІР°СЃ СЃРµР№С‡Р°СЃ ${n} РґРµР»СЊС„РёРЅ(РёРЅРѕРІ), РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СѓСЂРѕРІРµРЅСЊ: ${mx}.`;
     }
-    if (cmd === 'автор') return 'Меня создали разработчики мессенджера Nebula 🌌 Я — встроенный ИИ-ассистент: умею отвечать на вопросы, считать, шутить и рассказывать факты. Введи /помощь для списка команд.';
-    if (cmd === 'группа' || cmd === 'канал') {
-      const t = cmd === 'группа' ? 'группу' : 'канал';
-      return `Чтобы создать ${t}: нажмите кнопку «Создать» внизу списка чатов ➕, выберите «${cmd === 'группа' ? 'Новая группа' : 'Новый канал'}», укажите название, описание, цвет и участников. Готово! 🎉 Все настройки — по шестерёнке в чате: участники, админы, название, описание, удаление.`;
+    if (cmd === 'Р°РІС‚РѕСЂ') return 'РњРµРЅСЏ СЃРѕР·РґР°Р»Рё СЂР°Р·СЂР°Р±РѕС‚С‡РёРєРё РјРµСЃСЃРµРЅРґР¶РµСЂР° Nebula рџЊЊ РЇ вЂ” РІСЃС‚СЂРѕРµРЅРЅС‹Р№ РР-Р°СЃСЃРёСЃС‚РµРЅС‚: СѓРјРµСЋ РѕС‚РІРµС‡Р°С‚СЊ РЅР° РІРѕРїСЂРѕСЃС‹, СЃС‡РёС‚Р°С‚СЊ, С€СѓС‚РёС‚СЊ Рё СЂР°СЃСЃРєР°Р·С‹РІР°С‚СЊ С„Р°РєС‚С‹. Р’РІРµРґРё /РїРѕРјРѕС‰СЊ РґР»СЏ СЃРїРёСЃРєР° РєРѕРјР°РЅРґ.';
+    if (cmd === 'РіСЂСѓРїРїР°' || cmd === 'РєР°РЅР°Р»') {
+      const t = cmd === 'РіСЂСѓРїРїР°' ? 'РіСЂСѓРїРїСѓ' : 'РєР°РЅР°Р»';
+      return `Р§С‚РѕР±С‹ СЃРѕР·РґР°С‚СЊ ${t}: РЅР°Р¶РјРёС‚Рµ РєРЅРѕРїРєСѓ В«РЎРѕР·РґР°С‚СЊВ» РІРЅРёР·Сѓ СЃРїРёСЃРєР° С‡Р°С‚РѕРІ вћ•, РІС‹Р±РµСЂРёС‚Рµ В«${cmd === 'РіСЂСѓРїРїР°' ? 'РќРѕРІР°СЏ РіСЂСѓРїРїР°' : 'РќРѕРІС‹Р№ РєР°РЅР°Р»'}В», СѓРєР°Р¶РёС‚Рµ РЅР°Р·РІР°РЅРёРµ, РѕРїРёСЃР°РЅРёРµ, С†РІРµС‚ Рё СѓС‡Р°СЃС‚РЅРёРєРѕРІ. Р“РѕС‚РѕРІРѕ! рџЋ‰ Р’СЃРµ РЅР°СЃС‚СЂРѕР№РєРё вЂ” РїРѕ С€РµСЃС‚РµСЂС‘РЅРєРµ РІ С‡Р°С‚Рµ: СѓС‡Р°СЃС‚РЅРёРєРё, Р°РґРјРёРЅС‹, РЅР°Р·РІР°РЅРёРµ, РѕРїРёСЃР°РЅРёРµ, СѓРґР°Р»РµРЅРёРµ.`;
     }
-    if (cmd === 'настройки') return `Где что находится:\n• Аккаунт — аватар слева вверху → Настройки: юзернейм, описание, аватар, почта, пароль\n• Внешний вид — темы, рамки, размер и свечение курсора\n• Приватность — кто может писать\n• Дельфины 🐬 — уход за питомцами\n• Админ-панель — доступна администраторам\n\nСменить аккаунт — профиль → «Сменить аккаунт».`;
-    if (cmd === 'бот') return `Боты — это автоматические собеседники! 🤖 Нажмите «Создать» ➕, выберите «Бот», задайте имя и эмодзи. Если не указывать триггеры, бот станет чат-ботом: будет отвечать на любое сообщение умными ответами. Триггеры при этом работают как дополнительное обучение.`;
-    if (cmd === 'звонок') return `Звонки 📞: в личных и групповых чатах есть кнопки «Позвонить» и «Видеозвонок». В звонке можно включить камеру, показать экран (кнопка 🖥), выбрать камеру/микрофон/динамик (⚙), свернуть звонок в окошко (—) и сыграть в крестики-нолики (🎮)!`;
-    if (cmd === 'привет' || cmd === 'здравствуй') return pick(['Привет! 👋 Рад тебя видеть в Nebula.', 'Привет-привет! 🤖 Чем могу помочь?']);
-    return `Не знаю команду «/${cmd}». Введите /помощь, чтобы увидеть список команд.`;
+    if (cmd === 'РЅР°СЃС‚СЂРѕР№РєРё') return `Р“РґРµ С‡С‚Рѕ РЅР°С…РѕРґРёС‚СЃСЏ:\nвЂў РђРєРєР°СѓРЅС‚ вЂ” Р°РІР°С‚Р°СЂ СЃР»РµРІР° РІРІРµСЂС…Сѓ в†’ РќР°СЃС‚СЂРѕР№РєРё: СЋР·РµСЂРЅРµР№Рј, РѕРїРёСЃР°РЅРёРµ, Р°РІР°С‚Р°СЂ, РїРѕС‡С‚Р°, РїР°СЂРѕР»СЊ\nвЂў Р’РЅРµС€РЅРёР№ РІРёРґ вЂ” С‚РµРјС‹, СЂР°РјРєРё, СЂР°Р·РјРµСЂ Рё СЃРІРµС‡РµРЅРёРµ РєСѓСЂСЃРѕСЂР°\nвЂў РџСЂРёРІР°С‚РЅРѕСЃС‚СЊ вЂ” РєС‚Рѕ РјРѕР¶РµС‚ РїРёСЃР°С‚СЊ\nвЂў Р”РµР»СЊС„РёРЅС‹ рџђ¬ вЂ” СѓС…РѕРґ Р·Р° РїРёС‚РѕРјС†Р°РјРё\nвЂў РђРґРјРёРЅ-РїР°РЅРµР»СЊ вЂ” РґРѕСЃС‚СѓРїРЅР° Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°Рј\n\nРЎРјРµРЅРёС‚СЊ Р°РєРєР°СѓРЅС‚ вЂ” РїСЂРѕС„РёР»СЊ в†’ В«РЎРјРµРЅРёС‚СЊ Р°РєРєР°СѓРЅС‚В».`;
+    if (cmd === 'Р±РѕС‚') return `Р‘РѕС‚С‹ вЂ” СЌС‚Рѕ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРёРµ СЃРѕР±РµСЃРµРґРЅРёРєРё! рџ¤– РќР°Р¶РјРёС‚Рµ В«РЎРѕР·РґР°С‚СЊВ» вћ•, РІС‹Р±РµСЂРёС‚Рµ В«Р‘РѕС‚В», Р·Р°РґР°Р№С‚Рµ РёРјСЏ Рё СЌРјРѕРґР·Рё. Р•СЃР»Рё РЅРµ СѓРєР°Р·С‹РІР°С‚СЊ С‚СЂРёРіРіРµСЂС‹, Р±РѕС‚ СЃС‚Р°РЅРµС‚ С‡Р°С‚-Р±РѕС‚РѕРј: Р±СѓРґРµС‚ РѕС‚РІРµС‡Р°С‚СЊ РЅР° Р»СЋР±РѕРµ СЃРѕРѕР±С‰РµРЅРёРµ СѓРјРЅС‹РјРё РѕС‚РІРµС‚Р°РјРё. РўСЂРёРіРіРµСЂС‹ РїСЂРё СЌС‚РѕРј СЂР°Р±РѕС‚Р°СЋС‚ РєР°Рє РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРµ РѕР±СѓС‡РµРЅРёРµ.`;
+    if (cmd === 'Р·РІРѕРЅРѕРє') return `Р—РІРѕРЅРєРё рџ“ћ: РІ Р»РёС‡РЅС‹С… Рё РіСЂСѓРїРїРѕРІС‹С… С‡Р°С‚Р°С… РµСЃС‚СЊ РєРЅРѕРїРєРё В«РџРѕР·РІРѕРЅРёС‚СЊВ» Рё В«Р’РёРґРµРѕР·РІРѕРЅРѕРєВ». Р’ Р·РІРѕРЅРєРµ РјРѕР¶РЅРѕ РІРєР»СЋС‡РёС‚СЊ РєР°РјРµСЂСѓ, РїРѕРєР°Р·Р°С‚СЊ СЌРєСЂР°РЅ (РєРЅРѕРїРєР° рџ–Ґ), РІС‹Р±СЂР°С‚СЊ РєР°РјРµСЂСѓ/РјРёРєСЂРѕС„РѕРЅ/РґРёРЅР°РјРёРє (вљ™), СЃРІРµСЂРЅСѓС‚СЊ Р·РІРѕРЅРѕРє РІ РѕРєРѕС€РєРѕ (вЂ”) Рё СЃС‹РіСЂР°С‚СЊ РІ РєСЂРµСЃС‚РёРєРё-РЅРѕР»РёРєРё (рџЋ®)!`;
+    if (cmd === 'РїСЂРёРІРµС‚' || cmd === 'Р·РґСЂР°РІСЃС‚РІСѓР№') return pick(['РџСЂРёРІРµС‚! рџ‘‹ Р Р°Рґ С‚РµР±СЏ РІРёРґРµС‚СЊ РІ Nebula.', 'РџСЂРёРІРµС‚-РїСЂРёРІРµС‚! рџ¤– Р§РµРј РјРѕРіСѓ РїРѕРјРѕС‡СЊ?']);
+    return `РќРµ Р·РЅР°СЋ РєРѕРјР°РЅРґСѓ В«/${cmd}В». Р’РІРµРґРёС‚Рµ /РїРѕРјРѕС‰СЊ, С‡С‚РѕР±С‹ СѓРІРёРґРµС‚СЊ СЃРїРёСЃРѕРє РєРѕРјР°РЅРґ.`;
   }
 
-  const math = low.match(/(-?\d+(?:[.,]\d+)?)\s*([+\-*/x×÷])\s*(-?\d+(?:[.,]\d+)?)/);
-  if (math && /(посчитай|сколько|вычисли|реши|равно|плюс|минус)/.test(low)) return `🧮 ${math[0]} = ${aiCompute(math)}`;
+  const math = low.match(/(-?\d+(?:[.,]\d+)?)\s*([+\-*/xГ—Г·])\s*(-?\d+(?:[.,]\d+)?)/);
+  if (math && /(РїРѕСЃС‡РёС‚Р°Р№|СЃРєРѕР»СЊРєРѕ|РІС‹С‡РёСЃР»Рё|СЂРµС€Рё|СЂР°РІРЅРѕ|РїР»СЋСЃ|РјРёРЅСѓСЃ)/.test(low)) return `рџ§® ${math[0]} = ${aiCompute(math)}`;
 
   const intentScans = [
-    [/привет|здравств|салют|\bхай\b|здорово|доброе утро|добрый день|добрый вечер|ку\b/,
-      ['Привет! 👋 Рад тебя видеть в Nebula.', 'Здравствуй! Чем могу помочь?', 'Привет-привет! 🤖 Что нового?']],
-    [/как дела|как ты\b|как жизнь|что нового|как настроение|чё как/,
-      ['Отлично! 100% заряда и куча энтузиазма 🚀', 'Спасибо, что спросил! Всё супер — учу новые слова 😄', 'Лучше всех! А у тебя как?']],
-    [/кто ты|ты кто|расскажи о себе|что ты такое|кто тебя создал|твой создатель/,
-      ['Я Nebula AI — встроенный искусственный интеллект мессенджера 🤖 Создан помогать, развлекать и болтать с тобой. Напиши /помощь — покажу, что умею!']],
-    [/как тебя зовут|твоё имя|тебя как зовут/,
-      ['Меня зовут Nebula AI! 🤖 В честь мессенджера, в котором живу.']],
-    [/что умеешь|помоги|помощь|какие команды|справка|команды/, [aiCommandsHelp()]],
-    [/время|который час|сколько времени/,
-      [`Сейчас ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} ⏰`]],
-    [/какая дата|какой день|сегодня число|дата сегодня/,
-      [`Сегодня ${new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' })} 📅`]],
-    [/погод|сколько градусов|холодно|жарко|пойдёт дождь|идёт снег/,
-      [`Сейчас в вашем городе ${Math.round(8 + Math.random() * 22)}°C — ${Math.random() > 0.5 ? 'ясно ☀️' : 'пасмурно ☁️'}. Мессенджер работает при любой погоде 😉`]],
-    [/шутк|анекдот|рассмеши|пошути|смешно/, [`😄 ${pick(AI_JOKES)}`]],
-    [/факт|интересн|расскажи что-нибудь/, [`💡 Интересный факт: ${pick(AI_FACTS)}`]],
-    [/дельфин|дельфины/,
-      ['🐬 Дельфины — символ Nebula! Кормите, играйте и гладьте их в личных чатах и группах — они растут до 1000 уровня. Введи /дельфин, чтобы узнать свои показатели.']],
-    [/кто админ|кто создал мессенджер|кто тут админ/,
-      ['Список администраторов хранится в настройках на вкладке «Админ» — она видна только им 😉 Управляют Nebula лучшие!']],
-    [/спасибо|благодар|\bспс\b|круто|класс/,
-      ['Всегда пожалуйста! 😊', 'Рад помочь! 🚀', 'Обращайся в любой момент!']],
-    [/пока|до свидания|прощай|удачи|спокойной ночи/,
-      ['Пока-пока! Возвращайся скорее 👋', 'До встречи! Пиши ещё!', 'Удачи! Я буду здесь 🤖']],
-    [/люблю\b|нравишься|ты класс|обожаю|ты лучший/,
-      ['И я тебя! 🤖💜', 'Спасибо! Ты делаешь мой день ярче ✨', 'Ахах, приятно! 💜']],
-    [/переведи|перевод/,
-      ['Переводчик в разработке, но я могу подсказать: hello — привет, спасибо — thank you, дельфин — dolphin 🐬 Напиши /помощь для других команд.']],
+    [/РїСЂРёРІРµС‚|Р·РґСЂР°РІСЃС‚РІ|СЃР°Р»СЋС‚|\bС…Р°Р№\b|Р·РґРѕСЂРѕРІРѕ|РґРѕР±СЂРѕРµ СѓС‚СЂРѕ|РґРѕР±СЂС‹Р№ РґРµРЅСЊ|РґРѕР±СЂС‹Р№ РІРµС‡РµСЂ|РєСѓ\b/,
+      ['РџСЂРёРІРµС‚! рџ‘‹ Р Р°Рґ С‚РµР±СЏ РІРёРґРµС‚СЊ РІ Nebula.', 'Р—РґСЂР°РІСЃС‚РІСѓР№! Р§РµРј РјРѕРіСѓ РїРѕРјРѕС‡СЊ?', 'РџСЂРёРІРµС‚-РїСЂРёРІРµС‚! рџ¤– Р§С‚Рѕ РЅРѕРІРѕРіРѕ?']],
+    [/РєР°Рє РґРµР»Р°|РєР°Рє С‚С‹\b|РєР°Рє Р¶РёР·РЅСЊ|С‡С‚Рѕ РЅРѕРІРѕРіРѕ|РєР°Рє РЅР°СЃС‚СЂРѕРµРЅРёРµ|С‡С‘ РєР°Рє/,
+      ['РћС‚Р»РёС‡РЅРѕ! 100% Р·Р°СЂСЏРґР° Рё РєСѓС‡Р° СЌРЅС‚СѓР·РёР°Р·РјР° рџљЂ', 'РЎРїР°СЃРёР±Рѕ, С‡С‚Рѕ СЃРїСЂРѕСЃРёР»! Р’СЃС‘ СЃСѓРїРµСЂ вЂ” СѓС‡Сѓ РЅРѕРІС‹Рµ СЃР»РѕРІР° рџ„', 'Р›СѓС‡С€Рµ РІСЃРµС…! Рђ Сѓ С‚РµР±СЏ РєР°Рє?']],
+    [/РєС‚Рѕ С‚С‹|С‚С‹ РєС‚Рѕ|СЂР°СЃСЃРєР°Р¶Рё Рѕ СЃРµР±Рµ|С‡С‚Рѕ С‚С‹ С‚Р°РєРѕРµ|РєС‚Рѕ С‚РµР±СЏ СЃРѕР·РґР°Р»|С‚РІРѕР№ СЃРѕР·РґР°С‚РµР»СЊ/,
+      ['РЇ Nebula AI вЂ” РІСЃС‚СЂРѕРµРЅРЅС‹Р№ РёСЃРєСѓСЃСЃС‚РІРµРЅРЅС‹Р№ РёРЅС‚РµР»Р»РµРєС‚ РјРµСЃСЃРµРЅРґР¶РµСЂР° рџ¤– РЎРѕР·РґР°РЅ РїРѕРјРѕРіР°С‚СЊ, СЂР°Р·РІР»РµРєР°С‚СЊ Рё Р±РѕР»С‚Р°С‚СЊ СЃ С‚РѕР±РѕР№. РќР°РїРёС€Рё /РїРѕРјРѕС‰СЊ вЂ” РїРѕРєР°Р¶Сѓ, С‡С‚Рѕ СѓРјРµСЋ!']],
+    [/РєР°Рє С‚РµР±СЏ Р·РѕРІСѓС‚|С‚РІРѕС‘ РёРјСЏ|С‚РµР±СЏ РєР°Рє Р·РѕРІСѓС‚/,
+      ['РњРµРЅСЏ Р·РѕРІСѓС‚ Nebula AI! рџ¤– Р’ С‡РµСЃС‚СЊ РјРµСЃСЃРµРЅРґР¶РµСЂР°, РІ РєРѕС‚РѕСЂРѕРј Р¶РёРІСѓ.']],
+    [/С‡С‚Рѕ СѓРјРµРµС€СЊ|РїРѕРјРѕРіРё|РїРѕРјРѕС‰СЊ|РєР°РєРёРµ РєРѕРјР°РЅРґС‹|СЃРїСЂР°РІРєР°|РєРѕРјР°РЅРґС‹/, [aiCommandsHelp()]],
+    [/РІСЂРµРјСЏ|РєРѕС‚РѕСЂС‹Р№ С‡Р°СЃ|СЃРєРѕР»СЊРєРѕ РІСЂРµРјРµРЅРё/,
+      [`РЎРµР№С‡Р°СЃ ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} вЏ°`]],
+    [/РєР°РєР°СЏ РґР°С‚Р°|РєР°РєРѕР№ РґРµРЅСЊ|СЃРµРіРѕРґРЅСЏ С‡РёСЃР»Рѕ|РґР°С‚Р° СЃРµРіРѕРґРЅСЏ/,
+      [`РЎРµРіРѕРґРЅСЏ ${new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long' })} рџ“…`]],
+    [/РїРѕРіРѕРґ|СЃРєРѕР»СЊРєРѕ РіСЂР°РґСѓСЃРѕРІ|С…РѕР»РѕРґРЅРѕ|Р¶Р°СЂРєРѕ|РїРѕР№РґС‘С‚ РґРѕР¶РґСЊ|РёРґС‘С‚ СЃРЅРµРі/,
+      [`РЎРµР№С‡Р°СЃ РІ РІР°С€РµРј РіРѕСЂРѕРґРµ ${Math.round(8 + Math.random() * 22)}В°C вЂ” ${Math.random() > 0.5 ? 'СЏСЃРЅРѕ вЂпёЏ' : 'РїР°СЃРјСѓСЂРЅРѕ вЃпёЏ'}. РњРµСЃСЃРµРЅРґР¶РµСЂ СЂР°Р±РѕС‚Р°РµС‚ РїСЂРё Р»СЋР±РѕР№ РїРѕРіРѕРґРµ рџ‰`]],
+    [/С€СѓС‚Рє|Р°РЅРµРєРґРѕС‚|СЂР°СЃСЃРјРµС€Рё|РїРѕС€СѓС‚Рё|СЃРјРµС€РЅРѕ/, [`рџ„ ${pick(AI_JOKES)}`]],
+    [/С„Р°РєС‚|РёРЅС‚РµСЂРµСЃРЅ|СЂР°СЃСЃРєР°Р¶Рё С‡С‚Рѕ-РЅРёР±СѓРґСЊ/, [`рџ’Ў РРЅС‚РµСЂРµСЃРЅС‹Р№ С„Р°РєС‚: ${pick(AI_FACTS)}`]],
+    [/РґРµР»СЊС„РёРЅ|РґРµР»СЊС„РёРЅС‹/,
+      ['рџђ¬ Р”РµР»СЊС„РёРЅС‹ вЂ” СЃРёРјРІРѕР» Nebula! РљРѕСЂРјРёС‚Рµ, РёРіСЂР°Р№С‚Рµ Рё РіР»Р°РґСЊС‚Рµ РёС… РІ Р»РёС‡РЅС‹С… С‡Р°С‚Р°С… Рё РіСЂСѓРїРїР°С… вЂ” РѕРЅРё СЂР°СЃС‚СѓС‚ РґРѕ 1000 СѓСЂРѕРІРЅСЏ. Р’РІРµРґРё /РґРµР»СЊС„РёРЅ, С‡С‚РѕР±С‹ СѓР·РЅР°С‚СЊ СЃРІРѕРё РїРѕРєР°Р·Р°С‚РµР»Рё.']],
+    [/РєС‚Рѕ Р°РґРјРёРЅ|РєС‚Рѕ СЃРѕР·РґР°Р» РјРµСЃСЃРµРЅРґР¶РµСЂ|РєС‚Рѕ С‚СѓС‚ Р°РґРјРёРЅ/,
+      ['РЎРїРёСЃРѕРє Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ С…СЂР°РЅРёС‚СЃСЏ РІ РЅР°СЃС‚СЂРѕР№РєР°С… РЅР° РІРєР»Р°РґРєРµ В«РђРґРјРёРЅВ» вЂ” РѕРЅР° РІРёРґРЅР° С‚РѕР»СЊРєРѕ РёРј рџ‰ РЈРїСЂР°РІР»СЏСЋС‚ Nebula Р»СѓС‡С€РёРµ!']],
+    [/СЃРїР°СЃРёР±Рѕ|Р±Р»Р°РіРѕРґР°СЂ|\bСЃРїСЃ\b|РєСЂСѓС‚Рѕ|РєР»Р°СЃСЃ/,
+      ['Р’СЃРµРіРґР° РїРѕР¶Р°Р»СѓР№СЃС‚Р°! рџЉ', 'Р Р°Рґ РїРѕРјРѕС‡СЊ! рџљЂ', 'РћР±СЂР°С‰Р°Р№СЃСЏ РІ Р»СЋР±РѕР№ РјРѕРјРµРЅС‚!']],
+    [/РїРѕРєР°|РґРѕ СЃРІРёРґР°РЅРёСЏ|РїСЂРѕС‰Р°Р№|СѓРґР°С‡Рё|СЃРїРѕРєРѕР№РЅРѕР№ РЅРѕС‡Рё/,
+      ['РџРѕРєР°-РїРѕРєР°! Р’РѕР·РІСЂР°С‰Р°Р№СЃСЏ СЃРєРѕСЂРµРµ рџ‘‹', 'Р”Рѕ РІСЃС‚СЂРµС‡Рё! РџРёС€Рё РµС‰С‘!', 'РЈРґР°С‡Рё! РЇ Р±СѓРґСѓ Р·РґРµСЃСЊ рџ¤–']],
+    [/Р»СЋР±Р»СЋ\b|РЅСЂР°РІРёС€СЊСЃСЏ|С‚С‹ РєР»Р°СЃСЃ|РѕР±РѕР¶Р°СЋ|С‚С‹ Р»СѓС‡С€РёР№/,
+      ['Р СЏ С‚РµР±СЏ! рџ¤–рџ’њ', 'РЎРїР°СЃРёР±Рѕ! РўС‹ РґРµР»Р°РµС€СЊ РјРѕР№ РґРµРЅСЊ СЏСЂС‡Рµ вњЁ', 'РђС…Р°С…, РїСЂРёСЏС‚РЅРѕ! рџ’њ']],
+    [/РїРµСЂРµРІРµРґРё|РїРµСЂРµРІРѕРґ/,
+      ['РџРµСЂРµРІРѕРґС‡РёРє РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ, РЅРѕ СЏ РјРѕРіСѓ РїРѕРґСЃРєР°Р·Р°С‚СЊ: hello вЂ” РїСЂРёРІРµС‚, СЃРїР°СЃРёР±Рѕ вЂ” thank you, РґРµР»СЊС„РёРЅ вЂ” dolphin рџђ¬ РќР°РїРёС€Рё /РїРѕРјРѕС‰СЊ РґР»СЏ РґСЂСѓРіРёС… РєРѕРјР°РЅРґ.']],
   ];
   for (const [re, replies] of intentScans) {
     if (re.test(low)) return pick(replies);
@@ -2320,7 +2328,7 @@ function openAiChat() {
       name: 'Nebula AI',
       members: ['me'],
       dolphin: { xp: 0, lastFeed: 0, lastPlay: 0, lastPet: 0 },
-      messages: [{ id: 'm' + Date.now(), from: 'nebula', text: 'Привет! Я Nebula AI — встроенный ИИ-ассистент мессенджера 🤖 Задай вопрос или введи /помощь.', time: new Date().toISOString(), read: true }],
+      messages: [{ id: 'm' + Date.now(), from: 'nebula', text: 'РџСЂРёРІРµС‚! РЇ Nebula AI вЂ” РІСЃС‚СЂРѕРµРЅРЅС‹Р№ РР-Р°СЃСЃРёСЃС‚РµРЅС‚ РјРµСЃСЃРµРЅРґР¶РµСЂР° рџ¤– Р—Р°РґР°Р№ РІРѕРїСЂРѕСЃ РёР»Рё РІРІРµРґРё /РїРѕРјРѕС‰СЊ.', time: new Date().toISOString(), read: true }],
     };
     state.chats.push(chat);
     saveState();
@@ -2329,7 +2337,7 @@ function openAiChat() {
   selectChat(AI_CHAT_ID);
 }
 
-/* ---------- КАСТОМНЫЙ КУРСОР ---------- */
+/* ---------- РљРђРЎРўРћРњРќР«Р™ РљРЈР РЎРћР  ---------- */
 function initCursor() {
   const dot = $('.cursor-dot');
   const ring = $('.cursor-ring');
@@ -2380,7 +2388,7 @@ function toast(title, sub, ms = 2600) {
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
 }
 
-/* ---------- УВЕДОМЛЕНИЯ БРАУЗЕРА ---------- */
+/* ---------- РЈР’Р•Р”РћРњР›Р•РќРРЇ Р‘Р РђРЈР—Р•Р Рђ ---------- */
 let notifyThrottle = {};
 function notifyAllowed() {
   return typeof Notification !== 'undefined' && Notification.permission === 'granted';
@@ -2402,20 +2410,20 @@ function notifyNewMessages(chat, msgs) {
     const sender = m.from && accountByUsername(m.from) ? accountByUsername(m.from) : null;
     const from = sender ? sender.name : (chat.type === 'private' ? chatTitle(chat) : chatTitle(chat));
     let body = (m.text || '').replace(/<[^>]+>/g, '').trim().slice(0, 120);
-    if (m.voice) body = '🎤 Голосовое сообщение' + (body ? ' · ' + body : '');
-    else if (m.video) body = '🎬 Кружок';
-    else if (m.media && m.media.length) body = '🖼 ' + m.media[0].name;
-    else if (m.sticker) body = 'Стикер';
-    if (!body) body = 'Сообщение';
-    const title = 'Nebula · ' + (sender ? sender.name : from);
+    if (m.voice) body = 'рџЋ¤ Р“РѕР»РѕСЃРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ' + (body ? ' В· ' + body : '');
+    else if (m.video) body = 'рџЋ¬ РљСЂСѓР¶РѕРє';
+    else if (m.media && m.media.length) body = 'рџ–ј ' + m.media[0].name;
+    else if (m.sticker) body = 'РЎС‚РёРєРµСЂ';
+    if (!body) body = 'РЎРѕРѕР±С‰РµРЅРёРµ';
+    const title = 'Nebula В· ' + (sender ? sender.name : from);
     try { new Notification(title, { body, tag: chat.id, silent: false }); } catch (e) {}
   });
 }
 
-/* ---------- PUSH НА УСТРОЙСТВО (Web Push через воркер) ----------
-   Браузеры не дают отправлять push напрямую (CORS) — шифрование и доставку
-   делает сервер-реле (/sendpush). Подписки каждого пользователя хранятся
-   в Firestore (pushsubs:<username>). */
+/* ---------- PUSH РќРђ РЈРЎРўР РћР™РЎРўР’Рћ (Web Push С‡РµСЂРµР· РІРѕСЂРєРµСЂ) ----------
+   Р‘СЂР°СѓР·РµСЂС‹ РЅРµ РґР°СЋС‚ РѕС‚РїСЂР°РІР»СЏС‚СЊ push РЅР°РїСЂСЏРјСѓСЋ (CORS) вЂ” С€РёС„СЂРѕРІР°РЅРёРµ Рё РґРѕСЃС‚Р°РІРєСѓ
+   РґРµР»Р°РµС‚ СЃРµСЂРІРµСЂ-СЂРµР»Рµ (/sendpush). РџРѕРґРїРёСЃРєРё РєР°Р¶РґРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ С…СЂР°РЅСЏС‚СЃСЏ
+   РІ Firestore (pushsubs:<username>). */
 const VAPID_PUB = 'BLTo1NIW4sPrQabFsTNXGw7r_fZ2iG-PFyU__1Hrc2DcyEmK0WgQxEH1TA0x9du0Tsqn1uvKxpqyOLDtLiPkgLY';
 let pushSetupPromise = null;
 let pushSubsCache = {};
@@ -2457,7 +2465,7 @@ function setupPush() {
         savePushSubs(currentUser.username, list);
         try { localStorage.setItem('nebula_push_sub_' + currentUser.username, JSON.stringify(rec)); } catch (e) {}
       }
-    } catch (e) { /* push недоступен (iOS/не HTTPS/отклонено) — молча */ }
+    } catch (e) { /* push РЅРµРґРѕСЃС‚СѓРїРµРЅ (iOS/РЅРµ HTTPS/РѕС‚РєР»РѕРЅРµРЅРѕ) вЂ” РјРѕР»С‡Р° */ }
   })();
   return pushSetupPromise;
 }
@@ -2492,9 +2500,9 @@ function sendPushToUser(u, title, body, url, tag, msgId) {
     });
   }).catch(() => {});
 }
-/* Отправка пушей получателю за мои исходящие сообщения (вызывается из
-   syncCloudChats для своих сообщений — устройство-отправитель онлайн в
-   момент отправки) */
+/* РћС‚РїСЂР°РІРєР° РїСѓС€РµР№ РїРѕР»СѓС‡Р°С‚РµР»СЋ Р·Р° РјРѕРё РёСЃС…РѕРґСЏС‰РёРµ СЃРѕРѕР±С‰РµРЅРёСЏ (РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР·
+   syncCloudChats РґР»СЏ СЃРІРѕРёС… СЃРѕРѕР±С‰РµРЅРёР№ вЂ” СѓСЃС‚СЂРѕР№СЃС‚РІРѕ-РѕС‚РїСЂР°РІРёС‚РµР»СЊ РѕРЅР»Р°Р№РЅ РІ
+   РјРѕРјРµРЅС‚ РѕС‚РїСЂР°РІРєРё) */
 function pushNotifyForChat(chat, msgs) {
   if (!chat || chat.type !== 'private' || !chat.userId) return;
   const recipient = chat.userId;
@@ -2502,20 +2510,20 @@ function pushNotifyForChat(chat, msgs) {
     if (!m || !m.id) return;
     let title, body, url, tag;
     if (m.kind === 'call_in' || m.kind === 'call_out') {
-      title = 'Nebula · 📞 Входящий звонок';
-      body = 'От ' + ((m.from && accountByUsername(m.from)) ? accountByUsername(m.from).name : (m.from || 'собеседника'));
+      title = 'Nebula В· рџ“ћ Р’С…РѕРґСЏС‰РёР№ Р·РІРѕРЅРѕРє';
+      body = 'РћС‚ ' + ((m.from && accountByUsername(m.from)) ? accountByUsername(m.from).name : (m.from || 'СЃРѕР±РµСЃРµРґРЅРёРєР°'));
       url = '/';
       tag = 'call_' + chat.id;
     } else if (m.kind === 'call_ended' || m.kind === 'call_declined' || m.kind === 'call_missed') return;
     else {
       const sender = m.from && accountByUsername(m.from);
-      title = 'Nebula · ' + (sender ? sender.name : (m.from || chatTitle(chat)));
+      title = 'Nebula В· ' + (sender ? sender.name : (m.from || chatTitle(chat)));
       body = (m.text || '').replace(/<[^>]+>/g, '').trim().slice(0, 140);
-      if (m.voice) body = '🎤 Голосовое сообщение' + (body ? ' · ' + body : '');
-      else if (m.video) body = '🎬 Кружок';
-      else if (m.media && m.media.length) body = '🖼 Фото или файл';
-      else if (m.sticker) body = 'Стикер';
-      if (!body) body = 'Новое сообщение';
+      if (m.voice) body = 'рџЋ¤ Р“РѕР»РѕСЃРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ' + (body ? ' В· ' + body : '');
+      else if (m.video) body = 'рџЋ¬ РљСЂСѓР¶РѕРє';
+      else if (m.media && m.media.length) body = 'рџ–ј Р¤РѕС‚Рѕ РёР»Рё С„Р°Р№Р»';
+      else if (m.sticker) body = 'РЎС‚РёРєРµСЂ';
+      if (!body) body = 'РќРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ';
       url = '/';
       tag = chat.id;
     }
@@ -2523,7 +2531,7 @@ function pushNotifyForChat(chat, msgs) {
   });
 }
 
-/* ---------- РАМКИ / СТАТИСТИКА ---------- */
+/* ---------- Р РђРњРљР / РЎРўРђРўРРЎРўРРљРђ ---------- */
 function hoursInApp(acc) { return Math.floor(((acc.stats && acc.stats.seconds) || 0) / 3600); }
 function dolphinsMaxLevelFor(u) {
   const st = getStateFor(u);
@@ -2547,7 +2555,7 @@ function selectedFrameClass(acc) {
   return '';
 }
 
-/* ---------- ДЕЛЬФИН ---------- */
+/* ---------- Р”Р•Р›Р¬Р¤РРќ ---------- */
 const XP_PER_LEVEL = 50;
 const DOLPHIN_STORE_KEY = 'nebula_dolphins';
 function loadDolphins() {
@@ -2606,23 +2614,23 @@ function dolphinLevel(d) {
 }
 function dolphinActions() {
   return [
-    { id: 'feed', label: 'Покормить', emoji: '🍕', xp: 40, cd: 600 },
-    { id: 'play', label: 'Поиграть',  emoji: '⚽', xp: 30, cd: 480 },
-    { id: 'pet',  label: 'Погладить', emoji: '🖐️', xp: 20, cd: 300 },
+    { id: 'feed', label: 'РџРѕРєРѕСЂРјРёС‚СЊ', emoji: 'рџЌ•', xp: 40, cd: 600 },
+    { id: 'play', label: 'РџРѕРёРіСЂР°С‚СЊ',  emoji: 'вљЅ', xp: 30, cd: 480 },
+    { id: 'pet',  label: 'РџРѕРіР»Р°РґРёС‚СЊ', emoji: 'рџ–ђпёЏ', xp: 20, cd: 300 },
   ];
 }
 function dolphinStage(lvl) {
-  if (lvl >= 1000) return 'Повелитель морей';
-  if (lvl >= 750) return 'Хранитель океана';
-  if (lvl >= 500) return 'Морской страж';
-  if (lvl >= 350) return 'Легенда';
-  if (lvl >= 200) return 'Мастер';
-  if (lvl >= 100) return 'Ветеран';
-  if (lvl >= 60) return 'Взрослый';
-  if (lvl >= 30) return 'Юный дельфин';
-  if (lvl >= 15) return 'Подросток';
-  if (lvl >= 5) return 'Малыш';
-  return 'Новорождённый';
+  if (lvl >= 1000) return 'РџРѕРІРµР»РёС‚РµР»СЊ РјРѕСЂРµР№';
+  if (lvl >= 750) return 'РҐСЂР°РЅРёС‚РµР»СЊ РѕРєРµР°РЅР°';
+  if (lvl >= 500) return 'РњРѕСЂСЃРєРѕР№ СЃС‚СЂР°Р¶';
+  if (lvl >= 350) return 'Р›РµРіРµРЅРґР°';
+  if (lvl >= 200) return 'РњР°СЃС‚РµСЂ';
+  if (lvl >= 100) return 'Р’РµС‚РµСЂР°РЅ';
+  if (lvl >= 60) return 'Р’Р·СЂРѕСЃР»С‹Р№';
+  if (lvl >= 30) return 'Р®РЅС‹Р№ РґРµР»СЊС„РёРЅ';
+  if (lvl >= 15) return 'РџРѕРґСЂРѕСЃС‚РѕРє';
+  if (lvl >= 5) return 'РњР°Р»С‹С€';
+  return 'РќРѕРІРѕСЂРѕР¶РґС‘РЅРЅС‹Р№';
 }
 function openDolphin(chat) {
   renderDolphin(chat);
@@ -2642,9 +2650,9 @@ function renderDolphin(chat) {
   const xpIn = (d.xp || 0) % XP_PER_LEVEL;
   const now = Date.now();
   const fedAgo = now - (d.lastFeed || 0);
-  let hunger = 'Сыт и доволен 🥰';
-  if (fedAgo > 12 * 3600000) hunger = 'Очень голоден 😰';
-  else if (fedAgo > 6 * 3600000) hunger = 'Проголодался 😕';
+  let hunger = 'РЎС‹С‚ Рё РґРѕРІРѕР»РµРЅ рџҐ°';
+  if (fedAgo > 12 * 3600000) hunger = 'РћС‡РµРЅСЊ РіРѕР»РѕРґРµРЅ рџ°';
+  else if (fedAgo > 6 * 3600000) hunger = 'РџСЂРѕРіРѕР»РѕРґР°Р»СЃСЏ рџ•';
   const partner = chatTitle(chat);
 
   const btn = (act) => {
@@ -2660,20 +2668,20 @@ function renderDolphin(chat) {
     <div class="dolphin-pet">
       <div class="db-scene">
         <div class="db-bubbles"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="dolphin-emoji">🐬</div>
-        <div class="db-level">ур. ${lvl}</div>
+        <div class="dolphin-emoji">рџђ¬</div>
+        <div class="db-level">СѓСЂ. ${lvl}</div>
         <div class="db-stage">${dolphinStage(lvl)}</div>
       </div>
-      <div class="dp-name">Дельфин из чата «${escapeHtml(partner)}»</div>
+      <div class="dp-name">Р”РµР»СЊС„РёРЅ РёР· С‡Р°С‚Р° В«${escapeHtml(partner)}В»</div>
       <div class="xp-bar"><div class="xp-fill" style="width:${xpIn}%"></div></div>
-      <div style="font-size:12px;color:var(--text-muted)">${xpIn}/${XP_PER_LEVEL} XP до уровня ${Math.min(1000, lvl + 1)} · всего ${d.xp || 0} XP</div>
+      <div style="font-size:12px;color:var(--text-muted)">${xpIn}/${XP_PER_LEVEL} XP РґРѕ СѓСЂРѕРІРЅСЏ ${Math.min(1000, lvl + 1)} В· РІСЃРµРіРѕ ${d.xp || 0} XP</div>
     </div>
     <div style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:6px">${hunger}</div>
     <div class="dolphin-actions">
       ${dolphinActions().map(btn).join('')}
     </div>
     <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:14px">
-      Уровень дельфина общий для вас обоих — заботьтесь вместе 🤝
+      РЈСЂРѕРІРµРЅСЊ РґРµР»СЊС„РёРЅР° РѕР±С‰РёР№ РґР»СЏ РІР°СЃ РѕР±РѕРёС… вЂ” Р·Р°Р±РѕС‚СЊС‚РµСЃСЊ РІРјРµСЃС‚Рµ рџ¤ќ
     </div>`;
 
   $('#dolphinBody').querySelectorAll('.dolphin-action').forEach(b => {
@@ -2698,33 +2706,33 @@ function dolphinAct(chat, actId) {
     saveDolphins(store);
     syncDolphinLegacy(dkey, d);
     const after = dolphinLevel(d);
-    chat.messages.push({ id: 'm' + Date.now(), from: 'me', text: `🐬 ${act.label} дельфина (+${act.xp} XP)`, time: new Date().toISOString(), read: true });
-    addLog(currentUser.username, `Покормил/поиграл с дельфином в «${chatTitle(chat)}» (+${act.xp} XP)`);
+    chat.messages.push({ id: 'm' + Date.now(), from: 'me', text: `рџђ¬ ${act.label} РґРµР»СЊС„РёРЅР° (+${act.xp} XP)`, time: new Date().toISOString(), read: true });
+    addLog(currentUser.username, `РџРѕРєРѕСЂРјРёР»/РїРѕРёРіСЂР°Р» СЃ РґРµР»СЊС„РёРЅРѕРј РІ В«${chatTitle(chat)}В» (+${act.xp} XP)`);
     saveState();
     toast('+XP', `${act.label}: +${act.xp} XP`, 1600);
-    if (after > before) toast('🎉 Уровень повышен!', `Дельфин достиг уровня ${after}`);
+    if (after > before) toast('рџЋ‰ РЈСЂРѕРІРµРЅСЊ РїРѕРІС‹С€РµРЅ!', `Р”РµР»СЊС„РёРЅ РґРѕСЃС‚РёРі СѓСЂРѕРІРЅСЏ ${after}`);
     const stageAfter = dolphinStage(after), stageBefore = dolphinStage(before);
-    if (stageAfter !== stageBefore) toast('⭐ Новая стадия!', `Дельфин теперь — ${stageAfter}`);
+    if (stageAfter !== stageBefore) toast('в­ђ РќРѕРІР°СЏ СЃС‚Р°РґРёСЏ!', `Р”РµР»СЊС„РёРЅ С‚РµРїРµСЂСЊ вЂ” ${stageAfter}`);
   } catch (e) {
-    toast('Ошибка', 'Не удалось выполнить действие');
+    toast('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ РґРµР№СЃС‚РІРёРµ');
   }
   renderChat();
   renderDolphin(chat);
 }
 
-/* ---------- ТЕМА ---------- */
+/* ---------- РўР•РњРђ ---------- */
 const THEME_CLASSES = ['theme-light', 'theme-black', 'theme-tgreen', 'theme-lgreen', 'theme-ppink', 'theme-dred', 'theme-red', 'theme-brown', 'theme-blue'];
 const ALL_THEMES = [
-  { v: 'default', t: 'По умолчанию', d: 'Тёмно-синяя тема' },
-  { v: 'black', t: 'Чёрная', d: 'Глубокий чёрный цвет' },
-  { v: 'light', t: 'Белая', d: 'Светлая тема' },
-  { v: 'tgreen', t: 'Тёмно-зелёная', d: 'Глубокий лесной зелёный' },
-  { v: 'lgreen', t: 'Салатовая', d: 'Свежий салатово-зелёный' },
-  { v: 'ppink', t: 'Розово-фиолетовая', d: 'Неоновый розовый и пурпур' },
-  { v: 'dred', t: 'Тёмно-красная', d: 'Приглушённый тёмно-красный' },
-  { v: 'red', t: 'Красная', d: 'Ярко-алая красная' },
-  { v: 'brown', t: 'Коричневая', d: 'Тёплый шоколадный оттенок' },
-  { v: 'blue', t: 'Синяя', d: 'Насыщенный синий' },
+  { v: 'default', t: 'РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ', d: 'РўС‘РјРЅРѕ-СЃРёРЅСЏСЏ С‚РµРјР°' },
+  { v: 'black', t: 'Р§С‘СЂРЅР°СЏ', d: 'Р“Р»СѓР±РѕРєРёР№ С‡С‘СЂРЅС‹Р№ С†РІРµС‚' },
+  { v: 'light', t: 'Р‘РµР»Р°СЏ', d: 'РЎРІРµС‚Р»Р°СЏ С‚РµРјР°' },
+  { v: 'tgreen', t: 'РўС‘РјРЅРѕ-Р·РµР»С‘РЅР°СЏ', d: 'Р“Р»СѓР±РѕРєРёР№ Р»РµСЃРЅРѕР№ Р·РµР»С‘РЅС‹Р№' },
+  { v: 'lgreen', t: 'РЎР°Р»Р°С‚РѕРІР°СЏ', d: 'РЎРІРµР¶РёР№ СЃР°Р»Р°С‚РѕРІРѕ-Р·РµР»С‘РЅС‹Р№' },
+  { v: 'ppink', t: 'Р РѕР·РѕРІРѕ-С„РёРѕР»РµС‚РѕРІР°СЏ', d: 'РќРµРѕРЅРѕРІС‹Р№ СЂРѕР·РѕРІС‹Р№ Рё РїСѓСЂРїСѓСЂ' },
+  { v: 'dred', t: 'РўС‘РјРЅРѕ-РєСЂР°СЃРЅР°СЏ', d: 'РџСЂРёРіР»СѓС€С‘РЅРЅС‹Р№ С‚С‘РјРЅРѕ-РєСЂР°СЃРЅС‹Р№' },
+  { v: 'red', t: 'РљСЂР°СЃРЅР°СЏ', d: 'РЇСЂРєРѕ-Р°Р»Р°СЏ РєСЂР°СЃРЅР°СЏ' },
+  { v: 'brown', t: 'РљРѕСЂРёС‡РЅРµРІР°СЏ', d: 'РўС‘РїР»С‹Р№ С€РѕРєРѕР»Р°РґРЅС‹Р№ РѕС‚С‚РµРЅРѕРє' },
+  { v: 'blue', t: 'РЎРёРЅСЏСЏ', d: 'РќР°СЃС‹С‰РµРЅРЅС‹Р№ СЃРёРЅРёР№' },
 ];
 const BASE_THEME_COUNT = 3;
 function themeClass(t) { return t && t !== 'default' ? 'theme-' + t : ''; }
@@ -2755,7 +2763,7 @@ function applyCursorColors(dot, glow) {
 function isTester(u) { return !!(u && u.badges && u.badges.tester); }
 function canUseSpecialThemes(u) { return isAdmin(u.username) || isTester(u); }
 
-/* ---------- ОНЛАЙН-ТАЙМЕР / СТАТУСЫ ---------- */
+/* ---------- РћРќР›РђР™Рќ-РўРђР™РњР•Р  / РЎРўРђРўРЈРЎР« ---------- */
 let onlineTimer = null;
 let lastPresencePush = 0;
 const ONLINE_WINDOW = 2 * 60 * 1000;
@@ -2789,28 +2797,28 @@ function statusOf(acc) {
   if (!acc) return { cls: '', label: '', online: false, text: '' };
   const st = acc.status || {};
   if (st.t === 'offline' || st.t === 'invisible') {
-    let label = 'не в сети';
+    let label = 'РЅРµ РІ СЃРµС‚Рё';
     if (st.auto && st.t === 'offline') {
       const last = acc.lastSeen || 0;
       const diff = Date.now() - last;
       if (last) {
-        if (diff < 24 * 60 * 60 * 1000) label = 'был(а) в ' + fmtHM(last);
-        else if (diff < 7 * 24 * 60 * 60 * 1000) label = 'был(а) в течение недели';
-        else label = 'был(а) давно';
+        if (diff < 24 * 60 * 60 * 1000) label = 'Р±С‹Р»(Р°) РІ ' + fmtHM(last);
+        else if (diff < 7 * 24 * 60 * 60 * 1000) label = 'Р±С‹Р»(Р°) РІ С‚РµС‡РµРЅРёРµ РЅРµРґРµР»Рё';
+        else label = 'Р±С‹Р»(Р°) РґР°РІРЅРѕ';
       }
     }
     return { cls: 'off', label, online: false, text: st.s || '' };
   }
-  if (st.t === 'busy') return { cls: 'busy', label: 'занят', online: true, text: st.s || '' };
-  if (st.t === 'away') return { cls: 'away', label: 'отошёл', online: true, text: st.s || '' };
-  if (isOnline(acc.username)) return { cls: 'on', label: 'онлайн', online: true, text: st.s || '' };
+  if (st.t === 'busy') return { cls: 'busy', label: 'Р·Р°РЅСЏС‚', online: true, text: st.s || '' };
+  if (st.t === 'away') return { cls: 'away', label: 'РѕС‚РѕС€С‘Р»', online: true, text: st.s || '' };
+  if (isOnline(acc.username)) return { cls: 'on', label: 'РѕРЅР»Р°Р№РЅ', online: true, text: st.s || '' };
   const last = acc.lastSeen || 0;
   const diff = Date.now() - last;
-  let label = 'не в сети';
+  let label = 'РЅРµ РІ СЃРµС‚Рё';
   if (last) {
-    if (diff < 24 * 60 * 60 * 1000) label = 'был(а) в ' + fmtHM(last);
-    else if (diff < 7 * 24 * 60 * 60 * 1000) label = 'был(а) в течение недели';
-    else label = 'был(а) давно';
+    if (diff < 24 * 60 * 60 * 1000) label = 'Р±С‹Р»(Р°) РІ ' + fmtHM(last);
+    else if (diff < 7 * 24 * 60 * 60 * 1000) label = 'Р±С‹Р»(Р°) РІ С‚РµС‡РµРЅРёРµ РЅРµРґРµР»Рё';
+    else label = 'Р±С‹Р»(Р°) РґР°РІРЅРѕ';
   }
   return { cls: 'off', label, online: false, text: st.s || '' };
 }
@@ -2820,16 +2828,16 @@ function fmtHM(ts) {
 }
 function statusChoiceHtml(cur) {
   const opts = [
-    { t: 'online', label: '🟢 Онлайн', d: 'Видим всем, когда в сети' },
-    { t: 'busy', label: '🔴 Занят', d: 'Отвечаю позже' },
-    { t: 'away', label: '🟡 Отошёл', d: 'Отошёл ненадолго' },
-    { t: 'offline', label: '⚪ Не в сети', d: 'Скрыть активность' },
+    { t: 'online', label: 'рџџў РћРЅР»Р°Р№РЅ', d: 'Р’РёРґРёРј РІСЃРµРј, РєРѕРіРґР° РІ СЃРµС‚Рё' },
+    { t: 'busy', label: 'рџ”ґ Р—Р°РЅСЏС‚', d: 'РћС‚РІРµС‡Р°СЋ РїРѕР·Р¶Рµ' },
+    { t: 'away', label: 'рџџЎ РћС‚РѕС€С‘Р»', d: 'РћС‚РѕС€С‘Р» РЅРµРЅР°РґРѕР»РіРѕ' },
+    { t: 'offline', label: 'вљЄ РќРµ РІ СЃРµС‚Рё', d: 'РЎРєСЂС‹С‚СЊ Р°РєС‚РёРІРЅРѕСЃС‚СЊ' },
   ];
   return opts.map(o => `
     <button type="button" class="status-opt ${cur === o.t ? 'sel' : ''}" data-t="${o.t}">
       <span class="st-icon">${o.label.split(' ')[0]}</span>
       <span class="st-txt">${o.label.split(' ').slice(1).join(' ')}<small>${o.d}</small></span>
-      <span class="st-check">${cur === o.t ? '✓' : ''}</span>
+      <span class="st-check">${cur === o.t ? 'вњ“' : ''}</span>
     </button>`).join('');
 }
 function startIncomingGuard() {
@@ -2848,7 +2856,7 @@ function startIncomingGuard() {
 }
 
 /* ============================================================
-   AUTH + ВЕРИФИКАЦИЯ ПОЧТЫ
+   AUTH + Р’Р•Р РР¤РРљРђР¦РРЇ РџРћР§РўР«
    ============================================================ */
 let authMode = 'login';
 let authCaptchaCode = '';
@@ -3008,14 +3016,14 @@ function startCodeTimer(el, at, onExpire) {
 
 function demoCodeHtml(code, label) {
   return `<div class="dc-label">${label}</div>
-    <div class="dc-code-row"><span class="dc-code">${code}</span><button type="button" class="dc-copy" data-copy="${code}">Копировать</button></div>`;
+    <div class="dc-code-row"><span class="dc-code">${code}</span><button type="button" class="dc-copy" data-copy="${code}">РљРѕРїРёСЂРѕРІР°С‚СЊ</button></div>`;
 }
 function bindDemoCopy(box) {
   const b = box.querySelector('.dc-copy');
   if (!b) return;
   b.addEventListener('click', () => {
-    try { navigator.clipboard.writeText(b.dataset.copy); toast('Код скопирован'); }
-    catch (err) { toast('Код: ' + b.dataset.copy); }
+    try { navigator.clipboard.writeText(b.dataset.copy); toast('РљРѕРґ СЃРєРѕРїРёСЂРѕРІР°РЅ'); }
+    catch (err) { toast('РљРѕРґ: ' + b.dataset.copy); }
   });
 }
 
@@ -3025,7 +3033,7 @@ function sendAuthCode(email) {
   const box = $('#authDemoCode');
   box.classList.add('hidden');
   if (demoMode) {
-    box.innerHTML = demoCodeHtml(authCode, 'Демо-режим: ваш код:');
+    box.innerHTML = demoCodeHtml(authCode, 'Р”РµРјРѕ-СЂРµР¶РёРј: РІР°С€ РєРѕРґ:');
     box.classList.remove('hidden');
     bindDemoCopy(box);
   }
@@ -3033,28 +3041,28 @@ function sendAuthCode(email) {
   clearCode($('#authCodeInputs'));
   startCodeTimer($('#authCodeTimer'), authCodeAt, () => {
     authCode = null;
-    showAuthError($('#authCodeError'), 'Код истёк. Запросите код повторно.');
+    showAuthError($('#authCodeError'), 'РљРѕРґ РёСЃС‚С‘Рє. Р—Р°РїСЂРѕСЃРёС‚Рµ РєРѕРґ РїРѕРІС‚РѕСЂРЅРѕ.');
     $('#authVerifyBtn').disabled = true;
   });
   const btn = $('#authVerifyBtn');
   const resend = $('#authResend');
   const prevText = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Отправка...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'РћС‚РїСЂР°РІРєР°...'; }
   if (resend) resend.disabled = true;
-  sendCodeToEmail(email, authCode, 'Код подтверждения Nebula Messenger').then((r) => {
+  sendCodeToEmail(email, authCode, 'РљРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ Nebula Messenger').then((r) => {
     if (btn) { btn.disabled = false; btn.textContent = prevText; }
     if (resend) resend.disabled = false;
     if (r.demo) {
-      box.innerHTML = demoCodeHtml(authCode, 'Демо-режим: настоящая отправка не настроена, вот ваш код:');
+      box.innerHTML = demoCodeHtml(authCode, 'Р”РµРјРѕ-СЂРµР¶РёРј: РЅР°СЃС‚РѕСЏС‰Р°СЏ РѕС‚РїСЂР°РІРєР° РЅРµ РЅР°СЃС‚СЂРѕРµРЅР°, РІРѕС‚ РІР°С€ РєРѕРґ:');
       box.classList.remove('hidden');
       bindDemoCopy(box);
     } else if (r.ok) {
-      showAuthError($('#authCodeError'), 'Код отправлен на ' + email);
+      showAuthError($('#authCodeError'), 'РљРѕРґ РѕС‚РїСЂР°РІР»РµРЅ РЅР° ' + email);
     } else {
-      box.innerHTML = demoCodeHtml(authCode, 'Письмо не доставлено (' + (r.err || 'ошибка') + ') — вот ваш код:');
+      box.innerHTML = demoCodeHtml(authCode, 'РџРёСЃСЊРјРѕ РЅРµ РґРѕСЃС‚Р°РІР»РµРЅРѕ (' + (r.err || 'РѕС€РёР±РєР°') + ') вЂ” РІРѕС‚ РІР°С€ РєРѕРґ:');
       box.classList.remove('hidden');
       bindDemoCopy(box);
-      showAuthError($('#authCodeError'), 'Код не дошёл до почты, но показан на экране');
+      showAuthError($('#authCodeError'), 'РљРѕРґ РЅРµ РґРѕС€С‘Р» РґРѕ РїРѕС‡С‚С‹, РЅРѕ РїРѕРєР°Р·Р°РЅ РЅР° СЌРєСЂР°РЅРµ');
     }
   });
 }
@@ -3177,19 +3185,19 @@ function updatePwStrength() {
   if (s === 5) {
     if (weakPasswordDetect(pw)) {
       bar.style.background = '#e74c3c';
-      label.textContent = 'Слишком простой (123, qwerty...) — придумайте сложнее';
+      label.textContent = 'РЎР»РёС€РєРѕРј РїСЂРѕСЃС‚РѕР№ (123, qwerty...) вЂ” РїСЂРёРґСѓРјР°Р№С‚Рµ СЃР»РѕР¶РЅРµРµ';
     } else {
-      label.textContent = 'Супер-пароль';
+      label.textContent = 'РЎСѓРїРµСЂ-РїР°СЂРѕР»СЊ';
     }
     return;
   }
   const missing = [];
-  if (pw.length < 8) missing.push('8+ символов');
+  if (pw.length < 8) missing.push('8+ СЃРёРјРІРѕР»РѕРІ');
   if (!/[a-z]/.test(pw)) missing.push('a-z');
   if (!/[A-Z]/.test(pw)) missing.push('A-Z');
-  if (!/\d/.test(pw)) missing.push('цифру');
-  if (!/[^a-zA-Z0-9]/.test(pw)) missing.push('символ !@#');
-  label.textContent = 'Нужно: ' + missing.join(', ');
+  if (!/\d/.test(pw)) missing.push('С†РёС„СЂСѓ');
+  if (!/[^a-zA-Z0-9]/.test(pw)) missing.push('СЃРёРјРІРѕР» !@#');
+  label.textContent = 'РќСѓР¶РЅРѕ: ' + missing.join(', ');
 }
 
 function showAuthStep(name) {
@@ -3215,10 +3223,10 @@ function showAuth(mode) {
   $('#authCaptchaInput').value = '';
   clearAuthError($('#authCaptchaError'));
   if (reg) renderCaptcha();
-  $('#authSubmit').textContent = reg ? 'Далее' : 'Войти';
+  $('#authSubmit').textContent = reg ? 'Р”Р°Р»РµРµ' : 'Р’РѕР№С‚Рё';
   $('#authHint').innerHTML = reg
-    ? 'Уже есть аккаунт? <a href="#" id="authSwitch">Войти</a>'
-    : 'Нет аккаунта? <a href="#" id="authSwitch">Создать</a>';
+    ? 'РЈР¶Рµ РµСЃС‚СЊ Р°РєРєР°СѓРЅС‚? <a href="#" id="authSwitch">Р’РѕР№С‚Рё</a>'
+    : 'РќРµС‚ Р°РєРєР°СѓРЅС‚Р°? <a href="#" id="authSwitch">РЎРѕР·РґР°С‚СЊ</a>';
   $('#authSwitch').addEventListener('click', (e) => { e.preventDefault(); showAuth(reg ? 'login' : 'register'); });
   showAuthStep('creds');
   renderAuthColors();
@@ -3235,27 +3243,27 @@ async function handleAuthSubmit() {
   const accounts = await refreshAccountsFromCloud();
 
   if (mode === 'register') {
-    if (!name) return showAuthError($('#authError'), 'Введите никнейм');
-    if (name.length < 4) return showAuthError($('#authError'), 'Никнейм минимум 4 символа');
-    if (name.length > LIMITS.name) return showAuthError($('#authError'), `Никнейм максимум ${LIMITS.name} символов`);
-    if (!/^[a-z0-9_]+$/.test(username) || username.length < 4) return showAuthError($('#authError'), 'Юзернейм: 4-14 символов (a-z, 0-9, _)');
-    if (username.length > LIMITS.username) return showAuthError($('#authError'), `Юзернейм максимум ${LIMITS.username} символов`);
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showAuthError($('#authError'), 'Введите корректную почту');
-    if (password.length < 8) return showAuthError($('#authError'), 'Пароль минимум 8 символов');
-    if (!/[a-z]/.test(password)) return showAuthError($('#authError'), 'Пароль должен содержать строчную букву (a-z)');
-    if (!/[A-Z]/.test(password)) return showAuthError($('#authError'), 'Пароль должен содержать заглавную букву (A-Z)');
-    if (!/\d/.test(password)) return showAuthError($('#authError'), 'Пароль должен содержать цифру (0-9)');
-    if (!/[^a-zA-Z0-9]/.test(password)) return showAuthError($('#authError'), 'Пароль должен содержать символ (!@#$%^&*)');
-    if (weakPasswordDetect(password)) return showAuthError($('#authError'), 'Пароль слишком простой — придумайте сложнее (без 12345, qwerty и похожих)');
-    if (password.length > LIMITS.password) return showAuthError($('#authError'), `Пароль максимум ${LIMITS.password} символов`);
+    if (!name) return showAuthError($('#authError'), 'Р’РІРµРґРёС‚Рµ РЅРёРєРЅРµР№Рј');
+    if (name.length < 4) return showAuthError($('#authError'), 'РќРёРєРЅРµР№Рј РјРёРЅРёРјСѓРј 4 СЃРёРјРІРѕР»Р°');
+    if (name.length > LIMITS.name) return showAuthError($('#authError'), `РќРёРєРЅРµР№Рј РјР°РєСЃРёРјСѓРј ${LIMITS.name} СЃРёРјРІРѕР»РѕРІ`);
+    if (!/^[a-z0-9_]+$/.test(username) || username.length < 4) return showAuthError($('#authError'), 'Р®Р·РµСЂРЅРµР№Рј: 4-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _)');
+    if (username.length > LIMITS.username) return showAuthError($('#authError'), `Р®Р·РµСЂРЅРµР№Рј РјР°РєСЃРёРјСѓРј ${LIMITS.username} СЃРёРјРІРѕР»РѕРІ`);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showAuthError($('#authError'), 'Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅСѓСЋ РїРѕС‡С‚Сѓ');
+    if (password.length < 8) return showAuthError($('#authError'), 'РџР°СЂРѕР»СЊ РјРёРЅРёРјСѓРј 8 СЃРёРјРІРѕР»РѕРІ');
+    if (!/[a-z]/.test(password)) return showAuthError($('#authError'), 'РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ СЃС‚СЂРѕС‡РЅСѓСЋ Р±СѓРєРІСѓ (a-z)');
+    if (!/[A-Z]/.test(password)) return showAuthError($('#authError'), 'РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ Р·Р°РіР»Р°РІРЅСѓСЋ Р±СѓРєРІСѓ (A-Z)');
+    if (!/\d/.test(password)) return showAuthError($('#authError'), 'РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ С†РёС„СЂСѓ (0-9)');
+    if (!/[^a-zA-Z0-9]/.test(password)) return showAuthError($('#authError'), 'РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ СЃРёРјРІРѕР» (!@#$%^&*)');
+    if (weakPasswordDetect(password)) return showAuthError($('#authError'), 'РџР°СЂРѕР»СЊ СЃР»РёС€РєРѕРј РїСЂРѕСЃС‚РѕР№ вЂ” РїСЂРёРґСѓРјР°Р№С‚Рµ СЃР»РѕР¶РЅРµРµ (Р±РµР· 12345, qwerty Рё РїРѕС…РѕР¶РёС…)');
+    if (password.length > LIMITS.password) return showAuthError($('#authError'), `РџР°СЂРѕР»СЊ РјР°РєСЃРёРјСѓРј ${LIMITS.password} СЃРёРјРІРѕР»РѕРІ`);
     if (($('#authCaptchaInput').value.trim() || '').toUpperCase() !== authCaptchaCode) {
       renderCaptcha();
       $('#authCaptchaInput').value = '';
-      return showAuthError($('#authCaptchaError'), 'Введите код с картинки правильно');
+      return showAuthError($('#authCaptchaError'), 'Р’РІРµРґРёС‚Рµ РєРѕРґ СЃ РєР°СЂС‚РёРЅРєРё РїСЂР°РІРёР»СЊРЅРѕ');
     }
-    if (accounts.users[username]) return showAuthError($('#authError'), 'Этот юзернейм уже занят');
+    if (accounts.users[username]) return showAuthError($('#authError'), 'Р­С‚РѕС‚ СЋР·РµСЂРЅРµР№Рј СѓР¶Рµ Р·Р°РЅСЏС‚');
     const emailTaken = accountsList().some(a => a.email === email);
-    if (emailTaken) return showAuthError($('#authError'), 'Эта почта уже используется');
+    if (emailTaken) return showAuthError($('#authError'), 'Р­С‚Р° РїРѕС‡С‚Р° СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ');
     authPending = {
       email,
       finalize: () => {
@@ -3282,26 +3290,26 @@ async function handleAuthSubmit() {
           scheduleCloudBackup();
         }
         ensureDefaultAdmin();
-        addLog(username, 'Зарегистрировался (ID ' + acc.id + ')');
+        addLog(username, 'Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°Р»СЃСЏ (ID ' + acc.id + ')');
         startApp(acc);
       }
     };
   } else {
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showAuthError($('#authError'), 'Введите корректную почту');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showAuthError($('#authError'), 'Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅСѓСЋ РїРѕС‡С‚Сѓ');
     let acc = accounts.users[username];
     if (!acc && MAIL_RELAY_URL) {
       acc = await findAccountInCloud(username, email);
       if (acc) {
         accounts.users[username] = acc;
         saveAccounts(accounts);
-        toast('Аккаунт восстановлен из облака');
+        toast('РђРєРєР°СѓРЅС‚ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ РёР· РѕР±Р»Р°РєР°');
       }
     }
     if (!acc) {
       showAccountNotice(username);
-      return showAuthError($('#authError'), 'Пользователь не найден');
+      return showAuthError($('#authError'), 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ');
     }
-    if (acc.isBot) return showAuthError($('#authError'), 'Это бот — в аккаунт войти нельзя');
+    if (acc.isBot) return showAuthError($('#authError'), 'Р­С‚Рѕ Р±РѕС‚ вЂ” РІ Р°РєРєР°СѓРЅС‚ РІРѕР№С‚Рё РЅРµР»СЊР·СЏ');
     if (acc.banned) {
       if (acc.banInfo && acc.banInfo.unbanAt && Date.now() >= acc.banInfo.unbanAt) {
         acc.banned = false;
@@ -3311,12 +3319,12 @@ async function handleAuthSubmit() {
       } else {
         const bi = acc.banInfo || {};
         showAccountNotice(username);
-        return showAuthError($('#authError'), 'Этот аккаунт забанен администрацией\nАдминистратор: @' + (bi.admin || '—') + ' · Бан: ' + fmtNoticeDate(bi.bannedAt) + ' · Разбан: ' + (bi.unbanAt ? fmtNoticeDate(bi.unbanAt) : 'Навсегда'));
+        return showAuthError($('#authError'), 'Р­С‚РѕС‚ Р°РєРєР°СѓРЅС‚ Р·Р°Р±Р°РЅРµРЅ Р°РґРјРёРЅРёСЃС‚СЂР°С†РёРµР№\nРђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ: @' + (bi.admin || 'вЂ”') + ' В· Р‘Р°РЅ: ' + fmtNoticeDate(bi.bannedAt) + ' В· Р Р°Р·Р±Р°РЅ: ' + (bi.unbanAt ? fmtNoticeDate(bi.unbanAt) : 'РќР°РІСЃРµРіРґР°'));
       }
     }
-    if (acc.email !== email) return showAuthError($('#authError'), 'Почта не совпадает с этим аккаунтом');
-    if (acc.password !== password) return showAuthError($('#authError'), 'Неверный пароль');
-    authPending = { email: acc.email, finalize: () => { addLog(username, 'Вошёл в аккаунт'); startApp(acc); } };
+    if (acc.email !== email) return showAuthError($('#authError'), 'РџРѕС‡С‚Р° РЅРµ СЃРѕРІРїР°РґР°РµС‚ СЃ СЌС‚РёРј Р°РєРєР°СѓРЅС‚РѕРј');
+    if (acc.password !== password) return showAuthError($('#authError'), 'РќРµРІРµСЂРЅС‹Р№ РїР°СЂРѕР»СЊ');
+    authPending = { email: acc.email, finalize: () => { addLog(username, 'Р’РѕС€С‘Р» РІ Р°РєРєР°СѓРЅС‚'); startApp(acc); } };
   }
 
   $('#authVerifyEmail').textContent = authPending.email;
@@ -3327,10 +3335,10 @@ async function handleAuthSubmit() {
 
 function confirmAuthVerify() {
   const code = codeValue($('#authCodeInputs'));
-  if (!authCode) return showAuthError($('#authCodeError'), 'Код истёк. Запросите код повторно.');
-  if (code.length !== 6) return showAuthError($('#authCodeError'), 'Введите 6-значный код');
+  if (!authCode) return showAuthError($('#authCodeError'), 'РљРѕРґ РёСЃС‚С‘Рє. Р—Р°РїСЂРѕСЃРёС‚Рµ РєРѕРґ РїРѕРІС‚РѕСЂРЅРѕ.');
+  if (code.length !== 6) return showAuthError($('#authCodeError'), 'Р’РІРµРґРёС‚Рµ 6-Р·РЅР°С‡РЅС‹Р№ РєРѕРґ');
   if (code !== authCode) {
-    showAuthError($('#authCodeError'), 'Неверный код');
+    showAuthError($('#authCodeError'), 'РќРµРІРµСЂРЅС‹Р№ РєРѕРґ');
     clearCode($('#authCodeInputs'));
     return;
   }
@@ -3354,7 +3362,7 @@ function initAuth() {
       const box = $('#authDemoCode');
       if (!box) return;
       if (demoToggle.checked && authCode) {
-        box.innerHTML = demoCodeHtml(authCode, 'Демо-режим: ваш код:');
+        box.innerHTML = demoCodeHtml(authCode, 'Р”РµРјРѕ-СЂРµР¶РёРј: РІР°С€ РєРѕРґ:');
         box.classList.remove('hidden');
         bindDemoCopy(box);
       } else if (!demoToggle.checked) {
@@ -3398,7 +3406,7 @@ function initAuth() {
   $('#authResend').addEventListener('click', () => {
     $('#authVerifyBtn').disabled = false;
     sendAuthCode(authPending.email);
-    toast('Код отправлен повторно', authPending.email, 2000);
+    toast('РљРѕРґ РѕС‚РїСЂР°РІР»РµРЅ РїРѕРІС‚РѕСЂРЅРѕ', authPending.email, 2000);
   });
 
   showAuth('login');
@@ -3442,7 +3450,7 @@ function startApp(user) {
       const bi = user.banInfo || {};
       showAccountNotice(user.username);
       logout();
-      toast('Аккаунт забанен', 'Администратор: @' + (bi.admin || '—') + ' · Бан: ' + fmtNoticeDate(bi.bannedAt) + ' · Разбан: ' + (bi.unbanAt ? fmtNoticeDate(bi.unbanAt) : 'Навсегда'));
+      toast('РђРєРєР°СѓРЅС‚ Р·Р°Р±Р°РЅРµРЅ', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ: @' + (bi.admin || 'вЂ”') + ' В· Р‘Р°РЅ: ' + fmtNoticeDate(bi.bannedAt) + ' В· Р Р°Р·Р±Р°РЅ: ' + (bi.unbanAt ? fmtNoticeDate(bi.unbanAt) : 'РќР°РІСЃРµРіРґР°'));
       return;
     }
   }
@@ -3481,10 +3489,10 @@ function startApp(user) {
   setupPush();
   lastPresencePush = 0;
   pushPresence();
-  toast('Добро пожаловать', user.name + ' · ID ' + user.id + ' 👋');
+  toast('Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ', user.name + ' В· ID ' + user.id + ' рџ‘‹');
   maybeShowIncoming(state.chats.find(c => c.id === state.currentChatId));
   const ann = loadAnnouncement();
-  if (ann) toast('📢 Объявление', ann.text + (ann.by ? ' — @' + ann.by : ''), 6000);
+  if (ann) toast('рџ“ў РћР±СЉСЏРІР»РµРЅРёРµ', ann.text + (ann.by ? ' вЂ” @' + ann.by : ''), 6000);
   handleDeepLink();
   refreshAccountsFromCloud().then(() => {
     if (!currentUser) return;
@@ -3586,7 +3594,7 @@ function renderChatList() {
   };
 
   const catalogHtml = (catalog.length ? `
-    <div class="catalog-hint">🔍 Найдено: <b>${catalog.length}</b>${catalog.length === 6 ? '+' : ''}</div>
+    <div class="catalog-hint">рџ”Ќ РќР°Р№РґРµРЅРѕ: <b>${catalog.length}</b>${catalog.length === 6 ? '+' : ''}</div>
     ${catalog.map((c, i) => {
       const owner = accountByUsername(c.owner);
       return `
@@ -3598,16 +3606,16 @@ function renderChatList() {
             ${c.handle ? `<span class="chat-handle">@${escapeHtml(c.handle)}</span>` : ''}
           </div>
           <div class="chat-bottom">
-            <span class="chat-preview">${c.type === 'group' ? c.members.length + ' участников' : c.members.length + ' подписчиков'}${owner ? ' · создатель @' + escapeHtml(owner.username) : ''}</span>
+            <span class="chat-preview">${c.type === 'group' ? c.members.length + ' СѓС‡Р°СЃС‚РЅРёРєРѕРІ' : c.members.length + ' РїРѕРґРїРёСЃС‡РёРєРѕРІ'}${owner ? ' В· СЃРѕР·РґР°С‚РµР»СЊ @' + escapeHtml(owner.username) : ''}</span>
           </div>
         </div>
-        <button type="button" class="btn btn-primary sub-btn">${c.type === 'group' ? 'Вступить' : 'Подписаться'}</button>
+        <button type="button" class="btn btn-primary sub-btn">${c.type === 'group' ? 'Р’СЃС‚СѓРїРёС‚СЊ' : 'РџРѕРґРїРёСЃР°С‚СЊСЃСЏ'}</button>
       </div>`;
     }).join('')}
   ` : '');
 
   const userCatalogHtml = (userCatalog.length ? `
-    <div class="catalog-hint">👥 Пользователи: <b>${userCatalog.length}</b></div>
+    <div class="catalog-hint">рџ‘Ґ РџРѕР»СЊР·РѕРІР°С‚РµР»Рё: <b>${userCatalog.length}</b></div>
     ${userCatalog.map((u, i) => `
       <div class="chat-item catalog-item user-cat-item" data-user="${escapeHtml(u.username)}" style="animation-delay:${i * 30}ms">
         <div class="chat-avatar">${avatarHtml(u, '', selectedFrameClass(u))}</div>
@@ -3617,15 +3625,15 @@ function renderChatList() {
             <span class="chat-handle">@${escapeHtml(u.username)}</span>
           </div>
           <div class="chat-bottom">
-            <span class="chat-preview">ID <span class="copy-id" data-copy="${escapeHtml(u.id)}" title="Скопировать ID">${escapeHtml(u.id)} 📋</span> · ${statusOf(u).label}</span>
+            <span class="chat-preview">ID <span class="copy-id" data-copy="${escapeHtml(u.id)}" title="РЎРєРѕРїРёСЂРѕРІР°С‚СЊ ID">${escapeHtml(u.id)} рџ“‹</span> В· ${statusOf(u).label}</span>
           </div>
         </div>
-        <button type="button" class="btn btn-primary sub-btn">Написать</button>
+        <button type="button" class="btn btn-primary sub-btn">РќР°РїРёСЃР°С‚СЊ</button>
       </div>`).join('')}
   ` : '');
 
   if (!chats.length && !catalog.length && !userCatalog.length && !hidden.length) {
-    list.innerHTML = `<div class="empty-list">${state.activeFolder ? 'В папке пока нет чатов' : (q ? 'Ничего не найдено' : 'Чатов пока нет. Нажмите «+», чтобы создать чат')}</div>`;
+    list.innerHTML = `<div class="empty-list">${state.activeFolder ? 'Р’ РїР°РїРєРµ РїРѕРєР° РЅРµС‚ С‡Р°С‚РѕРІ' : (q ? 'РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ' : 'Р§Р°С‚РѕРІ РїРѕРєР° РЅРµС‚. РќР°Р¶РјРёС‚Рµ В«+В», С‡С‚РѕР±С‹ СЃРѕР·РґР°С‚СЊ С‡Р°С‚')}</div>`;
     return;
   }
 
@@ -3638,12 +3646,12 @@ function renderChatList() {
     const active = chat.id === state.currentChatId;
     const missed = chat.missedCalls || 0;
     let sub = '';
-    if (chat.type === 'private') { const stt = statusOf(user); sub = stt.label + ((user.status && user.status.s) ? ' · ' + user.status.s : ''); }
+    if (chat.type === 'private') { const stt = statusOf(user); sub = stt.label + ((user.status && user.status.s) ? ' В· ' + user.status.s : ''); }
     else if (chat.type === 'ai') sub = '';
-    else if (chat.type === 'saved') sub = 'Личные заметки';
-    else if (chat.type === 'group') sub = `${chat.members.length} участников`;
-    else sub = `${chat.members.length} подписчиков`;
-    if (chat.type === 'channel' && chat.handle) sub = `@${escapeHtml(chat.handle)} · ${sub}`;
+    else if (chat.type === 'saved') sub = 'Р›РёС‡РЅС‹Рµ Р·Р°РјРµС‚РєРё';
+    else if (chat.type === 'group') sub = `${chat.members.length} СѓС‡Р°СЃС‚РЅРёРєРѕРІ`;
+    else sub = `${chat.members.length} РїРѕРґРїРёСЃС‡РёРєРѕРІ`;
+    if (chat.type === 'channel' && chat.handle) sub = `@${escapeHtml(chat.handle)} В· ${sub}`;
     const isMe = lm && lm.from === 'me';
     const isPinned = state.pinned.includes(chat.id);
     const post = user && user.statusPost && (Date.now() - user.statusPost.time) < 86400000 ? user.statusPost : null;
@@ -3651,19 +3659,19 @@ function renderChatList() {
     return `
     <div class="chat-item ${active ? 'active' : ''}" data-id="${chat.id}" style="animation-delay:${i * 30}ms">
       <div class="chat-avatar">
-        ${post ? '<span class="st-ring" data-post="' + escapeHtml(chat.userId) + '" title="Статус">' : ''}${avatarHtml(acc, '', frame)}${post ? '</span>' : ''}
+        ${post ? '<span class="st-ring" data-post="' + escapeHtml(chat.userId) + '" title="РЎС‚Р°С‚СѓСЃ">' : ''}${avatarHtml(acc, '', frame)}${post ? '</span>' : ''}
         ${chat.type !== 'private' ? `<span class="type-icon">${TYPE_ICONS[chat.type]}</span>` : (user && statusOf(user).online ? `<span class="online-dot st-${statusOf(user).cls}"></span>` : '')}
       </div>
       <div class="chat-info">
         <div class="chat-top">
-          <span class="chat-name">${isPinned ? '<span class="pin-icon">📌</span>' : ''}${escapeHtml(chatTitle(chat))}${chat.type === 'private' ? badgeHtml(acc) : ''}</span>
+          <span class="chat-name">${isPinned ? '<span class="pin-icon">рџ“Њ</span>' : ''}${escapeHtml(chatTitle(chat))}${chat.type === 'private' ? badgeHtml(acc) : ''}</span>
           ${chat.type === 'channel' && chat.handle ? `<span class="chat-handle ch-link" data-ch="${chat.id}">@${escapeHtml(chat.handle)}</span>` : ''}
           <span class="chat-time">${lm ? fmtTime(lm.time) : ''}</span>
         </div>
         <div class="chat-bottom">
-          ${chat.type === 'ai' ? '' : `<span class="chat-preview ${unread && !active ? 'muted' : ''}">${isMe ? '<strong>Вы: </strong>' : ''}${escapeHtml(lastMessagePreview(chat))}</span>`}
+          ${chat.type === 'ai' ? '' : `<span class="chat-preview ${unread && !active ? 'muted' : ''}">${isMe ? '<strong>Р’С‹: </strong>' : ''}${escapeHtml(lastMessagePreview(chat))}</span>`}
           ${unread ? `<span class="badge">${unread}</span>` : ''}
-          ${missed ? `<span class="missed-badge" title="Пропущенный звонок">📵${missed > 1 ? ' ' + missed : ''}</span>` : ''}
+          ${missed ? `<span class="missed-badge" title="РџСЂРѕРїСѓС‰РµРЅРЅС‹Р№ Р·РІРѕРЅРѕРє">рџ“µ${missed > 1 ? ' ' + missed : ''}</span>` : ''}
         </div>
       </div>
     </div>`;
@@ -3677,8 +3685,8 @@ function renderChatList() {
   if (hidden.length) {
     html += `
       <div class="hidden-row" id="hiddenToggle">
-        <span>🙈 Скрытые (${hidden.length})</span>
-        <span class="hidden-caret">${showHidden ? '▴' : '▾'}</span>
+        <span>рџ™€ РЎРєСЂС‹С‚С‹Рµ (${hidden.length})</span>
+        <span class="hidden-caret">${showHidden ? 'в–ґ' : 'в–ѕ'}</span>
       </div>
       ${showHidden ? hidden.map(id => {
         const c = state.chats.find(x => x.id === id);
@@ -3688,7 +3696,7 @@ function renderChatList() {
           <div class="chat-avatar">${avatarHtml(accFromChat(c), '', '')}${c.type !== 'private' ? `<span class="type-icon">${TYPE_ICONS[c.type]}</span>` : ''}</div>
           <div class="chat-info">
             <div class="chat-top"><span class="chat-name">${escapeHtml(chatTitle(c))}</span></div>
-            <div class="chat-bottom"><span class="chat-preview muted">скрыт — ПКМ, чтобы показать</span></div>
+            <div class="chat-bottom"><span class="chat-preview muted">СЃРєСЂС‹С‚ вЂ” РџРљРњ, С‡С‚РѕР±С‹ РїРѕРєР°Р·Р°С‚СЊ</span></div>
           </div>
         </div>`;
       }).join('') : ''}`;
@@ -3739,7 +3747,7 @@ function renderChat() {
       <div class="empty-content">
         <div class="empty-logo"><svg viewBox="0 0 24 24"><g class="lg-ring-still"><ellipse cx="12" cy="12" rx="8.2" ry="2.6" fill="none" stroke="#fff" stroke-width="1.5" transform="rotate(-20 12 12)"/></g><circle cx="12" cy="12" r="4.4" fill="#fff"/><path class="lg-star" d="M18.4 2.9l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z" fill="#fff"/><g class="lg-orbit"><circle cx="20.2" cy="12" r="1.5" fill="#fff"/></g></svg></div>
         <h2>Nebula Messenger</h2>
-        <p>Выберите чат или создайте новый</p>
+        <p>Р’С‹Р±РµСЂРёС‚Рµ С‡Р°С‚ РёР»Рё СЃРѕР·РґР°Р№С‚Рµ РЅРѕРІС‹Р№</p>
       </div>`;
     return;
   }
@@ -3758,62 +3766,62 @@ function renderChat() {
   let sub;
   if (chat.type === 'private') {
     const stt = statusOf(user);
-    sub = `<span class="online st-${stt.cls}">${stt.label}</span>` + (stt.text ? ` · ${escapeHtml(stt.text)}` : '');
+    sub = `<span class="online st-${stt.cls}">${stt.label}</span>` + (stt.text ? ` В· ${escapeHtml(stt.text)}` : '');
   } else if (chat.type === 'ai') sub = '';
-  else if (chat.type === 'saved') sub = 'Личные заметки · видны только вам';
-  else if (chat.type === 'group') sub = `${chat.members.length} участников · ${chat.desc || 'группа'}`;
-  else sub = `${chat.members.length} подписчиков · ${chat.desc || 'канал'}`;
-  if (chat.type === 'channel' && chat.handle) sub = `@${escapeHtml(chat.handle)} · ${sub}`;
+  else if (chat.type === 'saved') sub = 'Р›РёС‡РЅС‹Рµ Р·Р°РјРµС‚РєРё В· РІРёРґРЅС‹ С‚РѕР»СЊРєРѕ РІР°Рј';
+  else if (chat.type === 'group') sub = `${chat.members.length} СѓС‡Р°СЃС‚РЅРёРєРѕРІ В· ${chat.desc || 'РіСЂСѓРїРїР°'}`;
+  else sub = `${chat.members.length} РїРѕРґРїРёСЃС‡РёРєРѕРІ В· ${chat.desc || 'РєР°РЅР°Р»'}`;
+  if (chat.type === 'channel' && chat.handle) sub = `@${escapeHtml(chat.handle)} В· ${sub}`;
 
   const showDolphin = chat.type !== 'channel' && chat.type !== 'ai' && chat.type !== 'saved';
   let headerExtras = '';
   if (chat.type === 'private' || chat.type === 'group') {
-    headerExtras += `<button class="icon-btn" id="callBtn" title="Позвонить" style="${chat.type === 'group' ? 'padding-right:2px' : ''}">
+    headerExtras += `<button class="icon-btn" id="callBtn" title="РџРѕР·РІРѕРЅРёС‚СЊ" style="${chat.type === 'group' ? 'padding-right:2px' : ''}">
       <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
     </button>
-    <button class="icon-btn" id="videoCallBtn" title="Видеозвонок" style="padding-right:2px">
+    <button class="icon-btn" id="videoCallBtn" title="Р’РёРґРµРѕР·РІРѕРЅРѕРє" style="padding-right:2px">
       <svg viewBox="0 0 24 24" style="fill:currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
     </button>`;
   }
   if (chat.type === 'private' || chat.type === 'ai') {
-    headerExtras += `<button class="icon-btn" id="userCardBtn" title="Карточка">
+    headerExtras += `<button class="icon-btn" id="userCardBtn" title="РљР°СЂС‚РѕС‡РєР°">
       <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg>
     </button>`;
   }
   if (showDolphin) {
     const dl = dolphinLevel(dolphinFor(dolphinKeyFor(chat), chat));
     headerExtras += `<button class="dolphin-chip" id="dolphinBtn" title="${dolphinStage(dl)}">
-      <span class="dl">🐬</span> ур. ${dl}
+      <span class="dl">рџђ¬</span> СѓСЂ. ${dl}
     </button>`;
   }
 
   let composer;
   if (isBlocked) {
-    composer = `<div class="channel-notice">Вы заблокировали этого пользователя</div>`;
+    composer = `<div class="channel-notice">Р’С‹ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°Р»Рё СЌС‚РѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div>`;
   } else if (canWrite) {
     composer = `
-      <button class="icon-btn" id="attachBtn" title="Прикрепить файл">
+      <button class="icon-btn" id="attachBtn" title="РџСЂРёРєСЂРµРїРёС‚СЊ С„Р°Р№Р»">
         <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
       </button>
-      <button class="icon-btn" id="voiceBtn" title="Голосовое сообщение">
+      <button class="icon-btn" id="voiceBtn" title="Р“РѕР»РѕСЃРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ">
         <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
       </button>
-      <button class="icon-btn" id="videoMsgBtn" title="Кружок — видеосообщение">
+      <button class="icon-btn" id="videoMsgBtn" title="РљСЂСѓР¶РѕРє вЂ” РІРёРґРµРѕСЃРѕРѕР±С‰РµРЅРёРµ">
         <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
       </button>
-      <button class="icon-btn" id="emojiBtn" title="Эмодзи">
+      <button class="icon-btn" id="emojiBtn" title="Р­РјРѕРґР·Рё">
         <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
       </button>
-      <button class="icon-btn" id="stickBtn" title="Стикеры">
+      <button class="icon-btn" id="stickBtn" title="РЎС‚РёРєРµСЂС‹">
         <svg viewBox="0 0 24 24"><path d="M18.5 2H5.5C4.12 2 3 3.12 3 4.5v15C3 20.88 4.12 22 5.5 22h13c1.38 0 2.5-1.12 2.5-2.5v-15C21 3.12 19.88 2 18.5 2zm0 17.5h-13v-15h13v15zM7.5 6h9v2h-9V6zm0 4h9v2h-9v-2zm0 4h6v2h-6v-2z"/></svg>
       </button>
       <div class="composer-extra" id="composerExtra">${composerExtraHtml(chat)}</div>
-      <div class="msg-input"><textarea id="msgText" placeholder="${isIgnored ? 'Сообщение (пользователь в игноре)' : 'Сообщение'}" rows="1"></textarea></div>
+      <div class="msg-input"><textarea id="msgText" placeholder="${isIgnored ? 'РЎРѕРѕР±С‰РµРЅРёРµ (РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РІ РёРіРЅРѕСЂРµ)' : 'РЎРѕРѕР±С‰РµРЅРёРµ'}" rows="1"></textarea></div>
       <button class="send-btn" id="sendBtn">
         <svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>`;
   } else {
-    composer = `<div class="channel-notice">${chat.id === NEWS_CHAT_ID ? 'Публиковать в Nebula News могут только админы' : 'Только владелец и администраторы могут публиковать сообщения'}</div>`;
+    composer = `<div class="channel-notice">${chat.id === NEWS_CHAT_ID ? 'РџСѓР±Р»РёРєРѕРІР°С‚СЊ РІ Nebula News РјРѕРіСѓС‚ С‚РѕР»СЊРєРѕ Р°РґРјРёРЅС‹' : 'РўРѕР»СЊРєРѕ РІР»Р°РґРµР»РµС† Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹ РјРѕРіСѓС‚ РїСѓР±Р»РёРєРѕРІР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёСЏ'}</div>`;
   }
 
   const inEl0 = $('#msgText');
@@ -3822,32 +3830,32 @@ function renderChat() {
 
   area.innerHTML = `
     <header class="chat-header">
-      <button class="icon-btn m-back-btn" id="mBackBtn" title="К списку чатов" style="flex-shrink:0">
+      <button class="icon-btn m-back-btn" id="mBackBtn" title="Рљ СЃРїРёСЃРєСѓ С‡Р°С‚РѕРІ" style="flex-shrink:0">
         <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       </button>
-      ${headPost ? `<span class="st-ring st-head" data-post="${escapeHtml(acc.username)}" title="Статус">` : ''}${avatarHtml(acc, '', frame)}${headPost ? '</span>' : ''}
+      ${headPost ? `<span class="st-ring st-head" data-post="${escapeHtml(acc.username)}" title="РЎС‚Р°С‚СѓСЃ">` : ''}${avatarHtml(acc, '', frame)}${headPost ? '</span>' : ''}
       <div class="chat-header-info">
-        <div class="chat-header-title${chat.type !== 'private' && chat.type !== 'ai' && chat.type !== 'saved' ? ' clickable-title' : ''}" ${chat.type !== 'private' && chat.type !== 'ai' && chat.type !== 'saved' ? `data-chcard="${escapeHtml(chat.id)}" title="Карточка ${chat.type === 'channel' ? 'канала' : 'группы'}"` : ''}>${chat.type === 'private' ? displayName(acc) : escapeHtml(chatTitle(chat))}${chat.type === 'channel' && chat.handle ? `<span class="chat-handle ch-link" data-ch="${chat.id}">@${escapeHtml(chat.handle)}</span>` : ''}</div>
+        <div class="chat-header-title${chat.type !== 'private' && chat.type !== 'ai' && chat.type !== 'saved' ? ' clickable-title' : ''}" ${chat.type !== 'private' && chat.type !== 'ai' && chat.type !== 'saved' ? `data-chcard="${escapeHtml(chat.id)}" title="РљР°СЂС‚РѕС‡РєР° ${chat.type === 'channel' ? 'РєР°РЅР°Р»Р°' : 'РіСЂСѓРїРїС‹'}"` : ''}>${chat.type === 'private' ? displayName(acc) : escapeHtml(chatTitle(chat))}${chat.type === 'channel' && chat.handle ? `<span class="chat-handle ch-link" data-ch="${chat.id}">@${escapeHtml(chat.handle)}</span>` : ''}</div>
         <div class="chat-header-sub">${sub}</div>
-        ${headPost && statusOf(acc).online ? `<button type="button" class="head-status-btn" data-post="${escapeHtml(acc.username)}">👁 Посмотреть статус</button>` : ''}
+        ${headPost && statusOf(acc).online ? `<button type="button" class="head-status-btn" data-post="${escapeHtml(acc.username)}">рџ‘Ѓ РџРѕСЃРјРѕС‚СЂРµС‚СЊ СЃС‚Р°С‚СѓСЃ</button>` : ''}
       </div>
       ${headerExtras}
-      ${chat.type !== 'saved' ? `<button class="icon-btn" id="manageBtn" title="Настройки чата">
+      ${chat.type !== 'saved' ? `<button class="icon-btn" id="manageBtn" title="РќР°СЃС‚СЂРѕР№РєРё С‡Р°С‚Р°">
         <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
       </button>` : ''}
     </header>
     <div class="messages-wrap" id="messagesWrap"></div>
-    <button class="jump-btn" id="jumpBottom" title="Вниз">↓</button>
-    ${isBlocked ? `<div class="service-msg warn" style="margin:0 22px 10px;align-self:center">⛔ Вы заблокировали этого пользователя — он больше не сможет вам писать</div>` : ''}
+    <button class="jump-btn" id="jumpBottom" title="Р’РЅРёР·">в†“</button>
+    ${isBlocked ? `<div class="service-msg warn" style="margin:0 22px 10px;align-self:center">в›” Р’С‹ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°Р»Рё СЌС‚РѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ вЂ” РѕРЅ Р±РѕР»СЊС€Рµ РЅРµ СЃРјРѕР¶РµС‚ РІР°Рј РїРёСЃР°С‚СЊ</div>` : ''}
     <div class="composer">
       <div class="rec-bar hidden" id="recBar">
         <video class="rec-preview hidden" id="recPreview" muted playsinline autoplay></video>
         <span class="rec-dot"></span>
-        <span class="rec-label" id="recLabel">Голосовое</span>
+        <span class="rec-label" id="recLabel">Р“РѕР»РѕСЃРѕРІРѕРµ</span>
         <span class="rec-timer" id="recTimer">0:00</span>
         <div class="rec-spacer"></div>
-        <button class="rec-cancel" id="recCancel" title="Отменить">✕</button>
-        <button class="rec-send" id="recSend" title="Отправить">➤</button>
+        <button class="rec-cancel" id="recCancel" title="РћС‚РјРµРЅРёС‚СЊ">вњ•</button>
+        <button class="rec-send" id="recSend" title="РћС‚РїСЂР°РІРёС‚СЊ">вћ¤</button>
       </div>
       <div class="pending-bar hidden" id="pendingBar"></div>
       ${composer}
@@ -3866,7 +3874,7 @@ function renderChat() {
   mobileShowChat();
 }
 
-/* ---------- Прокрутка чата ---------- */
+/* ---------- РџСЂРѕРєСЂСѓС‚РєР° С‡Р°С‚Р° ---------- */
 function isChatNearBottom() {
   const wrap = $('#messagesWrap');
   if (!wrap) return true;
@@ -3915,7 +3923,7 @@ function linkifyChannels(html) {
   });
   out = out.replace(/(?:nebula:\/\/c\/|https?:\/\/[^\s'"<>]*[?&]c=)([A-Za-z0-9_]+)/g, (m, ref) => {
     const c = byId[ref] || byHandle[String(ref).toLowerCase()];
-    if (c) return `<a class="ch-link" data-ch="${c.id}">🔗 ${c.handle ? '@' + c.handle : 'Ссылка на канал'}</a>`;
+    if (c) return `<a class="ch-link" data-ch="${c.id}">рџ”— ${c.handle ? '@' + c.handle : 'РЎСЃС‹Р»РєР° РЅР° РєР°РЅР°Р»'}</a>`;
     return m;
   });
   return out;
@@ -3926,12 +3934,12 @@ function openChannelByLink(ref) {
   const chat = state.chats.find(c => c.id === id || (c.handle && c.handle.toLowerCase() === lk));
   if (chat) { selectChat(chat.id); return; }
   const src = uniqueChatsAcrossUsers().find(c => c.id === id || (c.handle && c.handle.toLowerCase() === lk));
-  if (!src) return toast('Канал не найден');
+  if (!src) return toast('РљР°РЅР°Р» РЅРµ РЅР°Р№РґРµРЅ');
   state.search = '@' + (src.handle || '');
   state.activeFolder = null;
   state.filter = 'all';
   renderChatList();
-  toast(src.type === 'channel' ? 'Нажмите «Подписаться»' : 'Нажмите «Вступить»', src.name);
+  toast(src.type === 'channel' ? 'РќР°Р¶РјРёС‚Рµ В«РџРѕРґРїРёСЃР°С‚СЊСЃСЏВ»' : 'РќР°Р¶РјРёС‚Рµ В«Р’СЃС‚СѓРїРёС‚СЊВ»', src.name);
 }
 function msgMetaIcons(chat, msg) {
   if (msg.from !== 'me') return '';
@@ -3941,25 +3949,25 @@ function msgMetaIcons(chat, msg) {
   const clock = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.59 3.25 1.88-.55.94L11.5 13V6.5h1.5v6.09z"/></svg>';
   const cls = msg.read ? 'read' : msg.sent ? 'sent' : 'pending';
   const tick = cls === 'pending' ? clock : (isPriv ? dbl : single);
-  return `<span class="meta">${msg.edited ? '<span class="edited">изменено</span>' : ''}${fmtTime(msg.time)}<span class="meta-tick ${cls}">${tick}</span></span>`;
+  return `<span class="meta">${msg.edited ? '<span class="edited">РёР·РјРµРЅРµРЅРѕ</span>' : ''}${fmtTime(msg.time)}<span class="meta-tick ${cls}">${tick}</span></span>`;
 }
 
-function shortText(t, n = 60) { return String(t || '').length > n ? String(t || '').slice(0, n) + '…' : String(t || ''); }
+function shortText(t, n = 60) { return String(t || '').length > n ? String(t || '').slice(0, n) + 'вЂ¦' : String(t || ''); }
 function fmtBytes(b) {
   if (!b && b !== 0) return '';
-  if (b < 1024) return b + ' Б';
-  if (b < 1048576) return (b / 1024).toFixed(1).replace(/\.0$/, '') + ' КБ';
-  return (b / 1048576).toFixed(1).replace(/\.0$/, '') + ' МБ';
+  if (b < 1024) return b + ' Р‘';
+  if (b < 1048576) return (b / 1024).toFixed(1).replace(/\.0$/, '') + ' РљР‘';
+  return (b / 1048576).toFixed(1).replace(/\.0$/, '') + ' РњР‘';
 }
-function senderName(msg, chat, meLabel = 'Вы') {
+function senderName(msg, chat, meLabel = 'Р’С‹') {
   if (msg.from === 'me') return meLabel;
   if (msg.from === 'news') return 'Nebula News';
   if (msg.from === 'nebula') return 'Nebula AI';
   const u = chat.type === 'private' ? userById(chat.userId) : userById(msg.from);
-  return u ? u.name : 'Пользователь';
+  return u ? u.name : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ';
 }
 
-const REACT_EMOJIS = ['👍', '❤️', '😂', '🤣', '😮', '🔥', '🙏', '😍', '🎉', '😢', '😡', '💯'];
+const REACT_EMOJIS = ['рџ‘Ќ', 'вќ¤пёЏ', 'рџ‚', 'рџ¤Ј', 'рџ®', 'рџ”Ґ', 'рџ™Џ', 'рџЌ', 'рџЋ‰', 'рџў', 'рџЎ', 'рџ’Ї'];
 const replyTarget = { chatId: null, msgId: null };
 const editTarget = { chatId: null, msgId: null };
 const forwardTarget = { chatId: null, msgId: null };
@@ -3973,8 +3981,8 @@ function renderPollHtml(msg) {
   const showAnswer = p.quiz && (isAuthor || voted);
   return `<div class="poll-block">
     <div class="poll-head">
-      <span class="poll-q">${p.quiz ? '🧠' : '📊'} ${escapeHtml(p.question)}</span>
-      ${p.quiz ? `<span class="poll-tag ${showAnswer ? 'answered' : ''}">${showAnswer ? 'викторина · ответ открыт' : 'викторина'}</span>` : ''}
+      <span class="poll-q">${p.quiz ? 'рџ§ ' : 'рџ“Љ'} ${escapeHtml(p.question)}</span>
+      ${p.quiz ? `<span class="poll-tag ${showAnswer ? 'answered' : ''}">${showAnswer ? 'РІРёРєС‚РѕСЂРёРЅР° В· РѕС‚РІРµС‚ РѕС‚РєСЂС‹С‚' : 'РІРёРєС‚РѕСЂРёРЅР°'}</span>` : ''}
     </div>
     <div class="poll-opts">
       ${p.options.map((o, i) => {
@@ -3984,13 +3992,13 @@ function renderPollHtml(msg) {
         const isCorrect = showAnswer && p.correct === i;
         const isWrong = showAnswer && isMine && p.correct !== i;
         return `<button type="button" class="poll-opt ${isMine ? 'my' : ''} ${isCorrect ? 'right' : ''} ${isWrong ? 'wrong' : ''}" data-mid="${msg.id}" data-opt="${i}">
-          <span class="po-label">${isCorrect ? '✅ ' : isWrong ? '❌ ' : ''}${escapeHtml(o)}</span>
+          <span class="po-label">${isCorrect ? 'вњ… ' : isWrong ? 'вќЊ ' : ''}${escapeHtml(o)}</span>
           <span class="po-bar"><i style="width:${pct}%"></i></span>
           <span class="po-count">${cnt} (${pct}%)</span>
         </button>`;
       }).join('')}
     </div>
-    <div class="poll-total">Всего голосов: ${total}${voted && !p.allowChange ? ' · ответ принят' : ''}</div>
+    <div class="poll-total">Р’СЃРµРіРѕ РіРѕР»РѕСЃРѕРІ: ${total}${voted && !p.allowChange ? ' В· РѕС‚РІРµС‚ РїСЂРёРЅСЏС‚' : ''}</div>
   </div>`;
 }
 function renderContactHtml(c) {
@@ -3999,16 +4007,16 @@ function renderContactHtml(c) {
     <span class="avatar" style="${avatarStyle(acc)}">${avatarInnerHtml(acc)}</span>
     <div class="cc-info">
       <div class="cc-name">${displayName(acc)}</div>
-      <div class="cc-sub">@${escapeHtml(c.username)} · ID ${escapeHtml(c.id)}</div>
+      <div class="cc-sub">@${escapeHtml(c.username)} В· ID ${escapeHtml(c.id)}</div>
     </div>
-    <span class="cc-btn">Написать</span>
+    <span class="cc-btn">РќР°РїРёСЃР°С‚СЊ</span>
   </div>`;
 }
 function toggleVote(msg, optIdx) {
   if (!msg.poll.votes) msg.poll.votes = {};
   const cur = Object.entries(msg.poll.votes).find(([, a]) => a.includes('me'));
   if (cur && !msg.poll.allowChange) {
-    toast('Ответ уже принят', 'Изменить ответ нельзя');
+    toast('РћС‚РІРµС‚ СѓР¶Рµ РїСЂРёРЅСЏС‚', 'РР·РјРµРЅРёС‚СЊ РѕС‚РІРµС‚ РЅРµР»СЊР·СЏ');
     return;
   }
   if (cur) {
@@ -4032,7 +4040,7 @@ function sendPollMessage(chat, question, options, opts) {
     if (chat.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(msg);
     else syncGroupMessageEverywhere(chat, msg, currentUser.username);
   }
-  addLog(currentUser.username, `Создал ${opts.quiz ? 'викторину' : 'опрос'} «${shortText(question, 30)}» в «${chatTitle(chat)}»`);
+  addLog(currentUser.username, `РЎРѕР·РґР°Р» ${opts.quiz ? 'РІРёРєС‚РѕСЂРёРЅСѓ' : 'РѕРїСЂРѕСЃ'} В«${shortText(question, 30)}В» РІ В«${chatTitle(chat)}В»`);
   saveState();
   renderMessages(chat);
   if (isChatNearBottom()) scrollChatToBottom();
@@ -4047,7 +4055,7 @@ function sendContactMessage(chat, u) {
     if (chat.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(msg);
     else syncGroupMessageEverywhere(chat, msg, currentUser.username);
   }
-  addLog(currentUser.username, `Поделился контактом @${u.username} в «${chatTitle(chat)}»`);
+  addLog(currentUser.username, `РџРѕРґРµР»РёР»СЃСЏ РєРѕРЅС‚Р°РєС‚РѕРј @${u.username} РІ В«${chatTitle(chat)}В»`);
   saveState();
   renderMessages(chat);
   if (isChatNearBottom()) scrollChatToBottom();
@@ -4061,34 +4069,34 @@ function openPollModal(chat) {
   modal.innerHTML = `
     <div class="modal-box poll-modal">
       <div class="pm-head">
-        <span class="pm-ico">📊</span>
+        <span class="pm-ico">рџ“Љ</span>
         <div class="pm-head-txt">
-          <h3>Создать опрос</h3>
-          <p>в ${escapeHtml(chatTitle(chat))}</p>
+          <h3>РЎРѕР·РґР°С‚СЊ РѕРїСЂРѕСЃ</h3>
+          <p>РІ ${escapeHtml(chatTitle(chat))}</p>
         </div>
-        <button type="button" class="pm-x" title="Закрыть">✕</button>
+        <button type="button" class="pm-x" title="Р—Р°РєСЂС‹С‚СЊ">вњ•</button>
       </div>
       <div class="pm-field">
-        <textarea class="pm-q" rows="2" maxlength="120" placeholder="Напишите вопрос..." autocomplete="off"></textarea>
+        <textarea class="pm-q" rows="2" maxlength="120" placeholder="РќР°РїРёС€РёС‚Рµ РІРѕРїСЂРѕСЃ..." autocomplete="off"></textarea>
         <span class="pm-count">0/120</span>
       </div>
       <div class="pm-type">
-        <button type="button" class="pm-type-btn sel" data-type="poll">📊 Опрос</button>
-        <button type="button" class="pm-type-btn" data-type="quiz">🧠 Викторина</button>
+        <button type="button" class="pm-type-btn sel" data-type="poll">рџ“Љ РћРїСЂРѕСЃ</button>
+        <button type="button" class="pm-type-btn" data-type="quiz">рџ§  Р’РёРєС‚РѕСЂРёРЅР°</button>
       </div>
-      <div class="pm-hint" id="pmHint">Варианты ответа — минимум 2, максимум 10</div>
+      <div class="pm-hint" id="pmHint">Р’Р°СЂРёР°РЅС‚С‹ РѕС‚РІРµС‚Р° вЂ” РјРёРЅРёРјСѓРј 2, РјР°РєСЃРёРјСѓРј 10</div>
       <div class="pm-opts" id="pmOpts"></div>
-      <button type="button" class="pm-add">＋ Добавить вариант</button>
+      <button type="button" class="pm-add">пј‹ Р”РѕР±Р°РІРёС‚СЊ РІР°СЂРёР°РЅС‚</button>
       <div class="pm-correct-row" id="pmCorrectRow" style="display:none">
-        <span class="pm-correct-label">Правильный ответ:</span>
+        <span class="pm-correct-label">РџСЂР°РІРёР»СЊРЅС‹Р№ РѕС‚РІРµС‚:</span>
         <select class="pm-correct" id="pmCorrect"></select>
       </div>
       <label class="pm-switch-row">
         <input type="checkbox" id="pmAllowChange" checked>
         <span class="pm-switch"><i></i></span>
-        <span class="pm-switch-label">Разрешить менять ответ</span>
+        <span class="pm-switch-label">Р Р°Р·СЂРµС€РёС‚СЊ РјРµРЅСЏС‚СЊ РѕС‚РІРµС‚</span>
       </label>
-      <button type="button" class="btn btn-primary pm-send">Создать опрос</button>
+      <button type="button" class="btn btn-primary pm-send">РЎРѕР·РґР°С‚СЊ РѕРїСЂРѕСЃ</button>
     </div>`;
   document.body.appendChild(modal);
   modal.classList.add('open');
@@ -4100,14 +4108,14 @@ function openPollModal(chat) {
     const prev = correctSel.value;
     correctSel.innerHTML = vals.length
       ? vals.map((v, i) => `<option value="${i}">${i + 1}. ${escapeHtml(shortText(v, 30))}</option>`).join('')
-      : '<option value="0">—</option>';
+      : '<option value="0">вЂ”</option>';
     if (prev && vals.length > +prev) correctSel.value = prev;
   };
   modal.querySelectorAll('.pm-type-btn').forEach(b => b.addEventListener('click', () => {
     modal.querySelectorAll('.pm-type-btn').forEach(x => x.classList.toggle('sel', x === b));
     isQuiz = b.dataset.type === 'quiz';
     modal.querySelector('#pmCorrectRow').style.display = isQuiz ? 'flex' : 'none';
-    modal.querySelector('.pm-send').textContent = isQuiz ? 'Создать викторину' : 'Создать опрос';
+    modal.querySelector('.pm-send').textContent = isQuiz ? 'РЎРѕР·РґР°С‚СЊ РІРёРєС‚РѕСЂРёРЅСѓ' : 'РЎРѕР·РґР°С‚СЊ РѕРїСЂРѕСЃ';
     refreshCorrect();
   }));
   const makeRow = (n) => {
@@ -4115,10 +4123,10 @@ function openPollModal(chat) {
     row.className = 'pm-row';
     row.innerHTML = `
       <span class="pm-num">${n}</span>
-      <input type="text" class="pm-o" placeholder="Вариант ${n}" maxlength="60" autocomplete="off">
-      <button type="button" class="pm-del" title="Убрать вариант">✕</button>`;
+      <input type="text" class="pm-o" placeholder="Р’Р°СЂРёР°РЅС‚ ${n}" maxlength="60" autocomplete="off">
+      <button type="button" class="pm-del" title="РЈР±СЂР°С‚СЊ РІР°СЂРёР°РЅС‚">вњ•</button>`;
     row.querySelector('.pm-del').addEventListener('click', () => {
-      if (optsBox.children.length <= 2) return toast('Нужно минимум 2 варианта');
+      if (optsBox.children.length <= 2) return toast('РќСѓР¶РЅРѕ РјРёРЅРёРјСѓРј 2 РІР°СЂРёР°РЅС‚Р°');
       row.style.transform = 'scale(.92)';
       row.style.opacity = '0';
       setTimeout(() => { row.remove(); renum(); refreshCorrect(); }, 150);
@@ -4142,8 +4150,8 @@ function openPollModal(chat) {
   modal.querySelector('.pm-send').addEventListener('click', () => {
     const q = modal.querySelector('.pm-q').value.trim();
     const opts = Array.from(optsBox.querySelectorAll('.pm-o')).map(i => i.value.trim()).filter(Boolean);
-    if (!q) { toast('Введите вопрос'); return; }
-    if (opts.length < 2) { toast('Нужно минимум 2 варианта'); return; }
+    if (!q) { toast('Р’РІРµРґРёС‚Рµ РІРѕРїСЂРѕСЃ'); return; }
+    if (opts.length < 2) { toast('РќСѓР¶РЅРѕ РјРёРЅРёРјСѓРј 2 РІР°СЂРёР°РЅС‚Р°'); return; }
     modal.remove();
     sendPollMessage(chat, q, opts, { quiz: isQuiz, correct: correctSel.value, allowChange: modal.querySelector('#pmAllowChange').checked });
   });
@@ -4159,19 +4167,19 @@ function openContactPicker(chat) {
   modal.id = 'contactModal';
   modal.innerHTML = `
     <div class="modal-box contact-picker">
-      <h3>👤 Поделиться контактом</h3>
+      <h3>рџ‘¤ РџРѕРґРµР»РёС‚СЊСЃСЏ РєРѕРЅС‚Р°РєС‚РѕРј</h3>
       <div class="contact-list">
         ${accountsList().filter(a => a.username !== currentUser.username).map(u => `
           <div class="contact-pick" data-u="${escapeHtml(u.username)}">
             <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
             <div class="cp-info">
               <div class="cp-name">${displayName(u)}</div>
-              <div class="cp-sub">@${escapeHtml(u.username)} · ID ${escapeHtml(u.id)}</div>
+              <div class="cp-sub">@${escapeHtml(u.username)} В· ID ${escapeHtml(u.id)}</div>
             </div>
-            <button type="button" class="btn btn-primary cp-send">Поделиться</button>
-          </div>`).join('') || '<div class="empty-list">Нет других пользователей</div>'}
+            <button type="button" class="btn btn-primary cp-send">РџРѕРґРµР»РёС‚СЊСЃСЏ</button>
+          </div>`).join('') || '<div class="empty-list">РќРµС‚ РґСЂСѓРіРёС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</div>'}
       </div>
-      <button type="button" class="btn cp-cancel">Закрыть</button>
+      <button type="button" class="btn cp-cancel">Р—Р°РєСЂС‹С‚СЊ</button>
     </div>`;
   document.body.appendChild(modal);
   modal.classList.add('open');
@@ -4200,7 +4208,7 @@ function renderMessages(chat) {
     const mine = msg.from === 'me';
     const isNewsMsg = chat.id === NEWS_CHAT_ID;
     const senderAcc = isNewsMsg ? NEWS_ACC : (chat.type === 'ai' && !mine ? NEBULA_ACC : (chat.type !== 'private' && !mine ? userById(msg.from) : null));
-    const fwdName = msg.forwarded ? escapeHtml(msg.forwardedFrom || 'пользователя') : '';
+    const fwdName = msg.forwarded ? escapeHtml(msg.forwardedFrom || 'РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ') : '';
     const rt = msg.replyTo ? `
       <div class="reply-block">
         <span>${escapeHtml(msg.replyTo.name)}</span>
@@ -4213,35 +4221,35 @@ function renderMessages(chat) {
     const mediaHtml = msg.media && msg.media.length ? msg.media.map((md, mi) => {
       if (md.type && md.type.startsWith('image/')) {
         if (md.dataUrl) return `<img class="msg-photo" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
-        return `<div class="msg-photo-off" data-mid="${msg.id}" data-mi="${mi}" title="${escapeHtml(md.name)}">🖼 <span>${escapeHtml(md.name)}</span></div>`;
+        return `<div class="msg-photo-off" data-mid="${msg.id}" data-mi="${mi}" title="${escapeHtml(md.name)}">рџ–ј <span>${escapeHtml(md.name)}</span></div>`;
       }
       return `
         <div class="msg-file">
-          <span class="file-ic">📄</span>
+          <span class="file-ic">рџ“„</span>
           <span class="file-name">${escapeHtml(md.name)}</span>
           <span class="file-size">${fmtBytes(md.size)}</span>
-          ${md.dataUrl ? `<a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="Скачать">⬇</a>` : '<span class="file-dl-off" title="Файл не загружен на это устройство">—</span>'}
+          ${md.dataUrl ? `<a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="РЎРєР°С‡Р°С‚СЊ">в¬‡</a>` : '<span class="file-dl-off" title="Р¤Р°Р№Р» РЅРµ Р·Р°РіСЂСѓР¶РµРЅ РЅР° СЌС‚Рѕ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ">вЂ”</span>'}
         </div>`;
     }).join('') : '';
-    const stickerHtml = msg.sticker && msg.sticker.dataUrl ? `<img class="msg-sticker" src="${msg.sticker.dataUrl}" alt="Стикер">` : '';
+    const stickerHtml = msg.sticker && msg.sticker.dataUrl ? `<img class="msg-sticker" src="${msg.sticker.dataUrl}" alt="РЎС‚РёРєРµСЂ">` : '';
     const voiceHtml = msg.voice ? (msg.voice.dataUrl ? `
       <div class="msg-voice" data-mid="${msg.id}">
-        <button class="voice-play" data-vplay="${msg.id}" title="Играть">▶</button>
+        <button class="voice-play" data-vplay="${msg.id}" title="РРіСЂР°С‚СЊ">в–¶</button>
         <div class="voice-bar"><i></i></div>
         <span class="voice-dur">${fmtRecDur(msg.voice.dur || 0)}</span>
         <audio src="${msg.voice.dataUrl}" preload="none"></audio>
       </div>` : `
-      <div class="msg-voice-off" data-mid="${msg.id}">🎤 <span>Голосовое · ${fmtRecDur(msg.voice.dur || 0)}</span><span class="vo-note">не загружено</span></div>`) : '';
+      <div class="msg-voice-off" data-mid="${msg.id}">рџЋ¤ <span>Р“РѕР»РѕСЃРѕРІРѕРµ В· ${fmtRecDur(msg.voice.dur || 0)}</span><span class="vo-note">РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ</span></div>`) : '';
     const videoHtml = msg.video ? (msg.video.dataUrl ? `
-      <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" loop playsinline muted preload="metadata" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"></video>` : `
-      <div class="msg-kruzhok-off" data-mid="${msg.id}" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"><span>🎬</span><span class="kk-dur">${fmtRecDur(msg.video.dur || 0)}</span><span class="kk-note">не загружен</span></div>`) : '';
+      <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" loop playsinline muted preload="metadata" title="РљСЂСѓР¶РѕРє В· ${fmtRecDur(msg.video.dur || 0)}"></video>` : `
+      <div class="msg-kruzhok-off" data-mid="${msg.id}" title="РљСЂСѓР¶РѕРє В· ${fmtRecDur(msg.video.dur || 0)}"><span>рџЋ¬</span><span class="kk-dur">${fmtRecDur(msg.video.dur || 0)}</span><span class="kk-note">РЅРµ Р·Р°РіСЂСѓР¶РµРЅ</span></div>`) : '';
     const pollHtml = msg.poll ? renderPollHtml(msg) : '';
     const contactHtml = msg.contact ? renderContactHtml(msg.contact) : '';
     html += `
       <div class="msg-row ${mine ? 'out' : 'in'}">
         <div class="msg ${mine ? 'out' : 'in'}" data-mid="${msg.id}">
           ${senderAcc ? `<span class="sender">${displayName(senderAcc)}</span>` : ''}
-          ${fwdName ? `<div class="fwd-badge">➡ Переслано от ${fwdName}</div>` : ''}
+          ${fwdName ? `<div class="fwd-badge">вћЎ РџРµСЂРµСЃР»Р°РЅРѕ РѕС‚ ${fwdName}</div>` : ''}
           ${rt}
           ${pollHtml}
           ${contactHtml}
@@ -4253,12 +4261,12 @@ function renderMessages(chat) {
           ${msgMetaIcons(chat, msg)}
           ${reactChips ? `<div class="react-row">${reactChips}</div>` : ''}
           <div class="msg-actions">
-            <button data-act="react" title="Реакция"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button>
-            <button data-act="reply" title="Ответить"><svg viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5.4-5.5-9.4-11-10z"/></svg></button>
-            <button data-act="forward" title="Переслать"><svg viewBox="0 0 24 24"><path d="M5 4h14v3H5V4zm0 5h14v3H5V9zm0 5h14v3H5v-3zm0 5h14v3H5v-3z"/></svg></button>
-            <button data-act="copy" title="Копировать"><svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg></button>
-            ${mine ? `<button data-act="edit" title="Изменить">✎</button>` : ''}
-            ${(mine && chat.id !== NEWS_CHAT_ID) || (chat.id === NEWS_CHAT_ID && newsFullAccess(currentUser)) ? `<button data-act="del" title="Удалить"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
+            <button data-act="react" title="Р РµР°РєС†РёСЏ"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button>
+            <button data-act="reply" title="РћС‚РІРµС‚РёС‚СЊ"><svg viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5.4-5.5-9.4-11-10z"/></svg></button>
+            <button data-act="forward" title="РџРµСЂРµСЃР»Р°С‚СЊ"><svg viewBox="0 0 24 24"><path d="M5 4h14v3H5V4zm0 5h14v3H5V9zm0 5h14v3H5v-3zm0 5h14v3H5v-3z"/></svg></button>
+            <button data-act="copy" title="РљРѕРїРёСЂРѕРІР°С‚СЊ"><svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg></button>
+            ${mine ? `<button data-act="edit" title="РР·РјРµРЅРёС‚СЊ">вњЋ</button>` : ''}
+            ${(mine && chat.id !== NEWS_CHAT_ID) || (chat.id === NEWS_CHAT_ID && newsFullAccess(currentUser)) ? `<button data-act="del" title="РЈРґР°Р»РёС‚СЊ"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
           </div>
           <div class="react-picker">
             ${REACT_EMOJIS.map(e => `<button data-mid="${msg.id}" data-emoji="${e}">${e}</button>`).join('')}
@@ -4275,7 +4283,7 @@ function renderMessages(chat) {
   }
 }
 
-/* ---------- Отправка сообщений ---------- */
+/* ---------- РћС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёР№ ---------- */
 
 function bindChatEvents(chat) {
   bindMsgDelegation();
@@ -4330,7 +4338,7 @@ function bindChatEvents(chat) {
     if (!val && !pendingMedia.length) return;
     const now = Date.now();
     if (now - lastSendAt < 1000) {
-      toast('Слишком быстро', 'Подождите секунду перед следующим сообщением');
+      toast('РЎР»РёС€РєРѕРј Р±С‹СЃС‚СЂРѕ', 'РџРѕРґРѕР¶РґРёС‚Рµ СЃРµРєСѓРЅРґСѓ РїРµСЂРµРґ СЃР»РµРґСѓСЋС‰РёРј СЃРѕРѕР±С‰РµРЅРёРµРј');
       return;
     }
     sendMessage(chat.id, val);
@@ -4354,7 +4362,7 @@ function bindChatEvents(chat) {
     files.forEach(f => {
       const reader = new FileReader();
       reader.onload = () => {
-        pendingMedia.push({ name: f.name || 'Вставка.png', size: f.size, type: f.type, dataUrl: reader.result });
+        pendingMedia.push({ name: f.name || 'Р’СЃС‚Р°РІРєР°.png', size: f.size, type: f.type, dataUrl: reader.result });
         renderPendingMedia();
       };
       reader.readAsDataURL(f);
@@ -4397,9 +4405,9 @@ function bindChatEvents(chat) {
   if (recCancel) recCancel.addEventListener('click', (e) => { e.stopPropagation(); cancelRecording(); });
 }
 
-/* ---------- Отправка сообщений ---------- */
+/* ---------- РћС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёР№ ---------- */
 /* ============================================================
-   ЗВОНКИ (личные и групповые)
+   Р—Р’РћРќРљР (Р»РёС‡РЅС‹Рµ Рё РіСЂСѓРїРїРѕРІС‹Рµ)
    ============================================================ */
 const callState = { chatId: null, startedAt: 0, muted: false, video: false, micStream: null, camStream: null, shareStream: null, shareActive: false, ticker: null };
 let incomingCall = null; // { chatId, msgId, video }
@@ -4408,11 +4416,11 @@ let pendingMedia = []; // { name, size, type, dataUrl }
 function mediaLabel(msg) {
   if (msg.media && msg.media.length) {
     const m = msg.media[0];
-    if (m.type && m.type.startsWith('image/')) return msg.media.length > 1 ? `[${msg.media.length} фото]` : '[Фото]';
-    return `[Файл: ${m.name}]`;
+    if (m.type && m.type.startsWith('image/')) return msg.media.length > 1 ? `[${msg.media.length} С„РѕС‚Рѕ]` : '[Р¤РѕС‚Рѕ]';
+    return `[Р¤Р°Р№Р»: ${m.name}]`;
   }
-  if (msg.voice) return '[Голосовое]';
-  if (msg.video) return '[Кружок]';
+  if (msg.voice) return '[Р“РѕР»РѕСЃРѕРІРѕРµ]';
+  if (msg.video) return '[РљСЂСѓР¶РѕРє]';
   return '';
 }
 function renderPendingMedia() {
@@ -4424,10 +4432,10 @@ function renderPendingMedia() {
     <div class="pending-item">
       ${m.type && m.type.startsWith('image/')
         ? `<img src="${m.dataUrl}" alt="">`
-        : `<span class="pending-file-ic">📄</span>`}
+        : `<span class="pending-file-ic">рџ“„</span>`}
       <span class="pending-name">${escapeHtml(m.name)}</span>
-      <button type="button" class="pending-del" data-pi="${i}" title="Убрать">✕</button>
-    </div>`).join('') + '<div class="pending-send-hint">Нажмите ➤, чтобы отправить</div>';
+      <button type="button" class="pending-del" data-pi="${i}" title="РЈР±СЂР°С‚СЊ">вњ•</button>
+    </div>`).join('') + '<div class="pending-send-hint">РќР°Р¶РјРёС‚Рµ вћ¤, С‡С‚РѕР±С‹ РѕС‚РїСЂР°РІРёС‚СЊ</div>';
   bar.querySelectorAll('.pending-del').forEach(b => b.addEventListener('click', () => {
     pendingMedia.splice(Number(b.dataset.pi), 1);
     renderPendingMedia();
@@ -4450,7 +4458,7 @@ function maybeShowIncoming(chat) {
   const acc = chat.type === 'private' ? accountByUsername(chat.userId) : null;
   const av = $('#incomingAvatar'), nm = $('#incomingName');
   if (av) av.innerHTML = avatarHtml(acc || { name: chatTitle(chat), color: chat.color }, 'big', acc ? selectedFrameClass(acc) : '');
-  if (nm) nm.textContent = chat.type === 'private' ? (acc ? acc.name : 'Пользователь') : chatTitle(chat);
+  if (nm) nm.textContent = chat.type === 'private' ? (acc ? acc.name : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ') : chatTitle(chat);
   $('#incomingOverlay').classList.remove('hidden');
   startRing('in');
 }
@@ -4490,14 +4498,14 @@ function bindIncomingCall() {
     if (chat && chat.type === 'private') {
       const caller = accountByUsername(chat.userId);
       pushCallEventEverywhere(chat,
-        { kind: 'call_declined', text: `Вы отклонили вызов от @${(caller || {}).username || chat.userId}` },
-        { kind: 'call_declined', text: `@${currentUser.username} отклонил ваш вызов` }
+        { kind: 'call_declined', text: `Р’С‹ РѕС‚РєР»РѕРЅРёР»Рё РІС‹Р·РѕРІ РѕС‚ @${(caller || {}).username || chat.userId}` },
+        { kind: 'call_declined', text: `@${currentUser.username} РѕС‚РєР»РѕРЅРёР» РІР°С€ РІС‹Р·РѕРІ` }
       );
       saveState();
       renderMessages(chat);
     }
     closeIncoming(true);
-    toast('Вызов отклонён');
+    toast('Р’С‹Р·РѕРІ РѕС‚РєР»РѕРЅС‘РЅ');
   });
 }
 function endCallIfActive() {
@@ -4511,7 +4519,7 @@ function chatMembers(chat) {
   return [currentUser, userById(chat.userId)].filter(Boolean);
 }
 
-/* ---------- События звонков (входящий / пропущенный) ---------- */
+/* ---------- РЎРѕР±С‹С‚РёСЏ Р·РІРѕРЅРєРѕРІ (РІС…РѕРґСЏС‰РёР№ / РїСЂРѕРїСѓС‰РµРЅРЅС‹Р№) ---------- */
 function pushCallEvent(chat, ev) {
   const msg = {
     id: 'm' + Date.now() + Math.random().toString(36).slice(2, 6),
@@ -4554,33 +4562,33 @@ function fmtDur(s) {
 }
 function sysCallHtml(msg, chat) {
   const t = fmtTime(msg.time);
-  const icon = msg.video ? '🎥' : '📞';
+  const icon = msg.video ? 'рџЋҐ' : 'рџ“ћ';
   if (msg.kind === 'call_in' && !msg.dismissed) {
     return `<div class="sys-call in" data-msg="${msg.id}">
       <div class="sc-icon">${icon}</div>
-      <div class="sc-text"><b>Входящий звонок</b><span>${escapeHtml(msg.text)} · ${t}</span></div>
+      <div class="sc-text"><b>Р’С…РѕРґСЏС‰РёР№ Р·РІРѕРЅРѕРє</b><span>${escapeHtml(msg.text)} В· ${t}</span></div>
       <div class="sc-btns">
-        <button type="button" class="btn btn-primary sys-call-btn" data-sys="answer">Ответить</button>
-        <button type="button" class="btn btn-ghost sys-call-btn" data-sys="decline">Отклонить</button>
+        <button type="button" class="btn btn-primary sys-call-btn" data-sys="answer">РћС‚РІРµС‚РёС‚СЊ</button>
+        <button type="button" class="btn btn-ghost sys-call-btn" data-sys="decline">РћС‚РєР»РѕРЅРёС‚СЊ</button>
       </div>
     </div>`;
   }
   if (msg.kind === 'call_missed') {
     return `<div class="sys-call missed" data-msg="${msg.id}">
-      <div class="sc-icon">📵</div>
-      <div class="sc-text"><b>Пропущенный вызов</b><span>${escapeHtml(msg.text)} · ${t}</span></div>
-      <button type="button" class="btn btn-ghost sys-call-btn" data-sys="call">↩ Позвонить</button>
+      <div class="sc-icon">рџ“µ</div>
+      <div class="sc-text"><b>РџСЂРѕРїСѓС‰РµРЅРЅС‹Р№ РІС‹Р·РѕРІ</b><span>${escapeHtml(msg.text)} В· ${t}</span></div>
+      <button type="button" class="btn btn-ghost sys-call-btn" data-sys="call">в†© РџРѕР·РІРѕРЅРёС‚СЊ</button>
     </div>`;
   }
   if (msg.kind === 'call_declined') {
     return `<div class="sys-call declined" data-msg="${msg.id}">
-      <div class="sc-icon">❌</div>
-      <div class="sc-text"><b>Вызов отклонён</b><span>${escapeHtml(msg.text)} · ${t}</span></div>
-      ${chat.type === 'private' ? '<button type="button" class="btn btn-ghost sys-call-btn" data-sys="call">↩ Позвонить</button>' : ''}
+      <div class="sc-icon">вќЊ</div>
+      <div class="sc-text"><b>Р’С‹Р·РѕРІ РѕС‚РєР»РѕРЅС‘РЅ</b><span>${escapeHtml(msg.text)} В· ${t}</span></div>
+      ${chat.type === 'private' ? '<button type="button" class="btn btn-ghost sys-call-btn" data-sys="call">в†© РџРѕР·РІРѕРЅРёС‚СЊ</button>' : ''}
     </div>`;
   }
   if (msg.kind === 'call_ended') {
-    return `<div class="sys-call ended" data-msg="${msg.id}"><div class="sc-icon">✅</div><div class="sc-text"><b>${escapeHtml(msg.text)}</b><span>${t}</span></div></div>`;
+    return `<div class="sys-call ended" data-msg="${msg.id}"><div class="sc-icon">вњ…</div><div class="sc-text"><b>${escapeHtml(msg.text)}</b><span>${t}</span></div></div>`;
   }
   return `<div class="sys-call out" data-msg="${msg.id}"><div class="sc-icon">${icon}</div><div class="sc-text"><b>${escapeHtml(msg.text)}</b><span>${t}</span></div></div>`;
 }
@@ -4612,7 +4620,7 @@ async function enableCamera() {
   } catch (e) {
     callState.video = false;
     if (camBtn) camBtn.classList.add('muted');
-    toast('Камера недоступна', 'Разрешите доступ к камере или проверьте подключение');
+    toast('РљР°РјРµСЂР° РЅРµРґРѕСЃС‚СѓРїРЅР°', 'Р Р°Р·СЂРµС€РёС‚Рµ РґРѕСЃС‚СѓРї Рє РєР°РјРµСЂРµ РёР»Рё РїСЂРѕРІРµСЂСЊС‚Рµ РїРѕРґРєР»СЋС‡РµРЅРёРµ');
   }
   updateCallStageUI();
   updateCallStatus();
@@ -4639,7 +4647,7 @@ async function enableShare() {
     const btn = $('#callShareBtn');
     if (btn) btn.classList.add('active');
   } catch (e) {
-    toast('Показ экрана отменён или недоступен', 'Нужен доступ к записи экрана');
+    toast('РџРѕРєР°Р· СЌРєСЂР°РЅР° РѕС‚РјРµРЅС‘РЅ РёР»Рё РЅРµРґРѕСЃС‚СѓРїРµРЅ', 'РќСѓР¶РµРЅ РґРѕСЃС‚СѓРї Рє Р·Р°РїРёСЃРё СЌРєСЂР°РЅР°');
   }
   updateCallStageUI();
   updateCallStatus();
@@ -4656,10 +4664,10 @@ function disableShare() {
 }
 function callStatusText() {
   const parts = [];
-  if (callState.muted) parts.push('микрофон выключен');
-  if (callState.shareActive) parts.push('демонстрация экрана');
-  else if (callState.video) parts.push('камера включена');
-  return parts.join(' · ') || 'идёт разговор…';
+  if (callState.muted) parts.push('РјРёРєСЂРѕС„РѕРЅ РІС‹РєР»СЋС‡РµРЅ');
+  if (callState.shareActive) parts.push('РґРµРјРѕРЅСЃС‚СЂР°С†РёСЏ СЌРєСЂР°РЅР°');
+  else if (callState.video) parts.push('РєР°РјРµСЂР° РІРєР»СЋС‡РµРЅР°');
+  return parts.join(' В· ') || 'РёРґС‘С‚ СЂР°Р·РіРѕРІРѕСЂвЂ¦';
 }
 function updateCallStatus() {
   const ch = state.chats.find(c => c.id === callState.chatId);
@@ -4667,8 +4675,8 @@ function updateCallStatus() {
   const st = $('#callStatus');
   if (!st) return;
   if (ch.type !== 'private') {
-    st.innerHTML = `<div class="cs-title">Групповой звонок · <b>${escapeHtml(chatTitle(ch))}</b></div>
-      <div class="cs-sub">${chatMembers(ch).length} участников · ${callStatusText()}</div>`;
+    st.innerHTML = `<div class="cs-title">Р“СЂСѓРїРїРѕРІРѕР№ Р·РІРѕРЅРѕРє В· <b>${escapeHtml(chatTitle(ch))}</b></div>
+      <div class="cs-sub">${chatMembers(ch).length} СѓС‡Р°СЃС‚РЅРёРєРѕРІ В· ${callStatusText()}</div>`;
   } else {
     const other = userById(ch.userId);
     st.innerHTML = `<div class="cs-title">${displayName(other)}</div>
@@ -4687,7 +4695,7 @@ function startCall(chatId, video = false, noEvents = false) {
   if (!chat) return;
   const members = chatMembers(chat);
   if (members.length < 2) {
-    toast('Позвонить некому', members.length === 1 ? 'В этом чате пока только вы' : 'Нет доступных участников');
+    toast('РџРѕР·РІРѕРЅРёС‚СЊ РЅРµРєРѕРјСѓ', members.length === 1 ? 'Р’ СЌС‚РѕРј С‡Р°С‚Рµ РїРѕРєР° С‚РѕР»СЊРєРѕ РІС‹' : 'РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… СѓС‡Р°СЃС‚РЅРёРєРѕРІ');
     return;
   }
   const oldPip = $('#callPip');
@@ -4705,8 +4713,8 @@ function startCall(chatId, video = false, noEvents = false) {
   if (!noEvents) {
     pushCallEventEverywhere(
       chat,
-      { kind: 'call_out', video, u: currentUser.username, text: `${video ? '🎥' : '📞'} Исходящий ${video ? 'видео' : ''}звонок @${chat.type === 'private' ? chat.userId : 'собеседникам'}` },
-      { kind: 'call_in', video, u: currentUser.username, text: `Звонок от @${currentUser.username}${video ? ' · видео' : ''}` }
+      { kind: 'call_out', video, u: currentUser.username, text: `${video ? 'рџЋҐ' : 'рџ“ћ'} РСЃС…РѕРґСЏС‰РёР№ ${video ? 'РІРёРґРµРѕ' : ''}Р·РІРѕРЅРѕРє @${chat.type === 'private' ? chat.userId : 'СЃРѕР±РµСЃРµРґРЅРёРєР°Рј'}` },
+      { kind: 'call_in', video, u: currentUser.username, text: `Р—РІРѕРЅРѕРє РѕС‚ @${currentUser.username}${video ? ' В· РІРёРґРµРѕ' : ''}` }
     );
     startRing('out');
   }
@@ -4719,7 +4727,7 @@ function startCall(chatId, video = false, noEvents = false) {
     const pt = $('#pipTime');
     if (pt) pt.textContent = t ? t.textContent : `${String(Math.floor(dur / 60)).padStart(2, '0')}:${String(dur % 60).padStart(2, '0')}`;
   }, 1000);
-  toast(video ? 'Видеозвонок начат' : 'Звонок начат', members.length > 2 ? 'Групповой звонок' : chatTitle(chat));
+  toast(video ? 'Р’РёРґРµРѕР·РІРѕРЅРѕРє РЅР°С‡Р°С‚' : 'Р—РІРѕРЅРѕРє РЅР°С‡Р°С‚', members.length > 2 ? 'Р“СЂСѓРїРїРѕРІРѕР№ Р·РІРѕРЅРѕРє' : chatTitle(chat));
   if (chat.type === 'private' && rtcSupports()) {
     rtcMode = 'rtc';
     rtcRole = noEvents ? 'callee' : 'caller';
@@ -4768,11 +4776,11 @@ function renderCall(chat) {
   if (stage) {
     const remoteInner = other
       ? `<span class="cape"><span class="avatar ${f ? 'framed frame-' + f : ''}" style="${avatarStyle(other)}">${avatarInnerHtml(other)}</span></span>`
-      : `<span class="cape"><span style="font-size:34px">🎥</span></span>`;
+      : `<span class="cape"><span style="font-size:34px">рџЋҐ</span></span>`;
     stage.innerHTML = `
       <div class="call-bubbles"><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <video id="shareVideo" autoplay playsinline></video>
-      <div class="share-badge" id="shareBadge">🖥 Идёт демонстрация экрана</div>
+      <div class="share-badge" id="shareBadge">рџ–Ґ РРґС‘С‚ РґРµРјРѕРЅСЃС‚СЂР°С†РёСЏ СЌРєСЂР°РЅР°</div>
       <div class="call-remote demo" id="callRemote">
         ${remoteInner}
         <div class="cs-sub">${escapeHtml(other ? displayName(other) : chatTitle(chat))}</div>
@@ -4792,7 +4800,7 @@ function renderCall(chat) {
     part.innerHTML = isGroup ? members.map(u => `
       <div class="call-part">
         <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
-        <span>${u.username === currentUser.username ? 'Вы' : displayName(u)}</span>
+        <span>${u.username === currentUser.username ? 'Р’С‹' : displayName(u)}</span>
       </div>`).join('') : `
       <div class="call-part">
         <span class="avatar ${f ? 'framed frame-' + f : ''}" style="${avatarStyle(other)}">${avatarInnerHtml(other)}</span>
@@ -4812,19 +4820,19 @@ function endCall() {
   const endChat = state.chats.find(c => c.id === callState.chatId);
   if (endChat) {
     const isPriv = endChat.type === 'private';
-    const who = isPriv ? '@' + endChat.userId : '«' + chatTitle(endChat) + '»';
+    const who = isPriv ? '@' + endChat.userId : 'В«' + chatTitle(endChat) + 'В»';
     if (dur < 5) {
       pushCallEventEverywhere(
         endChat,
-        { kind: 'call_missed', text: `Вы звонили ${who}, но ответа не было` },
-        { kind: 'call_missed', text: `Пропущенный вызов от @${currentUser.username}` }
+        { kind: 'call_missed', text: `Р’С‹ Р·РІРѕРЅРёР»Рё ${who}, РЅРѕ РѕС‚РІРµС‚Р° РЅРµ Р±С‹Р»Рѕ` },
+        { kind: 'call_missed', text: `РџСЂРѕРїСѓС‰РµРЅРЅС‹Р№ РІС‹Р·РѕРІ РѕС‚ @${currentUser.username}` }
       );
-      addLog(currentUser.username, `Звонок ${who} не был принят (пропущен, ${dur} сек)`);
+      addLog(currentUser.username, `Р—РІРѕРЅРѕРє ${who} РЅРµ Р±С‹Р» РїСЂРёРЅСЏС‚ (РїСЂРѕРїСѓС‰РµРЅ, ${dur} СЃРµРє)`);
     } else {
       pushCallEventEverywhere(
         endChat,
-        { kind: 'call_ended', text: `Звонок завершён · ${fmtDur(dur)}` },
-        { kind: 'call_ended', text: `Звонок от @${currentUser.username} завершён · ${fmtDur(dur)}` }
+        { kind: 'call_ended', text: `Р—РІРѕРЅРѕРє Р·Р°РІРµСЂС€С‘РЅ В· ${fmtDur(dur)}` },
+        { kind: 'call_ended', text: `Р—РІРѕРЅРѕРє РѕС‚ @${currentUser.username} Р·Р°РІРµСЂС€С‘РЅ В· ${fmtDur(dur)}` }
       );
     }
   }
@@ -4840,13 +4848,13 @@ function endCall() {
   if (sigChat) { cloudDelete(rtcSigKeyFor(sigChat.id) + '_a'); cloudDelete(rtcSigKeyFor(sigChat.id) + '_b'); }
   renderChat();
   renderChatList();
-  if (dur > 0) toast('Звонок завершён', (wasGroup ? 'Групповой · ' : '') + fmtDur(dur));
+  if (dur > 0) toast('Р—РІРѕРЅРѕРє Р·Р°РІРµСЂС€С‘РЅ', (wasGroup ? 'Р“СЂСѓРїРїРѕРІРѕР№ В· ' : '') + fmtDur(dur));
 }
 
-/* ---------- НАСТОЯЩИЕ ЗВОНКИ (WebRTC) через облако ----------
-   Сигнализация: offer/answer/ICE кандидаты обмениваются через облачные ключи
-   call_sig_<chatId>_a (звонящий) и call_sig_<chatId>_b (отвечающий).
-   Если прямое соединение не установилось (сложный NAT) — остаётся демо-режим. */
+/* ---------- РќРђРЎРўРћРЇР©РР• Р—Р’РћРќРљР (WebRTC) С‡РµСЂРµР· РѕР±Р»Р°РєРѕ ----------
+   РЎРёРіРЅР°Р»РёР·Р°С†РёСЏ: offer/answer/ICE РєР°РЅРґРёРґР°С‚С‹ РѕР±РјРµРЅРёРІР°СЋС‚СЃСЏ С‡РµСЂРµР· РѕР±Р»Р°С‡РЅС‹Рµ РєР»СЋС‡Рё
+   call_sig_<chatId>_a (Р·РІРѕРЅСЏС‰РёР№) Рё call_sig_<chatId>_b (РѕС‚РІРµС‡Р°СЋС‰РёР№).
+   Р•СЃР»Рё РїСЂСЏРјРѕРµ СЃРѕРµРґРёРЅРµРЅРёРµ РЅРµ СѓСЃС‚Р°РЅРѕРІРёР»РѕСЃСЊ (СЃР»РѕР¶РЅС‹Р№ NAT) вЂ” РѕСЃС‚Р°С‘С‚СЃСЏ РґРµРјРѕ-СЂРµР¶РёРј. */
 const RTC_STUN = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
 let rtcPeer = null, rtcRemoteStream = null, rtcSigTimer = null;
 let rtcMode = 'sim', rtcRole = 'caller', rtcConnected = false, rtcSetupAt = 0;
@@ -4959,7 +4967,7 @@ function rtcTeardown(keepStreams) {
 }
 function rtcFallbackSim(chatId) {
   rtcTeardown(true);
-  if (callState.chatId === chatId) toast('Не удалось установить прямое соединение', 'Включён демо-режим звонка');
+  if (callState.chatId === chatId) toast('РќРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂСЏРјРѕРµ СЃРѕРµРґРёРЅРµРЅРёРµ', 'Р’РєР»СЋС‡С‘РЅ РґРµРјРѕ-СЂРµР¶РёРј Р·РІРѕРЅРєР°');
 }
 
 function bindCallModal() {
@@ -4971,7 +4979,7 @@ function bindCallModal() {
     if (callState.micStream) callState.micStream.getAudioTracks().forEach(t => t.enabled = !callState.muted);
     if (callState.micStream) callState.micStream.getAudioTracks().forEach(t => t.enabled = !callState.muted);
     updateCallStatus();
-    toast(callState.muted ? 'Микрофон выключен' : 'Микрофон включён');
+    toast(callState.muted ? 'РњРёРєСЂРѕС„РѕРЅ РІС‹РєР»СЋС‡РµРЅ' : 'РњРёРєСЂРѕС„РѕРЅ РІРєР»СЋС‡С‘РЅ');
   });
   $('#callCamBtn').addEventListener('click', () => {
     if (!callState.chatId) return;
@@ -4993,7 +5001,7 @@ function bindCallModal() {
     m.classList.remove('hidden');
     populateCallDevices();
     const st = $('#cmShareState');
-    if (st) st.textContent = callState.shareActive ? 'идёт демонстрация' : 'выключена';
+    if (st) st.textContent = callState.shareActive ? 'РёРґС‘С‚ РґРµРјРѕРЅСЃС‚СЂР°С†РёСЏ' : 'РІС‹РєР»СЋС‡РµРЅР°';
   });
   const cmShare = $('#cmShareBtn');
   if (cmShare) cmShare.addEventListener('click', () => {
@@ -5001,7 +5009,7 @@ function bindCallModal() {
     if (callState.shareActive) disableShare();
     else enableShare();
     const st = $('#cmShareState');
-    if (st) st.textContent = callState.shareActive ? 'идёт демонстрация' : 'выключена';
+    if (st) st.textContent = callState.shareActive ? 'РёРґС‘С‚ РґРµРјРѕРЅСЃС‚СЂР°С†РёСЏ' : 'РІС‹РєР»СЋС‡РµРЅР°';
   });
   bindCallDeviceSelect($('#cmCam'), 'videoId', () => {
     if (callState.video) { disableCamera(); enableCamera(); }
@@ -5021,7 +5029,7 @@ function bindCallModal() {
   const gpReset = $('#gpReset');
   if (gpReset) gpReset.addEventListener('click', gameReset);
   const rpsReset = $('#rpsReset');
-  if (rpsReset) rpsReset.addEventListener('click', () => { gameRps.score = [0, 0]; gameRps.picks = [null, null]; gameRps.step = 0; const m = $('#rpsMsg'); if (m) m.textContent = gameRps.mode === 'pvp' ? 'Игрок 1 выбирает жест…' : 'Выберите жест — до 3 побед'; const u = $('#rpsU'), b = $('#rpsB'); if (u) u.textContent = '❔'; if (b) b.textContent = '❔'; renderRps(); });
+  if (rpsReset) rpsReset.addEventListener('click', () => { gameRps.score = [0, 0]; gameRps.picks = [null, null]; gameRps.step = 0; const m = $('#rpsMsg'); if (m) m.textContent = gameRps.mode === 'pvp' ? 'РРіСЂРѕРє 1 РІС‹Р±РёСЂР°РµС‚ Р¶РµСЃС‚вЂ¦' : 'Р’С‹Р±РµСЂРёС‚Рµ Р¶РµСЃС‚ вЂ” РґРѕ 3 РїРѕР±РµРґ'; const u = $('#rpsU'), b = $('#rpsB'); if (u) u.textContent = 'вќ”'; if (b) b.textContent = 'вќ”'; renderRps(); });
   document.querySelectorAll('.gp-tab').forEach(t => t.addEventListener('click', () => switchGamePanel(t.dataset.g)));
   document.querySelectorAll('.gp-mode-btn').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll(`.gp-mode-btn[data-g="${btn.dataset.g}"]`).forEach(x => x.classList.toggle('sel', x === btn));
@@ -5039,12 +5047,12 @@ function populateCallDevices() {
     const vid = list.filter(d => d.kind === 'videoinput');
     const aud = list.filter(d => d.kind === 'audioinput');
     const spo = list.filter(d => d.kind === 'audiooutput');
-    cam.innerHTML = '<option value="">По умолчанию</option>' + vid.map((d, i) => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || 'Камера ' + (i + 1))}</option>`).join('');
-    mic.innerHTML = '<option value="">По умолчанию</option>' + aud.map((d, i) => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || 'Микрофон ' + (i + 1))}</option>`).join('');
-    out.innerHTML = '<option value="">По умолчанию</option>' + spo.map((d, i) => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || 'Динамик ' + (i + 1))}</option>`).join('');
-    if (!vid.length) cam.innerHTML = '<option value="">Камер не найдено</option>';
-    if (!aud.length) mic.innerHTML = '<option value="">Микрофонов не найдено</option>';
-    if (!spo.length) out.innerHTML = '<option value="">Динамиков не найдено</option>';
+    cam.innerHTML = '<option value="">РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ</option>' + vid.map((d, i) => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || 'РљР°РјРµСЂР° ' + (i + 1))}</option>`).join('');
+    mic.innerHTML = '<option value="">РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ</option>' + aud.map((d, i) => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || 'РњРёРєСЂРѕС„РѕРЅ ' + (i + 1))}</option>`).join('');
+    out.innerHTML = '<option value="">РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ</option>' + spo.map((d, i) => `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || 'Р”РёРЅР°РјРёРє ' + (i + 1))}</option>`).join('');
+    if (!vid.length) cam.innerHTML = '<option value="">РљР°РјРµСЂ РЅРµ РЅР°Р№РґРµРЅРѕ</option>';
+    if (!aud.length) mic.innerHTML = '<option value="">РњРёРєСЂРѕС„РѕРЅРѕРІ РЅРµ РЅР°Р№РґРµРЅРѕ</option>';
+    if (!spo.length) out.innerHTML = '<option value="">Р”РёРЅР°РјРёРєРѕРІ РЅРµ РЅР°Р№РґРµРЅРѕ</option>';
     cam.value = devs.videoId || '';
     mic.value = devs.audioId || '';
     out.value = devs.outId || '';
@@ -5057,7 +5065,7 @@ function bindCallDeviceSelect(sel, key, onApplied) {
     devs[key] = sel.value || null;
     persistCurrentUser();
     if (onApplied) onApplied();
-    toast('Устройство обновлено');
+    toast('РЈСЃС‚СЂРѕР№СЃС‚РІРѕ РѕР±РЅРѕРІР»РµРЅРѕ');
   });
 }
 function applyAudioOutput() {
@@ -5067,9 +5075,9 @@ function applyAudioOutput() {
   vs.forEach(v => { if (v && v.setSinkId) v.setSinkId(devs.outId).catch(() => {}); });
 }
 
-const gameState = { board: [], me: '❌', bot: '⭕', turn: 0, over: false, winner: null, score: [0, 0], mode: 'bot', busy: false };
+const gameState = { board: [], me: 'вќЊ', bot: 'в­•', turn: 0, over: false, winner: null, score: [0, 0], mode: 'bot', busy: false };
 const gameRps = { score: [0, 0], busy: false, mode: 'bot', picks: [null, null], step: 0 };
-const RPS_EMOJI = ['✊', '✋', '✌️'];
+const RPS_EMOJI = ['вњЉ', 'вњ‹', 'вњЊпёЏ'];
 function rpsResult(a, b) { if (a === b) return 0; return b === (a + 2) % 3 ? 1 : -1; }
 function setGameMode(g, mode) {
   if (g === 'xo') {
@@ -5081,10 +5089,10 @@ function setGameMode(g, mode) {
   gameRps.picks = [null, null];
   gameRps.step = 0;
   const m = $('#rpsMsg');
-  if (m) m.textContent = mode === 'pvp' ? 'Игрок 1 выбирает жест…' : 'Выберите жест — до 3 побед';
+  if (m) m.textContent = mode === 'pvp' ? 'РРіСЂРѕРє 1 РІС‹Р±РёСЂР°РµС‚ Р¶РµСЃС‚вЂ¦' : 'Р’С‹Р±РµСЂРёС‚Рµ Р¶РµСЃС‚ вЂ” РґРѕ 3 РїРѕР±РµРґ';
   const u = $('#rpsU'), b = $('#rpsB');
-  if (u) u.textContent = '❔';
-  if (b) b.textContent = '❔';
+  if (u) u.textContent = 'вќ”';
+  if (b) b.textContent = 'вќ”';
   renderRps();
 }
 function renderRps() {
@@ -5093,7 +5101,7 @@ function renderRps() {
   if (sb) sb.textContent = gameRps.score[1];
 }
 function rpsVsLabel(me, opp) {
-  return `Вы: <b>${me}</b> · Соперник: <b>${opp}</b>`;
+  return `Р’С‹: <b>${me}</b> В· РЎРѕРїРµСЂРЅРёРє: <b>${opp}</b>`;
 }
 function playRps(pick) {
   if (gameRps.busy) return;
@@ -5104,24 +5112,24 @@ function playRps(pick) {
       gameRps.step = 1;
       gameRps.busy = true;
       if (uEl) uEl.textContent = RPS_EMOJI[pick];
-      if (bEl) bEl.textContent = '…';
-      if (m) m.textContent = 'Игрок 1 выбрал · Игрок 2 думает…';
+      if (bEl) bEl.textContent = 'вЂ¦';
+      if (m) m.textContent = 'РРіСЂРѕРє 1 РІС‹Р±СЂР°Р» В· РРіСЂРѕРє 2 РґСѓРјР°РµС‚вЂ¦';
       renderRps();
       setTimeout(() => {
         gameRps.picks[1] = Math.floor(Math.random() * 3);
         if (bEl) bEl.textContent = RPS_EMOJI[gameRps.picks[1]];
         const res = rpsResult(gameRps.picks[0], gameRps.picks[1]);
-        if (res > 0) { gameRps.score[0]++; if (m) m.textContent = 'Победил Игрок 1! 🎉'; }
-        else if (res < 0) { gameRps.score[1]++; if (m) m.textContent = 'Победил Игрок 2! 🎉'; }
-        else if (m) m.textContent = 'Ничья 🤝';
-        if (gameRps.score[0] >= 3) { if (m) m.textContent = 'Игрок 1 выиграл матч! 🏆'; gameRps.score = [0, 0]; }
-        else if (gameRps.score[1] >= 3) { if (m) m.textContent = 'Игрок 2 выиграл матч! 🏆'; gameRps.score = [0, 0]; }
+        if (res > 0) { gameRps.score[0]++; if (m) m.textContent = 'РџРѕР±РµРґРёР» РРіСЂРѕРє 1! рџЋ‰'; }
+        else if (res < 0) { gameRps.score[1]++; if (m) m.textContent = 'РџРѕР±РµРґРёР» РРіСЂРѕРє 2! рџЋ‰'; }
+        else if (m) m.textContent = 'РќРёС‡СЊСЏ рџ¤ќ';
+        if (gameRps.score[0] >= 3) { if (m) m.textContent = 'РРіСЂРѕРє 1 РІС‹РёРіСЂР°Р» РјР°С‚С‡! рџЏ†'; gameRps.score = [0, 0]; }
+        else if (gameRps.score[1] >= 3) { if (m) m.textContent = 'РРіСЂРѕРє 2 РІС‹РёРіСЂР°Р» РјР°С‚С‡! рџЏ†'; gameRps.score = [0, 0]; }
         renderRps();
         gameRps.picks = [null, null];
         gameRps.step = 0;
         gameRps.busy = false;
-        if (m && !m.textContent.includes('матч')) m.textContent += ' · Новый раунд: ваш ход…';
-        else if (m && m.textContent.includes('матч')) m.textContent += ' · Новый раунд: ваш ход…';
+        if (m && !m.textContent.includes('РјР°С‚С‡')) m.textContent += ' В· РќРѕРІС‹Р№ СЂР°СѓРЅРґ: РІР°С€ С…РѕРґвЂ¦';
+        else if (m && m.textContent.includes('РјР°С‚С‡')) m.textContent += ' В· РќРѕРІС‹Р№ СЂР°СѓРЅРґ: РІР°С€ С…РѕРґвЂ¦';
       }, 900);
       return;
     }
@@ -5130,16 +5138,16 @@ function playRps(pick) {
   gameRps.busy = true;
   const bot = Math.floor(Math.random() * 3);
   if (uEl) uEl.textContent = RPS_EMOJI[pick];
-  if (bEl) bEl.textContent = '…';
-  if (m) m.textContent = '3…2…1';
+  if (bEl) bEl.textContent = 'вЂ¦';
+  if (m) m.textContent = '3вЂ¦2вЂ¦1';
   setTimeout(() => {
     if (bEl) bEl.textContent = RPS_EMOJI[bot];
     const res = rpsResult(pick, bot);
-    if (res > 0) { gameRps.score[0]++; if (m) m.textContent = 'Вы выиграли раунд! 🎉'; }
-    else if (res < 0) { gameRps.score[1]++; if (m) m.textContent = 'Бот выиграл раунд 🤖'; }
-    else if (m) m.textContent = 'Ничья 🤝';
-    if (gameRps.score[0] >= 3) { if (m) m.textContent = 'Победа — вы до 3 побед! 🏆'; gameRps.score = [0, 0]; }
-    else if (gameRps.score[1] >= 3) { if (m) m.textContent = 'Бот до 3 побед — реванш? 😏'; gameRps.score = [0, 0]; }
+    if (res > 0) { gameRps.score[0]++; if (m) m.textContent = 'Р’С‹ РІС‹РёРіСЂР°Р»Рё СЂР°СѓРЅРґ! рџЋ‰'; }
+    else if (res < 0) { gameRps.score[1]++; if (m) m.textContent = 'Р‘РѕС‚ РІС‹РёРіСЂР°Р» СЂР°СѓРЅРґ рџ¤–'; }
+    else if (m) m.textContent = 'РќРёС‡СЊСЏ рџ¤ќ';
+    if (gameRps.score[0] >= 3) { if (m) m.textContent = 'РџРѕР±РµРґР° вЂ” РІС‹ РґРѕ 3 РїРѕР±РµРґ! рџЏ†'; gameRps.score = [0, 0]; }
+    else if (gameRps.score[1] >= 3) { if (m) m.textContent = 'Р‘РѕС‚ РґРѕ 3 РїРѕР±РµРґ вЂ” СЂРµРІР°РЅС€? рџЏ'; gameRps.score = [0, 0]; }
     renderRps();
     gameRps.busy = false;
   }, 700);
@@ -5179,10 +5187,10 @@ function renderGame() {
   const m = $('#gpMsg');
   const pvp = gameState.mode === 'pvp';
   if (m) m.textContent = gameState.over
-    ? (gameState.winner === 'me' ? (pvp ? 'Победил Игрок 1! 🎉' : 'Вы победили! 🎉') : gameState.winner === 'bot' ? (pvp ? 'Победил Игрок 2! 🎉' : 'Победил бот 🤖') : 'Ничья 🤝')
+    ? (gameState.winner === 'me' ? (pvp ? 'РџРѕР±РµРґРёР» РРіСЂРѕРє 1! рџЋ‰' : 'Р’С‹ РїРѕР±РµРґРёР»Рё! рџЋ‰') : gameState.winner === 'bot' ? (pvp ? 'РџРѕР±РµРґРёР» РРіСЂРѕРє 2! рџЋ‰' : 'РџРѕР±РµРґРёР» Р±РѕС‚ рџ¤–') : 'РќРёС‡СЊСЏ рџ¤ќ')
     : pvp
-      ? (gameState.busy ? 'Ход Игрока 2…' : 'Ваш ход (Игрок 1 · ❌)')
-      : (gameState.turn === 0 ? 'Ваш ход' : 'Ход бота…');
+      ? (gameState.busy ? 'РҐРѕРґ РРіСЂРѕРєР° 2вЂ¦' : 'Р’Р°С€ С…РѕРґ (РРіСЂРѕРє 1 В· вќЊ)')
+      : (gameState.turn === 0 ? 'Р’Р°С€ С…РѕРґ' : 'РҐРѕРґ Р±РѕС‚Р°вЂ¦');
 }
 function gameTap(i) {
   if (gameState.over || gameState.busy || gameState.board[i]) return;
@@ -5254,12 +5262,12 @@ function minimizeCall() {
   const other = ch.type === 'private' ? userById(ch.userId) : null;
   const name = ch.type === 'private' ? (other ? displayName(other) : ch.userId) : chatTitle(ch);
   const last = callState.camStream || callState.shareStream;
-  pip.innerHTML = `<div class="pip-media">${last ? '<video autoplay playsinline muted></video>' : '<div class="pip-avatar">📞</div>'}</div>
+  pip.innerHTML = `<div class="pip-media">${last ? '<video autoplay playsinline muted></video>' : '<div class="pip-avatar">рџ“ћ</div>'}</div>
     <div class="pip-info">
       <div class="pip-name">${escapeHtml(name)}</div>
       <div class="pip-time"><i class="pip-dot"></i><span id="pipTime">00:00</span></div>
     </div>
-    <button class="pip-end" id="pipEndBtn" title="Завершить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg></button>`;
+    <button class="pip-end" id="pipEndBtn" title="Р—Р°РІРµСЂС€РёС‚СЊ"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg></button>`;
   document.body.appendChild(pip);
   const v = pip.querySelector('video');
   if (v && last) { v.srcObject = last; v.play().catch(() => {}); }
@@ -5317,12 +5325,12 @@ function minimizeCall() {
 
 let lastSendAt = 0;
 function fmtDurShort(sec) {
-  if (sec < 60) return sec + ' сек';
-  if (sec < 3600) return Math.floor(sec / 60) + ' мин';
-  return Math.floor(sec / 3600) + ' ч';
+  if (sec < 60) return sec + ' СЃРµРє';
+  if (sec < 3600) return Math.floor(sec / 60) + ' РјРёРЅ';
+  return Math.floor(sec / 3600) + ' С‡';
 }
 function fmtMb(b) {
-  return b >= 1048576 ? (b / 1048576).toFixed(1).replace(/\.0$/, '') + ' МБ' : Math.round(b / 1024) + ' КБ';
+  return b >= 1048576 ? (b / 1048576).toFixed(1).replace(/\.0$/, '') + ' РњР‘' : Math.round(b / 1024) + ' РљР‘';
 }
 function sendMessage(chatId, text) {
   const chat = state.chats.find(c => c.id === chatId);
@@ -5332,7 +5340,7 @@ function sendMessage(chatId, text) {
     const last = sml[currentUser.username] || 0;
     const wait = chat.slowMode * 1000 - (Date.now() - last);
     if (wait > 0) {
-      toast('Медленный режим', 'Подождите ' + fmtDurShort(Math.ceil(wait / 1000)));
+      toast('РњРµРґР»РµРЅРЅС‹Р№ СЂРµР¶РёРј', 'РџРѕРґРѕР¶РґРёС‚Рµ ' + fmtDurShort(Math.ceil(wait / 1000)));
       return;
     }
     sml[currentUser.username] = Date.now();
@@ -5341,7 +5349,7 @@ function sendMessage(chatId, text) {
     const other = accountByUsername(chat.userId);
     if (other && !canWriteTo(currentUser.username, other)) {
       const wcw = (other.settings && other.settings.whoCanWrite) || 'all';
-      toast('Нельзя отправить', wcw === 'nobody' ? `${other.name} запретил(а) писать себе` : `${other.name} разрешает писать только контактам`);
+      toast('РќРµР»СЊР·СЏ РѕС‚РїСЂР°РІРёС‚СЊ', wcw === 'nobody' ? `${other.name} Р·Р°РїСЂРµС‚РёР»(Р°) РїРёСЃР°С‚СЊ СЃРµР±Рµ` : `${other.name} СЂР°Р·СЂРµС€Р°РµС‚ РїРёСЃР°С‚СЊ С‚РѕР»СЊРєРѕ РєРѕРЅС‚Р°РєС‚Р°Рј`);
       return;
     }
   }
@@ -5349,7 +5357,7 @@ function sendMessage(chatId, text) {
     const m = chat.messages.find(x => x.id === editTarget.msgId);
     if (m) { m.text = text; m.edited = true; pushMsgToCloud(chat, m); }
     editTarget.chatId = null; editTarget.msgId = null;
-    addLog(currentUser.username, `Изменил сообщение в «${chatTitle(chat)}»`);
+    addLog(currentUser.username, `РР·РјРµРЅРёР» СЃРѕРѕР±С‰РµРЅРёРµ РІ В«${chatTitle(chat)}В»`);
   } else {
     const media = pendingMedia.slice();
     const isNews = chat.id === NEWS_CHAT_ID;
@@ -5366,11 +5374,11 @@ function sendMessage(chatId, text) {
     else if (chat.type === 'group' || chat.type === 'channel') syncGroupMessageEverywhere(chat, msg, currentUser.username);
     else if (chat.type === 'private') syncPrivateMessageEverywhere(chat, msg, currentUser.username);
     const preview = shortText(text || mediaLabel(msg), 45);
-    if (chatId === AI_CHAT_ID) addLog(currentUser.username, `Написал Nebula AI: "${preview}"`);
-    else if (chat.type === 'private') addLog(currentUser.username, `Написал @${chat.userId}: "${preview}"`);
-    else if (chat.type === 'saved') addLog(currentUser.username, `Сохранил заметку: "${preview}"`);
-    else if (chat.type === 'group') addLog(currentUser.username, `Написал в группе «${chat.name}»: "${preview}"`);
-    else addLog(currentUser.username, `Написал в канале «${chat.name}»: "${preview}"`);
+    if (chatId === AI_CHAT_ID) addLog(currentUser.username, `РќР°РїРёСЃР°Р» Nebula AI: "${preview}"`);
+    else if (chat.type === 'private') addLog(currentUser.username, `РќР°РїРёСЃР°Р» @${chat.userId}: "${preview}"`);
+    else if (chat.type === 'saved') addLog(currentUser.username, `РЎРѕС…СЂР°РЅРёР» Р·Р°РјРµС‚РєСѓ: "${preview}"`);
+    else if (chat.type === 'group') addLog(currentUser.username, `РќР°РїРёСЃР°Р» РІ РіСЂСѓРїРїРµ В«${chat.name}В»: "${preview}"`);
+    else addLog(currentUser.username, `РќР°РїРёСЃР°Р» РІ РєР°РЅР°Р»Рµ В«${chat.name}В»: "${preview}"`);
     if (chatId === AI_CHAT_ID) {
       const reply = aiReplyFor(text);
       setTimeout(() => appendMessage(AI_CHAT_ID, { from: 'nebula', text: reply, read: true }), aiDelay());
@@ -5398,16 +5406,16 @@ function sendMessage(chatId, text) {
   bindChatEvents(chat);
 }
 
-/* ---------- Действия над сообщениями ---------- */
+/* ---------- Р”РµР№СЃС‚РІРёСЏ РЅР°Рґ СЃРѕРѕР±С‰РµРЅРёСЏРјРё ---------- */
 function composerExtraHtml(chat) {
   let html = '';
   if (editTarget.chatId === chat.id) {
     const m = chat.messages.find(x => x.id === editTarget.msgId);
-    if (m) html += `<div class="composer-bar editing"><span>✎ Редактирование</span><b>${escapeHtml(shortText(m.text, 40))}</b><button data-bar="edit">✕</button></div>`;
+    if (m) html += `<div class="composer-bar editing"><span>вњЋ Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ</span><b>${escapeHtml(shortText(m.text, 40))}</b><button data-bar="edit">вњ•</button></div>`;
   }
   if (replyTarget.chatId === chat.id) {
     const m = chat.messages.find(x => x.id === replyTarget.msgId);
-    if (m) html += `<div class="composer-bar replying"><span>↩ В ответ на <i>${escapeHtml(senderName(m, chat))}</i></span><b>${escapeHtml(shortText(m.text, 40))}</b><button data-bar="reply">✕</button></div>`;
+    if (m) html += `<div class="composer-bar replying"><span>в†© Р’ РѕС‚РІРµС‚ РЅР° <i>${escapeHtml(senderName(m, chat))}</i></span><b>${escapeHtml(shortText(m.text, 40))}</b><button data-bar="reply">вњ•</button></div>`;
   }
   return html;
 }
@@ -5432,7 +5440,7 @@ function openPhotoViewer(md) {
     ov = document.createElement('div');
     ov.id = 'photoViewer';
     ov.className = 'photo-viewer';
-    ov.innerHTML = '<div class="pv-box"><img class="pv-img" src="" alt=""><button class="pv-close" title="Закрыть">✕</button><a class="pv-dl" download="" href="">⬇ Скачать</a></div>';
+    ov.innerHTML = '<div class="pv-box"><img class="pv-img" src="" alt=""><button class="pv-close" title="Р—Р°РєСЂС‹С‚СЊ">вњ•</button><a class="pv-dl" download="" href="">в¬‡ РЎРєР°С‡Р°С‚СЊ</a></div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', (e) => { if (e.target === ov || e.target.closest('.pv-close')) ov.classList.remove('open'); });
   }
@@ -5464,13 +5472,13 @@ function bindMsgDelegation() {
           if (chat.type === 'private') {
             const caller = accountByUsername(chat.userId);
             pushCallEventEverywhere(chat,
-              { kind: 'call_declined', text: `Вы отклонили вызов от @${(caller || {}).username || chat.userId}` },
-              { kind: 'call_declined', text: `@${currentUser.username} отклонил ваш вызов` }
+              { kind: 'call_declined', text: `Р’С‹ РѕС‚РєР»РѕРЅРёР»Рё РІС‹Р·РѕРІ РѕС‚ @${(caller || {}).username || chat.userId}` },
+              { kind: 'call_declined', text: `@${currentUser.username} РѕС‚РєР»РѕРЅРёР» РІР°С€ РІС‹Р·РѕРІ` }
             );
           }
           saveState();
           renderMessages(chat);
-          toast('Вызов отклонён');
+          toast('Р’С‹Р·РѕРІ РѕС‚РєР»РѕРЅС‘РЅ');
         }
         closeIncoming();
       }
@@ -5500,14 +5508,14 @@ function bindMsgDelegation() {
       if (au) {
         const bar = box.querySelector('.voice-bar i');
         if (au.paused) {
-          document.querySelectorAll('.msg-voice audio').forEach(a => { if (a !== au) { a.pause(); a.currentTime = 0; a.closest('.msg-voice').querySelector('.voice-play').textContent = '▶'; a.closest('.msg-voice').querySelector('.voice-bar i').style.width = '0%'; } });
-          vplay.textContent = '⏸';
-          au.play().catch(() => { vplay.textContent = '▶'; });
+          document.querySelectorAll('.msg-voice audio').forEach(a => { if (a !== au) { a.pause(); a.currentTime = 0; a.closest('.msg-voice').querySelector('.voice-play').textContent = 'в–¶'; a.closest('.msg-voice').querySelector('.voice-bar i').style.width = '0%'; } });
+          vplay.textContent = 'вЏё';
+          au.play().catch(() => { vplay.textContent = 'в–¶'; });
           au.ontimeupdate = () => { if (bar) bar.style.width = Math.min(100, (au.currentTime / (au.duration || 1)) * 100) + '%'; };
-          au.onended = () => { vplay.textContent = '▶'; if (bar) bar.style.width = '0%'; };
+          au.onended = () => { vplay.textContent = 'в–¶'; if (bar) bar.style.width = '0%'; };
         } else {
           au.pause();
-          vplay.textContent = '▶';
+          vplay.textContent = 'в–¶';
         }
       }
       return;
@@ -5559,8 +5567,8 @@ function bindMsgDelegation() {
         break;
       case 'copy':
         (navigator.clipboard ? navigator.clipboard.writeText(msg.text) : Promise.reject())
-          .then(() => toast('Скопировано'))
-          .catch(() => toast('Не удалось скопировать'));
+          .then(() => toast('РЎРєРѕРїРёСЂРѕРІР°РЅРѕ'))
+          .catch(() => toast('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ'));
         break;
       case 'edit':
         editTarget.chatId = chat.id; editTarget.msgId = msg.id;
@@ -5569,16 +5577,16 @@ function bindMsgDelegation() {
         if (t2) { t2.value = msg.text; t2.focus(); t2.dispatchEvent(new Event('input')); }
         break;
       case 'del':
-        if (!confirm('Удалить сообщение?')) return;
+        if (!confirm('РЈРґР°Р»РёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ?')) return;
         chat.messages = chat.messages.filter(m => m.id !== msg.id);
         cloudSave(cloudMdelKey(chat.id, msg.id), JSON.stringify({ ts: Date.now() }));
         cloudDelete(cloudMsgKey(chat.id, msg.id));
         if (chat.id === NEWS_CHAT_ID) syncNewsDeleteEverywhere(msg.id);
-        addLog(currentUser.username, `Удалил сообщение в «${chatTitle(chat)}»`);
+        addLog(currentUser.username, `РЈРґР°Р»РёР» СЃРѕРѕР±С‰РµРЅРёРµ РІ В«${chatTitle(chat)}В»`);
         saveState();
         renderMessages(chat);
         renderChatList();
-        toast('Сообщение удалено');
+        toast('РЎРѕРѕР±С‰РµРЅРёРµ СѓРґР°Р»РµРЅРѕ');
         break;
     }
   });
@@ -5593,7 +5601,7 @@ function toggleReaction(chatId, msgId, emoji) {
   const i = arr.indexOf('me');
   if (i >= 0) arr.splice(i, 1); else arr.push('me');
   if (!arr.length) delete msg.reactions[emoji];
-  addLog(currentUser.username, `${i >= 0 ? 'Убрал' : 'Поставил'} реакцию ${emoji} в «${chatTitle(chat)}»`);
+  addLog(currentUser.username, `${i >= 0 ? 'РЈР±СЂР°Р»' : 'РџРѕСЃС‚Р°РІРёР»'} СЂРµР°РєС†РёСЋ ${emoji} РІ В«${chatTitle(chat)}В»`);
   saveState();
   pushMsgToCloud(chat, msg);
 }
@@ -5606,8 +5614,8 @@ function renderForwardModal() {
   $('#forwardBody').innerHTML = targets.length ? targets.map(c => `
     <div class="fwd-item" data-id="${c.id}">
       ${avatarHtml(accFromChat(c))}
-      <div><div class="switch-name">${escapeHtml(chatTitle(c))}</div><div class="mi-status">${c.type === 'private' ? 'Личное' : c.type === 'group' ? 'Группа' : 'Канал'} · ${c.messages.length} сообщ.</div></div>
-    </div>`).join('') : '<div class="empty-list">Нет других чатов для пересылки.<br>Создайте новый чат и попробуйте снова</div>';
+      <div><div class="switch-name">${escapeHtml(chatTitle(c))}</div><div class="mi-status">${c.type === 'private' ? 'Р›РёС‡РЅРѕРµ' : c.type === 'group' ? 'Р“СЂСѓРїРїР°' : 'РљР°РЅР°Р»'} В· ${c.messages.length} СЃРѕРѕР±С‰.</div></div>
+    </div>`).join('') : '<div class="empty-list">РќРµС‚ РґСЂСѓРіРёС… С‡Р°С‚РѕРІ РґР»СЏ РїРµСЂРµСЃС‹Р»РєРё.<br>РЎРѕР·РґР°Р№С‚Рµ РЅРѕРІС‹Р№ С‡Р°С‚ Рё РїРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР°</div>';
   $('#forwardBody').querySelectorAll('.fwd-item').forEach(item => {
     item.addEventListener('click', () => forwardMessage(item.dataset.id, msg.id, forwardTarget.chatId));
   });
@@ -5620,7 +5628,7 @@ function bindForwardModal() {
 }
 
 /* ============================================================
-   КАРТОЧКА ПОЛЬЗОВАТЕЛЯ (как в Discord)
+   РљРђР РўРћР§РљРђ РџРћР›Р¬Р—РћР’РђРўР•Р›РЇ (РєР°Рє РІ Discord)
    ============================================================ */
 function openUserCard(username) {
   const acc = username === currentUser.username ? currentUser
@@ -5639,39 +5647,39 @@ function renderUserCard(acc) {
   const dolphinMax = dolphinsMaxLevelFor(acc.username);
   const st = getStateFor(acc.username);
   const msgs = st ? st.chats.reduce((n, c) => n + c.messages.filter(m => m.from === 'me').length, 0) : 0;
-  const created = acc.created ? new Date(acc.created).toLocaleDateString('ru-RU') : '—';
+  const created = acc.created ? new Date(acc.created).toLocaleDateString('ru-RU') : 'вЂ”';
   const fr = FRAMES.find(f => f.id === frame);
-  const frameName = frame ? (fr ? fr.name : frame) : '—';
+  const frameName = frame ? (fr ? fr.name : frame) : 'вЂ”';
   const frameEmoji = frame ? (fr ? fr.emoji : '') : '';
   const hasPost = acc.statusPost && (Date.now() - acc.statusPost.time) < 86400000;
   $('#userCardBody').innerHTML = `
     <div class="ucard">
       <div class="ucard-banner" style="background:linear-gradient(135deg, ${acc.color[0]}, ${acc.color[1]})"></div>
       <div class="ucard-avatar-wrap">
-        ${hasPost ? `<span class="st-ring" data-post="${escapeHtml(acc.username)}" title="Статус">` : ''}${avatarHtml(acc, 'xl', frame)}${hasPost ? '</span>' : ''}
+        ${hasPost ? `<span class="st-ring" data-post="${escapeHtml(acc.username)}" title="РЎС‚Р°С‚СѓСЃ">` : ''}${avatarHtml(acc, 'xl', frame)}${hasPost ? '</span>' : ''}
         ${online ? '<span class="uc-online"></span>' : ''}
       </div>
       <div class="ucard-name">${displayName(acc)}</div>
-      <div class="ucard-username"><span class="copy-id" data-copy="${escapeHtml(acc.id)}" title="Нажмите, чтобы скопировать ID">ID ${escapeHtml(acc.id)} 📋</span> · @${escapeHtml(acc.username)}</div>
+      <div class="ucard-username"><span class="copy-id" data-copy="${escapeHtml(acc.id)}" title="РќР°Р¶РјРёС‚Рµ, С‡С‚РѕР±С‹ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ ID">ID ${escapeHtml(acc.id)} рџ“‹</span> В· @${escapeHtml(acc.username)}</div>
       ${acc.bio ? `<div class="ucard-bio">${escapeHtml(acc.bio)}</div>` : ''}
-      <div class="ucard-status st-${statusOf(acc).cls}">${statusOf(acc).online ? '● ' : ''}${statusOf(acc).label}${statusOf(acc).text ? ' · ' + escapeHtml(statusOf(acc).text) : ''}</div>
-      ${hasPost ? `<button class="btn btn-ghost" id="ucStatusBtn" style="width:100%;margin-top:8px">🌈 Посмотреть статус</button>` : ''}
+      <div class="ucard-status st-${statusOf(acc).cls}">${statusOf(acc).online ? 'в—Џ ' : ''}${statusOf(acc).label}${statusOf(acc).text ? ' В· ' + escapeHtml(statusOf(acc).text) : ''}</div>
+      ${hasPost ? `<button class="btn btn-ghost" id="ucStatusBtn" style="width:100%;margin-top:8px">рџЊ€ РџРѕСЃРјРѕС‚СЂРµС‚СЊ СЃС‚Р°С‚СѓСЃ</button>` : ''}
       <div class="ucard-about">
-        <div class="ucard-row"><span>Аккаунт создан</span><b>${created}</b></div>
-        <div class="ucard-row"><span>Время в мессенджере</span><b>${fmtDuration(stat.seconds || 0)}</b></div>
-        <div class="ucard-row"><span>Сообщений отправлено</span><b>${msgs}</b></div>
-        <div class="ucard-row"><span>Макс. уровень дельфина</span><b>🐬 ${dolphinMax}</b></div>
-        <div class="ucard-row"><span>Рамка аватара</span><b>${frameEmoji} ${frameName}</b></div>
+        <div class="ucard-row"><span>РђРєРєР°СѓРЅС‚ СЃРѕР·РґР°РЅ</span><b>${created}</b></div>
+        <div class="ucard-row"><span>Р’СЂРµРјСЏ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ</span><b>${fmtDuration(stat.seconds || 0)}</b></div>
+        <div class="ucard-row"><span>РЎРѕРѕР±С‰РµРЅРёР№ РѕС‚РїСЂР°РІР»РµРЅРѕ</span><b>${msgs}</b></div>
+        <div class="ucard-row"><span>РњР°РєСЃ. СѓСЂРѕРІРµРЅСЊ РґРµР»СЊС„РёРЅР°</span><b>рџђ¬ ${dolphinMax}</b></div>
+        <div class="ucard-row"><span>Р Р°РјРєР° Р°РІР°С‚Р°СЂР°</span><b>${frameEmoji} ${frameName}</b></div>
       </div>
       <div class="ucard-tracks" id="ucTracks">
-        <div class="ucard-tracks-head">🎵 Треки</div>
-        <div class="ucard-tracks-sub">загрузка...</div>
+        <div class="ucard-tracks-head">рџЋµ РўСЂРµРєРё</div>
+        <div class="ucard-tracks-sub">Р·Р°РіСЂСѓР·РєР°...</div>
       </div>
       <div class="ucard-actions">
-        ${isMe ? '' : `<button class="btn btn-primary" id="ucWrite"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;margin-right:6px"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 14H6.83L4 18.83V4h14v12z"/></svg>Написать</button>`}
-        ${isMe ? '' : `<button class="btn btn-ghost" id="ucCall">📞 Позвонить</button>`}
-        ${isMe ? '' : `<button class="btn btn-ghost" id="ucVideoCall">🎥 Видеозвонок</button>`}
-        <button class="btn btn-ghost" id="ucClose">Закрыть</button>
+        ${isMe ? '' : `<button class="btn btn-primary" id="ucWrite"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;margin-right:6px"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-2 14H6.83L4 18.83V4h14v12z"/></svg>РќР°РїРёСЃР°С‚СЊ</button>`}
+        ${isMe ? '' : `<button class="btn btn-ghost" id="ucCall">рџ“ћ РџРѕР·РІРѕРЅРёС‚СЊ</button>`}
+        ${isMe ? '' : `<button class="btn btn-ghost" id="ucVideoCall">рџЋҐ Р’РёРґРµРѕР·РІРѕРЅРѕРє</button>`}
+        <button class="btn btn-ghost" id="ucClose">Р—Р°РєСЂС‹С‚СЊ</button>
       </div>
     </div>`;
   const w = $('#ucWrite');
@@ -5698,21 +5706,21 @@ function renderUserCard(acc) {
     const box = $('#ucTracks');
     if (!box) return;
     if (!list.length) {
-      box.innerHTML = `<div class="ucard-tracks-head">🎵 Треки</div><div class="ucard-tracks-sub">Нет треков</div>`;
+      box.innerHTML = `<div class="ucard-tracks-head">рџЋµ РўСЂРµРєРё</div><div class="ucard-tracks-sub">РќРµС‚ С‚СЂРµРєРѕРІ</div>`;
       return;
     }
     let idx = 0;
     const render = () => {
       const t = list[idx];
       box.innerHTML = `
-        <div class="ucard-tracks-head">🎵 Треки (${list.length})</div>
+        <div class="ucard-tracks-head">рџЋµ РўСЂРµРєРё (${list.length})</div>
         <div class="uc-player">
-          <button type="button" class="uc-pnav" data-ucnav="-1" title="Предыдущий трек">⏮</button>
+          <button type="button" class="uc-pnav" data-ucnav="-1" title="РџСЂРµРґС‹РґСѓС‰РёР№ С‚СЂРµРє">вЏ®</button>
           <div class="uc-pcenter">
             <div class="uc-pname">${idx + 1}. ${escapeHtml(t.name)}</div>
             <audio class="uc-paudio" controls preload="none" src="${t.data}"></audio>
           </div>
-          <button type="button" class="uc-pnav" data-ucnav="1" title="Следующий трек">⏭</button>
+          <button type="button" class="uc-pnav" data-ucnav="1" title="РЎР»РµРґСѓСЋС‰РёР№ С‚СЂРµРє">вЏ­</button>
         </div>
         <div class="uc-tlist">${list.map((x, i) => `<button type="button" class="uc-titem ${i === idx ? 'on' : ''}" data-uci="${i}">${i + 1}. ${escapeHtml(x.name)}</button>`).join('')}</div>`;
       const audio = box.querySelector('.uc-paudio');
@@ -5748,15 +5756,15 @@ function forwardMessage(targetChatId, msgId, srcChatId) {
   const src = state.chats.find(c => c.id === srcChatId);
   const msg = src && src.messages.find(m => m.id === msgId);
   if (!dst || !msg) return;
-  const name = msg.from === 'me' ? currentUser.name : (userById(msg.from) || { name: 'Пользователь' }).name;
+  const name = msg.from === 'me' ? currentUser.name : (userById(msg.from) || { name: 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ' }).name;
   const fwdMsg = { id: 'm' + Date.now(), from: dst.id === NEWS_CHAT_ID ? 'news' : 'me', text: msg.text, time: new Date().toISOString(), read: false, sent: true, forwarded: true, forwardedFrom: name };
   dst.messages.push(fwdMsg);
   pushMsgToCloud(dst, fwdMsg);
   if (dst.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(fwdMsg);
-  addLog(currentUser.username, `Переслал сообщение в «${chatTitle(dst)}» из «${chatTitle(src)}»`);
+  addLog(currentUser.username, `РџРµСЂРµСЃР»Р°Р» СЃРѕРѕР±С‰РµРЅРёРµ РІ В«${chatTitle(dst)}В» РёР· В«${chatTitle(src)}В»`);
   saveState();
   closeForwardModal();
-  toast('Переслано', chatTitle(dst));
+  toast('РџРµСЂРµСЃР»Р°РЅРѕ', chatTitle(dst));
   if (state.currentChatId === targetChatId) renderMessages(dst);
   else renderChatList();
 }
@@ -5821,7 +5829,7 @@ function appendMessage(chatId, msg) {
     bindChatEvents(chat);
   } else {
     renderChatList();
-    toast('Новое сообщение', chatTitle(chat), 2200);
+    toast('РќРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ', chatTitle(chat), 2200);
   }
 }
 
@@ -5867,7 +5875,7 @@ function toggleEmojiPicker(btn, textarea) {
   const r = btn.getBoundingClientRect();
   picker.style.right = (innerWidth - r.right) + 'px';
   picker.innerHTML = EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')
-    + `<div class="emoji-sep">Флаги</div>`
+    + `<div class="emoji-sep">Р¤Р»Р°РіРё</div>`
     + FLAG_EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('');
   picker.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     textarea.value += b.dataset.e;
@@ -5884,7 +5892,7 @@ document.addEventListener('click', (e) => {
 });
 
 function copyTextPlain(t, label) {
-  const done = () => toast('Скопировано в буфер', label || t);
+  const done = () => toast('РЎРєРѕРїРёСЂРѕРІР°РЅРѕ РІ Р±СѓС„РµСЂ', label || t);
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(t).then(done).catch(() => fallbackCopyPlain(t, done));
   } else fallbackCopyPlain(t, done);
@@ -5900,14 +5908,14 @@ function fallbackCopyPlain(t, done) {
     document.execCommand('copy');
     ta.remove();
     done();
-  } catch (e) { toast('Не удалось скопировать'); }
+  } catch (e) { toast('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ'); }
 }
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-copy]');
-  if (el) copyTextPlain(el.dataset.copy, 'ID скопирован в буфер');
+  if (el) copyTextPlain(el.dataset.copy, 'ID СЃРєРѕРїРёСЂРѕРІР°РЅ РІ Р±СѓС„РµСЂ');
 });
 
-/* ---------- СТИКЕРЫ ---------- */
+/* ---------- РЎРўРРљР•Р Р« ---------- */
 function myStickerPacks() { return (currentUser && currentUser.stickerPacks) || []; }
 function myFavStickers() { return (currentUser && currentUser.favStickers) || []; }
 function friendStickerPacks() {
@@ -5926,13 +5934,13 @@ function stickerPackPrompt(owner, pack) {
   ov.id = 'stickerPackPrompt';
   ov.innerHTML = `
     <div class="modal-box stickers-modal">
-      <h3>${subd ? 'Этот пак уже в избранном' : 'Добавить пак в избранное?'}</h3>
+      <h3>${subd ? 'Р­С‚РѕС‚ РїР°Рє СѓР¶Рµ РІ РёР·Р±СЂР°РЅРЅРѕРј' : 'Р”РѕР±Р°РІРёС‚СЊ РїР°Рє РІ РёР·Р±СЂР°РЅРЅРѕРµ?'}</h3>
       <div class="spp-grid">${pack.stickers.slice(0, 8).map(s => `<img src="${s.dataUrl}" alt="">`).join('')}</div>
       <div class="spp-name">${escapeHtml(pack.name)}</div>
-      <div class="spp-sub">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</div>
+      <div class="spp-sub">РѕС‚ @${escapeHtml(owner.username)} В· ${pack.stickers.length} СЃС‚РёРє.</div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="sppYes">${subd ? 'Отписаться' : 'Да, добавить'}</button>
-        <button class="btn" id="sppNo">Отмена</button>
+        <button class="btn btn-primary" id="sppYes">${subd ? 'РћС‚РїРёСЃР°С‚СЊСЃСЏ' : 'Р”Р°, РґРѕР±Р°РІРёС‚СЊ'}</button>
+        <button class="btn" id="sppNo">РћС‚РјРµРЅР°</button>
       </div>
     </div>`;
   document.body.appendChild(ov);
@@ -5943,10 +5951,10 @@ function stickerPackPrompt(owner, pack) {
     currentUser.subscribedPacks = currentUser.subscribedPacks || [];
     if (subd) {
       currentUser.subscribedPacks = currentUser.subscribedPacks.filter(x => x !== pack.id);
-      toast('Пак убран из избранного');
+      toast('РџР°Рє СѓР±СЂР°РЅ РёР· РёР·Р±СЂР°РЅРЅРѕРіРѕ');
     } else {
       currentUser.subscribedPacks.push(pack.id);
-      toast('Пак добавлен в избранное ✓');
+      toast('РџР°Рє РґРѕР±Р°РІР»РµРЅ РІ РёР·Р±СЂР°РЅРЅРѕРµ вњ“');
     }
     persistCurrentUser();
     renderStickPanel('fav');
@@ -5994,21 +6002,21 @@ function renderStickPanel(tab) {
     if (subs.length) h += subs.map(({ pack, owner }) => `
       <div class="stick-pack-row">
         <b>${escapeHtml(pack.name)}</b>
-        <span class="stick-pack-count">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</span>
-        <button class="stick-sub" data-sub="${escapeHtml(pack.id)}">Отписаться</button>
+        <span class="stick-pack-count">РѕС‚ @${escapeHtml(owner.username)} В· ${pack.stickers.length} СЃС‚РёРє.</span>
+        <button class="stick-sub" data-sub="${escapeHtml(pack.id)}">РћС‚РїРёСЃР°С‚СЊСЃСЏ</button>
       </div>
       <div class="stick-grid">${pack.stickers.map(s => `
         <div class="sticker-cell">
-          <img class="stick-img" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
+          <img class="stick-img" src="${s.dataUrl}" alt="" title="РћС‚РїСЂР°РІРёС‚СЊ" data-send="${escapeHtml(s.dataUrl)}">
         </div>`).join('')}</div>`).join('');
     if (fav.length) {
-      h += '<div class="stick-sep">⭐ Избранные стикеры</div><div class="stick-grid">' + fav.map((s, i) => `
+      h += '<div class="stick-sep">в­ђ РР·Р±СЂР°РЅРЅС‹Рµ СЃС‚РёРєРµСЂС‹</div><div class="stick-grid">' + fav.map((s, i) => `
         <div class="sticker-cell">
-          <img class="stick-img" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-          <button class="stick-fav-del" data-fav="${i}" title="Убрать из избранного">✕</button>
+          <img class="stick-img" src="${s.dataUrl}" alt="" title="РћС‚РїСЂР°РІРёС‚СЊ" data-send="${escapeHtml(s.dataUrl)}">
+          <button class="stick-fav-del" data-fav="${i}" title="РЈР±СЂР°С‚СЊ РёР· РёР·Р±СЂР°РЅРЅРѕРіРѕ">вњ•</button>
         </div>`).join('') + '</div>';
     }
-    if (!subs.length && !fav.length) h = '<div class="empty-list">Избранного пока нет.<br>Откройте «Паки друзей» и добавьте пак — стикеры появятся здесь.</div>';
+    if (!subs.length && !fav.length) h = '<div class="empty-list">РР·Р±СЂР°РЅРЅРѕРіРѕ РїРѕРєР° РЅРµС‚.<br>РћС‚РєСЂРѕР№С‚Рµ В«РџР°РєРё РґСЂСѓР·РµР№В» Рё РґРѕР±Р°РІСЊС‚Рµ РїР°Рє вЂ” СЃС‚РёРєРµСЂС‹ РїРѕСЏРІСЏС‚СЃСЏ Р·РґРµСЃСЊ.</div>';
     body.innerHTML = h;
     body.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => {
       currentUser.favStickers.splice(Number(b.dataset.fav), 1);
@@ -6020,27 +6028,27 @@ function renderStickPanel(tab) {
       currentUser.subscribedPacks = (currentUser.subscribedPacks || []).filter(x => x !== id);
       persistCurrentUser();
       renderStickPanel('fav');
-      toast('Пак убран из избранного');
+      toast('РџР°Рє СѓР±СЂР°РЅ РёР· РёР·Р±СЂР°РЅРЅРѕРіРѕ');
     }));
   } else if (tab === 'mine') {
     const packs = myStickerPacks();
     body.innerHTML = (packs.length ? packs.map(p => `
       <div class="stick-pack-row">
         <b>${escapeHtml(p.name)}</b>
-        <span class="stick-pack-count">${p.stickers.length} стик.</span>
-        <button class="stick-pack-del" data-pack="${escapeHtml(p.id)}" title="Удалить пак">🗑</button>
+        <span class="stick-pack-count">${p.stickers.length} СЃС‚РёРє.</span>
+        <button class="stick-pack-del" data-pack="${escapeHtml(p.id)}" title="РЈРґР°Р»РёС‚СЊ РїР°Рє">рџ—‘</button>
       </div>
       <div class="stick-grid">${p.stickers.map(s => `
         <div class="sticker-cell">
-          <img class="stick-img" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-          <button class="stick-fav" data-sf="${escapeHtml(s.dataUrl)}" title="В избранное">★</button>
+          <img class="stick-img" src="${s.dataUrl}" alt="" title="РћС‚РїСЂР°РІРёС‚СЊ" data-send="${escapeHtml(s.dataUrl)}">
+          <button class="stick-fav" data-sf="${escapeHtml(s.dataUrl)}" title="Р’ РёР·Р±СЂР°РЅРЅРѕРµ">в…</button>
         </div>`).join('')}</div>`).join('')
-      : '<div class="empty-list">У вас пока нет стикер-паков.</div>') + '<button type="button" class="btn btn-primary stick-create">＋ Создать пак из фото</button>';
+      : '<div class="empty-list">РЈ РІР°СЃ РїРѕРєР° РЅРµС‚ СЃС‚РёРєРµСЂ-РїР°РєРѕРІ.</div>') + '<button type="button" class="btn btn-primary stick-create">пј‹ РЎРѕР·РґР°С‚СЊ РїР°Рє РёР· С„РѕС‚Рѕ</button>';
     body.querySelectorAll('[data-pack]').forEach(b => b.addEventListener('click', () => {
       currentUser.stickerPacks = currentUser.stickerPacks.filter(p => p.id !== b.dataset.pack);
       persistCurrentUser();
       renderStickPanel('mine');
-      toast('Пак удалён');
+      toast('РџР°Рє СѓРґР°Р»С‘РЅ');
     }));
     body.querySelectorAll('[data-sf]').forEach(b => b.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -6049,8 +6057,8 @@ function renderStickPanel(tab) {
       if (!currentUser.favStickers.some(s => s.dataUrl === url)) {
         currentUser.favStickers.push({ dataUrl: url });
         persistCurrentUser();
-        toast('Добавлено в избранное ⭐');
-      } else toast('Уже в избранном');
+        toast('Р”РѕР±Р°РІР»РµРЅРѕ РІ РёР·Р±СЂР°РЅРЅРѕРµ в­ђ');
+      } else toast('РЈР¶Рµ РІ РёР·Р±СЂР°РЅРЅРѕРј');
     }));
     const sc = body.querySelector('.stick-create');
     if (sc) sc.addEventListener('click', openStickersManager);
@@ -6059,17 +6067,17 @@ function renderStickPanel(tab) {
     body.innerHTML = packs.length ? packs.map(({ pack, owner }) => {
       const subd = (currentUser.subscribedPacks || []).includes(pack.id);
       return `
-      <div class="stick-pack-row clickable" data-subrow="${escapeHtml(pack.id)}" title="Добавить пак в избранное">
+      <div class="stick-pack-row clickable" data-subrow="${escapeHtml(pack.id)}" title="Р”РѕР±Р°РІРёС‚СЊ РїР°Рє РІ РёР·Р±СЂР°РЅРЅРѕРµ">
         <b>${escapeHtml(pack.name)}</b>
-        <span class="stick-pack-count">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</span>
-        <button class="stick-sub" data-sub="${escapeHtml(pack.id)}">${subd ? '✓ Подписан' : '+ Добавить пак'}</button>
+        <span class="stick-pack-count">РѕС‚ @${escapeHtml(owner.username)} В· ${pack.stickers.length} СЃС‚РёРє.</span>
+        <button class="stick-sub" data-sub="${escapeHtml(pack.id)}">${subd ? 'вњ“ РџРѕРґРїРёСЃР°РЅ' : '+ Р”РѕР±Р°РІРёС‚СЊ РїР°Рє'}</button>
       </div>
       <div class="stick-grid">${pack.stickers.slice(0, 4).map(s => `
         <div class="sticker-cell">
-          <img class="stick-img" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-          <button class="stick-fav" data-sf="${escapeHtml(s.dataUrl)}" title="В избранное">★</button>
+          <img class="stick-img" src="${s.dataUrl}" alt="" title="РћС‚РїСЂР°РІРёС‚СЊ" data-send="${escapeHtml(s.dataUrl)}">
+          <button class="stick-fav" data-sf="${escapeHtml(s.dataUrl)}" title="Р’ РёР·Р±СЂР°РЅРЅРѕРµ">в…</button>
         </div>`).join('')}</div>`;
-    }).join('') : '<div class="empty-list">У друзей пока нет паков.<br>Создайте свой пак — он появится у них здесь.</div>';
+    }).join('') : '<div class="empty-list">РЈ РґСЂСѓР·РµР№ РїРѕРєР° РЅРµС‚ РїР°РєРѕРІ.<br>РЎРѕР·РґР°Р№С‚Рµ СЃРІРѕР№ РїР°Рє вЂ” РѕРЅ РїРѕСЏРІРёС‚СЃСЏ Сѓ РЅРёС… Р·РґРµСЃСЊ.</div>';
     body.querySelectorAll('[data-subrow]').forEach(b => b.addEventListener('click', (e) => {
       if (e.target.closest('.stick-sub') || e.target.closest('.stick-fav') || e.target.closest('.stick-img')) return;
       const found = packs.find(x => x.pack.id === b.dataset.subrow);
@@ -6081,10 +6089,10 @@ function renderStickPanel(tab) {
       currentUser.subscribedPacks = currentUser.subscribedPacks || [];
       if (currentUser.subscribedPacks.includes(id)) {
         currentUser.subscribedPacks = currentUser.subscribedPacks.filter(x => x !== id);
-        toast('Пак убран');
+        toast('РџР°Рє СѓР±СЂР°РЅ');
       } else {
         currentUser.subscribedPacks.push(id);
-        toast('Пак добавлен ✓');
+        toast('РџР°Рє РґРѕР±Р°РІР»РµРЅ вњ“');
       }
       persistCurrentUser();
       renderStickPanel('friends');
@@ -6096,8 +6104,8 @@ function renderStickPanel(tab) {
       if (!currentUser.favStickers.some(s => s.dataUrl === url)) {
         currentUser.favStickers.push({ dataUrl: url });
         persistCurrentUser();
-        toast('Добавлено в избранное ⭐');
-      } else toast('Уже в избранном');
+        toast('Р”РѕР±Р°РІР»РµРЅРѕ РІ РёР·Р±СЂР°РЅРЅРѕРµ в­ђ');
+      } else toast('РЈР¶Рµ РІ РёР·Р±СЂР°РЅРЅРѕРј');
     }));
   } else if (tab === 'mgr') {
     openStickersManager();
@@ -6118,7 +6126,7 @@ function sendSticker(chat, dataUrl) {
     if (chat.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(msg);
     else syncGroupMessageEverywhere(chat, msg, currentUser.username);
   }
-  addLog(currentUser.username, `Отправил стикер в «${chatTitle(chat)}»`);
+  addLog(currentUser.username, `РћС‚РїСЂР°РІРёР» СЃС‚РёРєРµСЂ РІ В«${chatTitle(chat)}В»`);
   saveState();
   renderMessages(chat);
   if (isChatNearBottom()) scrollChatToBottom();
@@ -6127,7 +6135,7 @@ function sendSticker(chat, dataUrl) {
 }
 
 /* ============================================================
-   ГОЛОСОВЫЕ СООБЩЕНИЯ И КРУЖКИ (видеосообщения)
+   Р“РћР›РћРЎРћР’Р«Р• РЎРћРћР‘Р©Р•РќРРЇ Р РљР РЈР–РљР (РІРёРґРµРѕСЃРѕРѕР±С‰РµРЅРёСЏ)
    ============================================================ */
 let recState = null;
 const VOICE_MAX_SEC = 120;
@@ -6145,7 +6153,7 @@ function showRecBar(type) {
   const bar = $('#recBar');
   if (!bar) return;
   const lab = $('#recLabel');
-  if (lab) lab.textContent = type === 'video' ? 'Кружок · запись…' : 'Голосовое · запись…';
+  if (lab) lab.textContent = type === 'video' ? 'РљСЂСѓР¶РѕРє В· Р·Р°РїРёСЃСЊвЂ¦' : 'Р“РѕР»РѕСЃРѕРІРѕРµ В· Р·Р°РїРёСЃСЊвЂ¦';
   bar.classList.remove('hidden');
   const pv = $('#recPreview');
   if (pv) { if (type === 'video') pv.classList.remove('hidden'); else { pv.classList.add('hidden'); pv.srcObject = null; } }
@@ -6170,23 +6178,23 @@ function updateRecTimer() {
 }
 function startRecording(type) {
   if (recState) return;
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast('Запись не поддерживается этим браузером');
-  if (typeof MediaRecorder === 'undefined') return toast('Запись не поддерживается этим браузером (нужен свежий Chrome/Safari)');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast('Р—Р°РїРёСЃСЊ РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЌС‚РёРј Р±СЂР°СѓР·РµСЂРѕРј');
+  if (typeof MediaRecorder === 'undefined') return toast('Р—Р°РїРёСЃСЊ РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ СЌС‚РёРј Р±СЂР°СѓР·РµСЂРѕРј (РЅСѓР¶РµРЅ СЃРІРµР¶РёР№ Chrome/Safari)');
   const video = type === 'video';
   const chat = currentChat();
   if (!chat) return;
 const begin = (stream) => {
-      if (video && !stream.getVideoTracks().length) { stream.getTracks().forEach(t => t.stop()); return toast('Камера не найдена'); }
+      if (video && !stream.getVideoTracks().length) { stream.getTracks().forEach(t => t.stop()); return toast('РљР°РјРµСЂР° РЅРµ РЅР°Р№РґРµРЅР°'); }
       const mime = pickRecordMime(video);
       let rec;
       try { rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
-      catch (e) { stream.getTracks().forEach(t => t.stop()); return toast('Не удалось начать запись'); }
+      catch (e) { stream.getTracks().forEach(t => t.stop()); return toast('РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°С‡Р°С‚СЊ Р·Р°РїРёСЃСЊ'); }
       const chunks = [];
       rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
       rec.onstop = () => {
         clearInterval(recState && recState.timer);
         stream.getTracks().forEach(t => t.stop());
-        if (!chunks.length) { recState = null; hideRecBar(); return toast('Запись не удалась, попробуйте ещё раз'); }
+        if (!chunks.length) { recState = null; hideRecBar(); return toast('Р—Р°РїРёСЃСЊ РЅРµ СѓРґР°Р»Р°СЃСЊ, РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·'); }
         const blob = new Blob(chunks, { type: rec.mimeType || (video ? 'video/webm' : 'audio/webm') });
       const dur = Math.max(1, Math.round((Date.now() - recState.t0) / 1000));
       const rd = new FileReader();
@@ -6207,7 +6215,7 @@ const begin = (stream) => {
     }
     if (video) setTimeout(() => { if (recState && recState.rec.state === 'recording') stopRecording(); }, VIDEO_MSG_MAX_SEC * 1000);
     else setTimeout(() => { if (recState && recState.rec.state === 'recording') stopRecording(); }, VOICE_MAX_SEC * 1000);
-    toast(video ? 'Запись кружка…' : 'Запись голосового…');
+    toast(video ? 'Р—Р°РїРёСЃСЊ РєСЂСѓР¶РєР°вЂ¦' : 'Р—Р°РїРёСЃСЊ РіРѕР»РѕСЃРѕРІРѕРіРѕвЂ¦');
   };
   navigator.mediaDevices.getUserMedia(video
     ? { audio: true, video: { facingMode: 'user' } }
@@ -6217,9 +6225,9 @@ const begin = (stream) => {
       if (video) {
         navigator.mediaDevices.getUserMedia({ audio: true, video: true })
           .then(begin)
-          .catch(() => toast('Нет доступа к камере/микрофону'));
+          .catch(() => toast('РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РєР°РјРµСЂРµ/РјРёРєСЂРѕС„РѕРЅСѓ'));
       } else {
-        toast('Нет доступа к микрофону');
+        toast('РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РјРёРєСЂРѕС„РѕРЅСѓ');
       }
     });
 }
@@ -6244,7 +6252,7 @@ function sendMediaMessage(chat, media) {
     if (chat.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(msg);
     else syncGroupMessageEverywhere(chat, msg, currentUser.username);
   }
-  addLog(currentUser.username, `Отправил ${media.voice ? 'голосовое' : 'видеосообщение'} в «${chatTitle(chat)}»`);
+  addLog(currentUser.username, `РћС‚РїСЂР°РІРёР» ${media.voice ? 'РіРѕР»РѕСЃРѕРІРѕРµ' : 'РІРёРґРµРѕСЃРѕРѕР±С‰РµРЅРёРµ'} РІ В«${chatTitle(chat)}В»`);
   saveState();
   renderMessages(chat);
   if (isChatNearBottom()) scrollChatToBottom();
@@ -6259,7 +6267,7 @@ function compressStickerFile(f, cb) {
   const reader = new FileReader();
   reader.onload = () => {
     if (animated) {
-      if (f.size > 3 * 1024 * 1024) toast('Стикер больше 3 МБ — может грузиться долго');
+      if (f.size > 3 * 1024 * 1024) toast('РЎС‚РёРєРµСЂ Р±РѕР»СЊС€Рµ 3 РњР‘ вЂ” РјРѕР¶РµС‚ РіСЂСѓР·РёС‚СЊСЃСЏ РґРѕР»РіРѕ');
       cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), dataUrl: reader.result });
       return;
     }
@@ -6287,18 +6295,18 @@ function openStickersManager() {
   modal.classList.add('open');
   modal.innerHTML = `
     <div class="modal-box stickers-modal">
-      <h3>🎨 Мои стикер-паки</h3>
+      <h3>рџЋЁ РњРѕРё СЃС‚РёРєРµСЂ-РїР°РєРё</h3>
       <div class="sm-list">
         ${packs.length ? packs.map(p => `
           <div class="sm-pack">
             <img class="sm-prev" src="${p.stickers[0].dataUrl}" alt="">
-            <div class="sm-info"><b>${escapeHtml(p.name)}</b><span>${p.stickers.length} стикеров</span></div>
-            <button class="btn sm-add-sticker" data-smpack="${escapeHtml(p.id)}">＋ Стикер</button>
-            <button class="btn btn-danger sm-del" data-smpack="${escapeHtml(p.id)}">Удалить</button>
-          </div>`).join('') : '<div class="empty-list">Пока нет паков</div>'}
+            <div class="sm-info"><b>${escapeHtml(p.name)}</b><span>${p.stickers.length} СЃС‚РёРєРµСЂРѕРІ</span></div>
+            <button class="btn sm-add-sticker" data-smpack="${escapeHtml(p.id)}">пј‹ РЎС‚РёРєРµСЂ</button>
+            <button class="btn btn-danger sm-del" data-smpack="${escapeHtml(p.id)}">РЈРґР°Р»РёС‚СЊ</button>
+          </div>`).join('') : '<div class="empty-list">РџРѕРєР° РЅРµС‚ РїР°РєРѕРІ</div>'}
       </div>
-      <button class="btn btn-primary" id="smCreate">＋ Создать пак из фото</button>
-      <button class="btn sm-close">Закрыть</button>
+      <button class="btn btn-primary" id="smCreate">пј‹ РЎРѕР·РґР°С‚СЊ РїР°Рє РёР· С„РѕС‚Рѕ</button>
+      <button class="btn sm-close">Р—Р°РєСЂС‹С‚СЊ</button>
     </div>`;
   modal.querySelector('.sm-close').addEventListener('click', () => { modal.classList.remove('open'); renderStickPanel('mine'); });
   modal.addEventListener('click', (e) => {
@@ -6309,7 +6317,7 @@ function openStickersManager() {
     currentUser.stickerPacks = currentUser.stickerPacks.filter(p => p.id !== b.dataset.smpack);
     persistCurrentUser();
     openStickersManager();
-    toast('Пак удалён');
+    toast('РџР°Рє СѓРґР°Р»С‘РЅ');
   }));
   const create = modal.querySelector('#smCreate');
   const createInput = document.createElement('input');
@@ -6323,7 +6331,7 @@ function openStickersManager() {
     const files = Array.from(createInput.files || []).slice(0, 30);
     createInput.value = '';
     if (!files.length) return;
-    const name = prompt('Название пака:');
+    const name = prompt('РќР°Р·РІР°РЅРёРµ РїР°РєР°:');
     if (!name) return;
     let done = 0;
     const stickers = [];
@@ -6334,7 +6342,7 @@ function openStickersManager() {
         currentUser.stickerPacks = currentUser.stickerPacks || [];
         currentUser.stickerPacks.push({ id: 'pk' + Date.now() + Math.random().toString(36).slice(2, 6), name, stickers });
         persistCurrentUser();
-        toast('Пак создан', name);
+        toast('РџР°Рє СЃРѕР·РґР°РЅ', name);
         openStickersManager();
       }
     }));
@@ -6362,14 +6370,14 @@ function openStickersManager() {
       done++;
       if (done === files.length) {
         persistCurrentUser();
-        toast('Стикеры добавлены', pack.name + ' · теперь ' + pack.stickers.length + ' шт.');
+        toast('РЎС‚РёРєРµСЂС‹ РґРѕР±Р°РІР»РµРЅС‹', pack.name + ' В· С‚РµРїРµСЂСЊ ' + pack.stickers.length + ' С€С‚.');
         openStickersManager();
       }
     }));
   });
 }
 
-/* ---------- Фильтры / поиск ---------- */
+/* ---------- Р¤РёР»СЊС‚СЂС‹ / РїРѕРёСЃРє ---------- */
 function bindFilters() {
   $$('.filter-tab').forEach(tab => tab.addEventListener('click', () => {
     $$('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -6385,16 +6393,16 @@ function bindFilters() {
 }
 
 /* ============================================================
-   СОЗДАНИЕ ЧАТА
+   РЎРћР—Р”РђРќРР• Р§РђРўРђ
    ============================================================ */
 let createContext = { type: null, selected: [], color: COLOR_PALETTE[0] };
 let createAvatarImage = null;
-const TYPE_NAMES = { private: 'Личное сообщение', group: 'Новая группа', channel: 'Новый канал' };
+const TYPE_NAMES = { private: 'Р›РёС‡РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ', group: 'РќРѕРІР°СЏ РіСЂСѓРїРїР°', channel: 'РќРѕРІС‹Р№ РєР°РЅР°Р»' };
 
 function openCreateModal() {
   createContext = { type: null, selected: [], color: COLOR_PALETTE[0], botColor: COLOR_PALETTE[0], access: 'public' };
   createAvatarImage = null;
-  $('#modalTitle').textContent = 'Создать';
+  $('#modalTitle').textContent = 'РЎРѕР·РґР°С‚СЊ';
   $$('#modalSteps .step').forEach(s => s.classList.add('hidden'));
   $('#step-type').classList.remove('hidden');
   $('#modalBack').classList.add('hidden');
@@ -6405,11 +6413,11 @@ function openCreateModal() {
 function closeCreateModal() { $('#createModal').classList.remove('open'); }
 
 function contactListHtml(items, checkable) {
-  if (!items.length) return '<div class="empty-list">Пока нет других пользователей.<br>Зарегистрируйте второй аккаунт, чтобы общаться с ним.</div>';
+  if (!items.length) return '<div class="empty-list">РџРѕРєР° РЅРµС‚ РґСЂСѓРіРёС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№.<br>Р—Р°СЂРµРіРёСЃС‚СЂРёСЂСѓР№С‚Рµ РІС‚РѕСЂРѕР№ Р°РєРєР°СѓРЅС‚, С‡С‚РѕР±С‹ РѕР±С‰Р°С‚СЊСЃСЏ СЃ РЅРёРј.</div>';
   return items.map(u => `
     <div class="member-item ${checkable && createContext.selected.includes(u.username) ? 'checked' : ''}" data-id="${u.username}">
       ${avatarHtml(u)}
-      <div style="min-width:0;flex:1"><div class="mi-name">${displayName(u)}</div><div class="mi-status">ID ${u.id} · ${statusOf(u).label}</div></div>
+      <div style="min-width:0;flex:1"><div class="mi-name">${displayName(u)}</div><div class="mi-status">ID ${u.id} В· ${statusOf(u).label}</div></div>
       ${checkable ? `<span class="check">${CHECK_ICON}</span>` : ''}
     </div>`).join('');
 }
@@ -6417,8 +6425,8 @@ function contactListHtml(items, checkable) {
 function renderSearchPicker(container, sources, opts) {
   const { checkable, selected, onPick, onToggle, hint } = opts;
   container.innerHTML = `
-    <input type="text" class="contact-search" placeholder="🔍 Поиск по ID, @юзернейму или имени" autocomplete="off">
-    <div class="contact-hint">${hint || 'Введите ID, @юзернейм или имя контакта'}</div>
+    <input type="text" class="contact-search" placeholder="рџ”Ќ РџРѕРёСЃРє РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё" autocomplete="off">
+    <div class="contact-hint">${hint || 'Р’РІРµРґРёС‚Рµ ID, @СЋР·РµСЂРЅРµР№Рј РёР»Рё РёРјСЏ РєРѕРЅС‚Р°РєС‚Р°'}</div>
     <div class="contact-results"></div>`;
   const inp = container.querySelector('.contact-search');
   const hintEl = container.querySelector('.contact-hint');
@@ -6428,14 +6436,14 @@ function renderSearchPicker(container, sources, opts) {
     const q = raw.toLowerCase().replace(/^@/, '');
     if (!q) {
       const all = sources.slice(0, 15);
-      if (!all.length) { res.innerHTML = '<div class="empty-list">Никого не найдено</div>'; hintEl.classList.add('hidden'); return; }
+      if (!all.length) { res.innerHTML = '<div class="empty-list">РќРёРєРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</div>'; hintEl.classList.add('hidden'); return; }
       hintEl.classList.add('hidden');
       res.innerHTML = all.map(u => `
         <div class="member-item ${checkable && selected.includes(u.username) ? 'checked' : ''}" data-id="${u.username}">
           <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
           <div style="min-width:0;flex:1">
             <div class="mi-name">${displayName(u)}</div>
-            <div class="mi-status">ID ${u.id} · @${escapeHtml(u.username)}</div>
+            <div class="mi-status">ID ${u.id} В· @${escapeHtml(u.username)}</div>
           </div>
           ${checkable ? `<span class="check">${CHECK_ICON}</span>` : ''}
         </div>`).join('');
@@ -6447,14 +6455,14 @@ function renderSearchPicker(container, sources, opts) {
       return;
     }
     hintEl.classList.add('hidden');
-    if (!/^[a-zа-яё0-9_@ ]*$/i.test(raw)) { res.innerHTML = '<div class="empty-list">Только буквы, цифры и _</div>'; return; }
+    if (!/^[a-zР°-СЏС‘0-9_@ ]*$/i.test(raw)) { res.innerHTML = '<div class="empty-list">РўРѕР»СЊРєРѕ Р±СѓРєРІС‹, С†РёС„СЂС‹ Рё _</div>'; return; }
     const list = sources.filter(u => {
       if (String(u.id).toLowerCase().includes(q)) return true;
       if (u.username.toLowerCase().startsWith(q)) return true;
       return u.name.toLowerCase().includes(q);
     }).slice(0, 25);
     if (!list.length) {
-      res.innerHTML = '<div class="empty-list">Никого не найдено</div>';
+      res.innerHTML = '<div class="empty-list">РќРёРєРѕРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</div>';
       if (q.length >= 2) {
         cloudSearchAndMerge(q).then(f => {
           if (f && currentUser && !sources.some(x => x && x.username === f.username)) sources.push(f);
@@ -6468,7 +6476,7 @@ function renderSearchPicker(container, sources, opts) {
         <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
         <div style="min-width:0;flex:1">
           <div class="mi-name">${displayName(u)}</div>
-          <div class="mi-status">ID ${u.id} · @${escapeHtml(u.username)} · ${statusOf(u).label}</div>
+          <div class="mi-status">ID ${u.id} В· @${escapeHtml(u.username)} В· ${statusOf(u).label}</div>
         </div>
         ${checkable ? `<span class="check">${CHECK_ICON}</span>` : ''}
       </div>`).join('');
@@ -6488,7 +6496,7 @@ function renderPrivatePicker() {
     checkable: false,
     selected: [],
     onPick: startPrivateChat,
-    hint: 'Выберите контакт или найдите по ID, @юзернейму или имени',
+    hint: 'Р’С‹Р±РµСЂРёС‚Рµ РєРѕРЅС‚Р°РєС‚ РёР»Рё РЅР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё',
   });
   refreshAccountsFromCloud().then(() => {
     const fresh = accountsList().filter(u => u.username !== currentUser.username);
@@ -6497,7 +6505,7 @@ function renderPrivatePicker() {
         checkable: false,
         selected: [],
         onPick: startPrivateChat,
-        hint: 'Выберите контакт или найдите по ID, @юзернейму или имени',
+        hint: 'Р’С‹Р±РµСЂРёС‚Рµ РєРѕРЅС‚Р°РєС‚ РёР»Рё РЅР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё',
       });
     }
   });
@@ -6516,11 +6524,11 @@ function startPrivateChat(userId) {
   state.chats.push(chat);
   saveState();
   pushChatMeta(chat);
-  addLog(currentUser.username, `Начал диалог с @${userId}`);
+  addLog(currentUser.username, `РќР°С‡Р°Р» РґРёР°Р»РѕРі СЃ @${userId}`);
   closeCreateModal();
   renderChatList();
   selectChat(chat.id);
-  toast('Чат создан', chatTitle(chat));
+  toast('Р§Р°С‚ СЃРѕР·РґР°РЅ', chatTitle(chat));
 }
 
 function renderCreateStep() {
@@ -6558,7 +6566,7 @@ function renderCreateStep() {
       if (idx >= 0) createContext.selected.splice(idx, 1);
       else createContext.selected.push(id);
     },
-    hint: 'Выберите участников или найдите по ID, @юзернейму или имени',
+    hint: 'Р’С‹Р±РµСЂРёС‚Рµ СѓС‡Р°СЃС‚РЅРёРєРѕРІ РёР»Рё РЅР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё',
   });
   renderPicker();
   refreshAccountsFromCloud().then(() => {
@@ -6571,7 +6579,7 @@ function renderCreateStep() {
   const update = () => {
     if (createAvatarImage) return;
     const p = $('#createAvatarPreview');
-    const t = name.value.trim() || (isChannel ? 'К' : 'Г');
+    const t = name.value.trim() || (isChannel ? 'Рљ' : 'Р“');
     p.textContent = t[0].toUpperCase();
     p.style.background = `linear-gradient(135deg, ${createContext.color[0]}, ${createContext.color[1]})`;
   };
@@ -6581,23 +6589,23 @@ function renderCreateStep() {
     p.innerHTML = `<img src="${createAvatarImage}">`;
     p.style.background = 'none';
   } else {
-    p.textContent = (isChannel ? 'К' : 'Г');
+    p.textContent = (isChannel ? 'Рљ' : 'Р“');
     p.style.background = `linear-gradient(135deg, ${createContext.color[0]}, ${createContext.color[1]})`;
   }
 }
 
 function performCreate() {
   const isChannel = createContext.type === 'channel';
-  const name = $('#createName').value.trim() || (isChannel ? 'Новый канал' : 'Новая группа');
+  const name = $('#createName').value.trim() || (isChannel ? 'РќРѕРІС‹Р№ РєР°РЅР°Р»' : 'РќРѕРІР°СЏ РіСЂСѓРїРїР°');
   const desc = $('#createDesc').value.trim();
-  if (name.length > LIMITS.name) return toast('Ошибка', `Название — максимум ${LIMITS.name} символов`);
-  if (desc.length > LIMITS.desc) return toast('Ошибка', `Описание — максимум ${LIMITS.desc} символов`);
+  if (name.length > LIMITS.name) return toast('РћС€РёР±РєР°', `РќР°Р·РІР°РЅРёРµ вЂ” РјР°РєСЃРёРјСѓРј ${LIMITS.name} СЃРёРјРІРѕР»РѕРІ`);
+  if (desc.length > LIMITS.desc) return toast('РћС€РёР±РєР°', `РћРїРёСЃР°РЅРёРµ вЂ” РјР°РєСЃРёРјСѓРј ${LIMITS.desc} СЃРёРјРІРѕР»РѕРІ`);
   let handle = null;
   if (isChannel) {
     const h = $('#createHandle').value.trim().replace(/^@/, '').toLowerCase();
     if (h) {
-      if (!/^[a-z0-9_]{3,14}$/.test(h)) return toast('Ошибка', 'Юзернейм канала: 3-14 символов (a-z, 0-9, _)');
-      if (channelHandleTaken(h)) return toast('Ошибка', 'Этот юзернейм канала уже занят');
+      if (!/^[a-z0-9_]{3,14}$/.test(h)) return toast('РћС€РёР±РєР°', 'Р®Р·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р°: 3-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _)');
+      if (channelHandleTaken(h)) return toast('РћС€РёР±РєР°', 'Р­С‚РѕС‚ СЋР·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р° СѓР¶Рµ Р·Р°РЅСЏС‚');
       handle = h;
     }
   }
@@ -6612,19 +6620,19 @@ function performCreate() {
     avatar: createAvatarImage ? { type: 'upload', dataUrl: createAvatarImage } : null,
     owner: 'me', admins: ['me'], members,
     dolphin: { xp: 0, lastFeed: 0, lastPlay: 0, lastPet: 0 },
-    messages: [{ id: 'm' + Date.now(), from: 'me', text: isChannel ? `Канал «${name}» создан 🎉` : `Группа «${name}» создана 🎉`, time: new Date().toISOString(), read: true }],
+    messages: [{ id: 'm' + Date.now(), from: 'me', text: isChannel ? `РљР°РЅР°Р» В«${name}В» СЃРѕР·РґР°РЅ рџЋ‰` : `Р“СЂСѓРїРїР° В«${name}В» СЃРѕР·РґР°РЅР° рџЋ‰`, time: new Date().toISOString(), read: true }],
   };
   state.chats.push(chat);
   saveState();
   pushChatMeta(chat);
   distributeGroupToMembers(chat, currentUser.username);
   addLog(currentUser.username, isChannel
-    ? `Создал канал «${name}»${handle ? ' @' + handle : ''}`
-    : `Создал группу «${name}»`);
+    ? `РЎРѕР·РґР°Р» РєР°РЅР°Р» В«${name}В»${handle ? ' @' + handle : ''}`
+    : `РЎРѕР·РґР°Р» РіСЂСѓРїРїСѓ В«${name}В»`);
   closeCreateModal();
   renderChatList();
   selectChat(chat.id);
-  toast(isChannel ? 'Канал создан' : 'Группа создана', name);
+  toast(isChannel ? 'РљР°РЅР°Р» СЃРѕР·РґР°РЅ' : 'Р“СЂСѓРїРїР° СЃРѕР·РґР°РЅР°', name);
 }
 
 function bindCreateModal() {
@@ -6641,7 +6649,7 @@ function bindCreateModal() {
       return;
     }
     if (createContext.type === 'private') {
-      $('#modalTitle').textContent = 'Выберите контакт';
+      $('#modalTitle').textContent = 'Р’С‹Р±РµСЂРёС‚Рµ РєРѕРЅС‚Р°РєС‚';
       $('#step-type').classList.add('hidden');
       $('#step-contact').classList.remove('hidden');
       $('#modalBack').classList.remove('hidden');
@@ -6678,29 +6686,29 @@ function bindCreateModal() {
   createFile.addEventListener('change', () => {
     const f = createFile.files[0];
     if (!f) return;
-    if (!f.type.startsWith('image/')) return toast('Ошибка', 'Можно загрузить только изображение');
+    if (!f.type.startsWith('image/')) return toast('РћС€РёР±РєР°', 'РњРѕР¶РЅРѕ Р·Р°РіСЂСѓР·РёС‚СЊ С‚РѕР»СЊРєРѕ РёР·РѕР±СЂР°Р¶РµРЅРёРµ');
     const reader = new FileReader();
     reader.onload = (ev) => {
       createAvatarImage = ev.target.result;
       const p = $('#createAvatarPreview');
       p.innerHTML = `<img src="${createAvatarImage}">`;
       p.style.background = 'none';
-      toast('Фото загружено', 'Нажмите «Создать»');
+      toast('Р¤РѕС‚Рѕ Р·Р°РіСЂСѓР¶РµРЅРѕ', 'РќР°Р¶РјРёС‚Рµ В«РЎРѕР·РґР°С‚СЊВ»');
     };
     reader.readAsDataURL(f);
   });
   $('#modalCreate').addEventListener('click', performCreate);
 }
 
-/* ---------- БОТЫ ---------- */
+/* ---------- Р‘РћРўР« ---------- */
 function botAccounts() { return accountsList().filter(a => a.isBot); }
 function createBotFromModal() {
   const name = $('#botName').value.trim();
-  if (!name) return toast('Ошибка', 'Введите имя бота');
-  const emoji = $('#botEmoji').value.trim() || '🤖';
+  if (!name) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ РёРјСЏ Р±РѕС‚Р°');
+  const emoji = $('#botEmoji').value.trim() || 'рџ¤–';
   const triggers = $('#botTriggers').value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
   const replies = $('#botReplies').value.split('\n').map(t => t.trim()).filter(Boolean);
-  if (!replies.length) return toast('Ошибка', 'Добавьте хотя бы один ответ бота');
+  if (!replies.length) return toast('РћС€РёР±РєР°', 'Р”РѕР±Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РѕС‚РІРµС‚ Р±РѕС‚Р°');
   const d = loadAccounts();
   let username = 'bot_' + Math.floor(Math.random() * 900000000);
   while (d.users[username]) {
@@ -6713,37 +6721,37 @@ function createBotFromModal() {
     bot: { emoji, triggers, replies, owner: currentUser.username },
   };
   saveAccounts(d);
-  addLog(currentUser.username, `Создал бота «${name}» (@${username})`);
+  addLog(currentUser.username, `РЎРѕР·РґР°Р» Р±РѕС‚Р° В«${name}В» (@${username})`);
   closeCreateModal();
-  toast('Бот создан', name + (triggers.length ? ' — триггеры: ' + triggers.join(', ') : ' — чат-бот, отвечает на всё'));
+  toast('Р‘РѕС‚ СЃРѕР·РґР°РЅ', name + (triggers.length ? ' вЂ” С‚СЂРёРіРіРµСЂС‹: ' + triggers.join(', ') : ' вЂ” С‡Р°С‚-Р±РѕС‚, РѕС‚РІРµС‡Р°РµС‚ РЅР° РІСЃС‘'));
 }
 function smartBotReply(raw, bot) {
   const text = String(raw || '').trim();
   const low = text.toLowerCase();
-  const emoji = (bot.bot && bot.bot.emoji) || '🤖';
-  const name = bot.name || 'Бот';
+  const emoji = (bot.bot && bot.bot.emoji) || 'рџ¤–';
+  const name = bot.name || 'Р‘РѕС‚';
   const pairs = [
-    [/привет|здравств|салют|хай|здорово|добрый день|добрый вечер|ку\b/,
-      [`Привет! ${emoji} Рад(а) поболтать.`, `Здравствуй! ${emoji} Как дела?`, `Привет-привет! ${emoji} Чем займёмся?`]],
-    [/как дела|как ты\b|как жизнь|что нового|как настроение/,
-      [`У меня всё отлично! ${emoji} А у тебя?`, `Живу в телефоне — тут не скучно ${emoji} А ты как?`, `Супер! ${emoji} Расскажи, как твой день?`]],
-    [/кто ты|ты кто|расскажи о себе|как тебя зовут|твоё имя/,
-      [`Я ${name} ${emoji} — твой собеседник в Nebula. Напиши мне что-нибудь!`, `Меня зовут ${name} ${emoji} Создан(а), чтобы общаться с тобой.`]],
-    [/как тебя зовут/, [`Меня зовут ${name} ${emoji}`]],
-    [/спасибо|благодар|спс\b|круто|класс|топ\b/,
-      [`Всегда пожалуйста! ${emoji}`, `Не за что! ${emoji}`, `Рад(а) помочь ${emoji}`]],
-    [/пока|до свидания|прощай|спокойной ночи/,
-      [`Пока-пока! ${emoji} Возвращайся скорее.`, `До встречи! ${emoji} Буду ждать.`]],
-    [/люблю\b|нравишься|ты класс|обожаю/,
-      [`И я тебя! ${emoji}`, `Ахах, спасибо! ${emoji}`, `Ты делаешь мой день ${emoji}`]],
-    [/шутк|анекдот|рассмеши|смешно/,
-      [`Какой любимый цвет у программиста? Синий-синий-синий! ${emoji}`, `— Я пошутил! — Кто говорит? ${emoji}`]],
-    [/дельфин/,
-      [`Дельфины — это морская любовь ${emoji} Покорми дельфина в чате!`]],
-    [/погод/,
-      [`Говорят, в вашем городе ${Math.round(8 + Math.random() * 22)}°C ${emoji} Ну а у меня всегда солнечно!`]],
-    [/время|который час/,
-      [`Сейчас ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} ${emoji}`]],
+    [/РїСЂРёРІРµС‚|Р·РґСЂР°РІСЃС‚РІ|СЃР°Р»СЋС‚|С…Р°Р№|Р·РґРѕСЂРѕРІРѕ|РґРѕР±СЂС‹Р№ РґРµРЅСЊ|РґРѕР±СЂС‹Р№ РІРµС‡РµСЂ|РєСѓ\b/,
+      [`РџСЂРёРІРµС‚! ${emoji} Р Р°Рґ(Р°) РїРѕР±РѕР»С‚Р°С‚СЊ.`, `Р—РґСЂР°РІСЃС‚РІСѓР№! ${emoji} РљР°Рє РґРµР»Р°?`, `РџСЂРёРІРµС‚-РїСЂРёРІРµС‚! ${emoji} Р§РµРј Р·Р°Р№РјС‘РјСЃСЏ?`]],
+    [/РєР°Рє РґРµР»Р°|РєР°Рє С‚С‹\b|РєР°Рє Р¶РёР·РЅСЊ|С‡С‚Рѕ РЅРѕРІРѕРіРѕ|РєР°Рє РЅР°СЃС‚СЂРѕРµРЅРёРµ/,
+      [`РЈ РјРµРЅСЏ РІСЃС‘ РѕС‚Р»РёС‡РЅРѕ! ${emoji} Рђ Сѓ С‚РµР±СЏ?`, `Р–РёРІСѓ РІ С‚РµР»РµС„РѕРЅРµ вЂ” С‚СѓС‚ РЅРµ СЃРєСѓС‡РЅРѕ ${emoji} Рђ С‚С‹ РєР°Рє?`, `РЎСѓРїРµСЂ! ${emoji} Р Р°СЃСЃРєР°Р¶Рё, РєР°Рє С‚РІРѕР№ РґРµРЅСЊ?`]],
+    [/РєС‚Рѕ С‚С‹|С‚С‹ РєС‚Рѕ|СЂР°СЃСЃРєР°Р¶Рё Рѕ СЃРµР±Рµ|РєР°Рє С‚РµР±СЏ Р·РѕРІСѓС‚|С‚РІРѕС‘ РёРјСЏ/,
+      [`РЇ ${name} ${emoji} вЂ” С‚РІРѕР№ СЃРѕР±РµСЃРµРґРЅРёРє РІ Nebula. РќР°РїРёС€Рё РјРЅРµ С‡С‚Рѕ-РЅРёР±СѓРґСЊ!`, `РњРµРЅСЏ Р·РѕРІСѓС‚ ${name} ${emoji} РЎРѕР·РґР°РЅ(Р°), С‡С‚РѕР±С‹ РѕР±С‰Р°С‚СЊСЃСЏ СЃ С‚РѕР±РѕР№.`]],
+    [/РєР°Рє С‚РµР±СЏ Р·РѕРІСѓС‚/, [`РњРµРЅСЏ Р·РѕРІСѓС‚ ${name} ${emoji}`]],
+    [/СЃРїР°СЃРёР±Рѕ|Р±Р»Р°РіРѕРґР°СЂ|СЃРїСЃ\b|РєСЂСѓС‚Рѕ|РєР»Р°СЃСЃ|С‚РѕРї\b/,
+      [`Р’СЃРµРіРґР° РїРѕР¶Р°Р»СѓР№СЃС‚Р°! ${emoji}`, `РќРµ Р·Р° С‡С‚Рѕ! ${emoji}`, `Р Р°Рґ(Р°) РїРѕРјРѕС‡СЊ ${emoji}`]],
+    [/РїРѕРєР°|РґРѕ СЃРІРёРґР°РЅРёСЏ|РїСЂРѕС‰Р°Р№|СЃРїРѕРєРѕР№РЅРѕР№ РЅРѕС‡Рё/,
+      [`РџРѕРєР°-РїРѕРєР°! ${emoji} Р’РѕР·РІСЂР°С‰Р°Р№СЃСЏ СЃРєРѕСЂРµРµ.`, `Р”Рѕ РІСЃС‚СЂРµС‡Рё! ${emoji} Р‘СѓРґСѓ Р¶РґР°С‚СЊ.`]],
+    [/Р»СЋР±Р»СЋ\b|РЅСЂР°РІРёС€СЊСЃСЏ|С‚С‹ РєР»Р°СЃСЃ|РѕР±РѕР¶Р°СЋ/,
+      [`Р СЏ С‚РµР±СЏ! ${emoji}`, `РђС…Р°С…, СЃРїР°СЃРёР±Рѕ! ${emoji}`, `РўС‹ РґРµР»Р°РµС€СЊ РјРѕР№ РґРµРЅСЊ ${emoji}`]],
+    [/С€СѓС‚Рє|Р°РЅРµРєРґРѕС‚|СЂР°СЃСЃРјРµС€Рё|СЃРјРµС€РЅРѕ/,
+      [`РљР°РєРѕР№ Р»СЋР±РёРјС‹Р№ С†РІРµС‚ Сѓ РїСЂРѕРіСЂР°РјРјРёСЃС‚Р°? РЎРёРЅРёР№-СЃРёРЅРёР№-СЃРёРЅРёР№! ${emoji}`, `вЂ” РЇ РїРѕС€СѓС‚РёР»! вЂ” РљС‚Рѕ РіРѕРІРѕСЂРёС‚? ${emoji}`]],
+    [/РґРµР»СЊС„РёРЅ/,
+      [`Р”РµР»СЊС„РёРЅС‹ вЂ” СЌС‚Рѕ РјРѕСЂСЃРєР°СЏ Р»СЋР±РѕРІСЊ ${emoji} РџРѕРєРѕСЂРјРё РґРµР»СЊС„РёРЅР° РІ С‡Р°С‚Рµ!`]],
+    [/РїРѕРіРѕРґ/,
+      [`Р“РѕРІРѕСЂСЏС‚, РІ РІР°С€РµРј РіРѕСЂРѕРґРµ ${Math.round(8 + Math.random() * 22)}В°C ${emoji} РќСѓ Р° Сѓ РјРµРЅСЏ РІСЃРµРіРґР° СЃРѕР»РЅРµС‡РЅРѕ!`]],
+    [/РІСЂРµРјСЏ|РєРѕС‚РѕСЂС‹Р№ С‡Р°СЃ/,
+      [`РЎРµР№С‡Р°СЃ ${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} ${emoji}`]],
   ];
   for (const [re, replies] of pairs) {
     if (re.test(low)) return pick(replies);
@@ -6751,16 +6759,16 @@ function smartBotReply(raw, bot) {
   const short = shortText(text, 40);
   if (low.includes('?')) {
     return pick([
-      `Хм, интересный вопрос про «${short}» ${emoji} Что ты сам(а) думаешь?`,
-      `Ох, а я как раз об этом думал(а) ${emoji} Расскажи подробнее?`,
+      `РҐРј, РёРЅС‚РµСЂРµСЃРЅС‹Р№ РІРѕРїСЂРѕСЃ РїСЂРѕ В«${short}В» ${emoji} Р§С‚Рѕ С‚С‹ СЃР°Рј(Р°) РґСѓРјР°РµС€СЊ?`,
+      `РћС…, Р° СЏ РєР°Рє СЂР°Р· РѕР± СЌС‚РѕРј РґСѓРјР°Р»(Р°) ${emoji} Р Р°СЃСЃРєР°Р¶Рё РїРѕРґСЂРѕР±РЅРµРµ?`,
     ]);
   }
   return pick([
-    `«${short}» — понял(а) тебя ${emoji} Продолжай!`,
-    `Ого, расскажи ещё что-нибудь ${emoji}`,
-    `Интересно! ${emoji} А что ты думаешь об этом?`,
-    `Слушаю тебя внимательно ${emoji} И что дальше?`,
-    `Я за тебя ${emoji} Только вперёд!`,
+    `В«${short}В» вЂ” РїРѕРЅСЏР»(Р°) С‚РµР±СЏ ${emoji} РџСЂРѕРґРѕР»Р¶Р°Р№!`,
+    `РћРіРѕ, СЂР°СЃСЃРєР°Р¶Рё РµС‰С‘ С‡С‚Рѕ-РЅРёР±СѓРґСЊ ${emoji}`,
+    `РРЅС‚РµСЂРµСЃРЅРѕ! ${emoji} Рђ С‡С‚Рѕ С‚С‹ РґСѓРјР°РµС€СЊ РѕР± СЌС‚РѕРј?`,
+    `РЎР»СѓС€Р°СЋ С‚РµР±СЏ РІРЅРёРјР°С‚РµР»СЊРЅРѕ ${emoji} Р С‡С‚Рѕ РґР°Р»СЊС€Рµ?`,
+    `РЇ Р·Р° С‚РµР±СЏ ${emoji} РўРѕР»СЊРєРѕ РІРїРµСЂС‘Рґ!`,
   ]);
 }
 function maybeBotReply(chat, text) {
@@ -6797,34 +6805,34 @@ function truthySubstr(hay, needle) { return !!needle && hay.includes(needle); }
 function openEditBot(chat) {
   const body = $('#manageBody');
   const bot = accountsList().find(a => a.isBot && a.username === chat.userId);
-  if (!bot) return toast('Ошибка', 'Бот не найден');
+  if (!bot) return toast('РћС€РёР±РєР°', 'Р‘РѕС‚ РЅРµ РЅР°Р№РґРµРЅ');
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Настройки бота</h4>
-      <div class="admin-hint">Бот отвечает в личных чатах всегда (если нет триггеров) или по триггерам. В группах — только на упоминание @${bot.username} или триггер. Без триггеров бот отвечает на любое сообщение умными ответами чат-бота.</div>
+      <h4>РќР°СЃС‚СЂРѕР№РєРё Р±РѕС‚Р°</h4>
+      <div class="admin-hint">Р‘РѕС‚ РѕС‚РІРµС‡Р°РµС‚ РІ Р»РёС‡РЅС‹С… С‡Р°С‚Р°С… РІСЃРµРіРґР° (РµСЃР»Рё РЅРµС‚ С‚СЂРёРіРіРµСЂРѕРІ) РёР»Рё РїРѕ С‚СЂРёРіРіРµСЂР°Рј. Р’ РіСЂСѓРїРїР°С… вЂ” С‚РѕР»СЊРєРѕ РЅР° СѓРїРѕРјРёРЅР°РЅРёРµ @${bot.username} РёР»Рё С‚СЂРёРіРіРµСЂ. Р‘РµР· С‚СЂРёРіРіРµСЂРѕРІ Р±РѕС‚ РѕС‚РІРµС‡Р°РµС‚ РЅР° Р»СЋР±РѕРµ СЃРѕРѕР±С‰РµРЅРёРµ СѓРјРЅС‹РјРё РѕС‚РІРµС‚Р°РјРё С‡Р°С‚-Р±РѕС‚Р°.</div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" class="rename-input" id="ebEmoji" value="${escapeHtml(bot.bot.emoji || '🤖')}" maxlength="4" style="width:70px;text-align:center" title="Эмодзи">
-        <input type="text" class="rename-input" id="ebName" value="${escapeHtml(bot.name)}" maxlength="24" placeholder="Имя бота">
+        <input type="text" class="rename-input" id="ebEmoji" value="${escapeHtml(bot.bot.emoji || 'рџ¤–')}" maxlength="4" style="width:70px;text-align:center" title="Р­РјРѕРґР·Рё">
+        <input type="text" class="rename-input" id="ebName" value="${escapeHtml(bot.name)}" maxlength="24" placeholder="РРјСЏ Р±РѕС‚Р°">
       </div>
-      <input type="text" class="rename-input" id="ebTriggers" style="margin-top:8px" value="${escapeHtml((bot.bot.triggers || []).join(', '))}" placeholder="Триггеры через запятую: привет, хай, бот. Пусто или * — отвечать на всё" maxlength="120">
-      <textarea class="rename-input" id="ebReplies" rows="4" style="margin-top:8px" placeholder="Ответы бота — каждый с новой строки" maxlength="600">${escapeHtml((bot.bot.replies || []).join('\n'))}</textarea>
+      <input type="text" class="rename-input" id="ebTriggers" style="margin-top:8px" value="${escapeHtml((bot.bot.triggers || []).join(', '))}" placeholder="РўСЂРёРіРіРµСЂС‹ С‡РµСЂРµР· Р·Р°РїСЏС‚СѓСЋ: РїСЂРёРІРµС‚, С…Р°Р№, Р±РѕС‚. РџСѓСЃС‚Рѕ РёР»Рё * вЂ” РѕС‚РІРµС‡Р°С‚СЊ РЅР° РІСЃС‘" maxlength="120">
+      <textarea class="rename-input" id="ebReplies" rows="4" style="margin-top:8px" placeholder="РћС‚РІРµС‚С‹ Р±РѕС‚Р° вЂ” РєР°Р¶РґС‹Р№ СЃ РЅРѕРІРѕР№ СЃС‚СЂРѕРєРё" maxlength="600">${escapeHtml((bot.bot.replies || []).join('\n'))}</textarea>
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="ebSave">Сохранить</button>
-        <button class="btn btn-ghost" id="ebBack">Назад</button>
+        <button class="btn btn-primary" id="ebSave">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="ebBack">РќР°Р·Р°Рґ</button>
       </div>
     </div>`;
   body.querySelector('#ebSave').addEventListener('click', () => {
     bot.name = $('#ebName').value.trim() || bot.name;
-    bot.bot.emoji = $('#ebEmoji').value.trim() || '🤖';
+    bot.bot.emoji = $('#ebEmoji').value.trim() || 'рџ¤–';
     bot.bot.triggers = $('#ebTriggers').value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
     bot.bot.replies = $('#ebReplies').value.split('\n').map(t => t.trim()).filter(Boolean);
-    if (!bot.bot.replies.length) return toast('Ошибка', 'Добавьте хотя бы один ответ');
+    if (!bot.bot.replies.length) return toast('РћС€РёР±РєР°', 'Р”РѕР±Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РѕС‚РІРµС‚');
     persistOther(bot);
-    addLog(currentUser.username, `Обновил бота «${bot.name}»`);
+    addLog(currentUser.username, `РћР±РЅРѕРІРёР» Р±РѕС‚Р° В«${bot.name}В»`);
     renderManageBody(chat);
     renderChatList();
     renderChat();
-    toast('Бот обновлён', bot.name);
+    toast('Р‘РѕС‚ РѕР±РЅРѕРІР»С‘РЅ', bot.name);
   });
   body.querySelector('#ebBack').addEventListener('click', () => renderManageBody(chat));
 }
@@ -6844,7 +6852,7 @@ function deleteBotEverywhere(username) {
   saveAccounts(d);
 }
 
-/* ---------- ЛИЧНЫЕ ЧАТЫ (для админки) ---------- */
+/* ---------- Р›РР§РќР«Р• Р§РђРўР« (РґР»СЏ Р°РґРјРёРЅРєРё) ---------- */
 function privateChatPairKey(a, b) { return [a, b].sort().join('|'); }
 function privateChatExistsEverywhere(a, b) {
   return accountsList().some(u => {
@@ -6888,12 +6896,12 @@ function deletePrivateChatEverywhere(a, b) {
 }
 
 /* ============================================================
-   НАСТРОЙКИ ЧАТА (управление)
+   РќРђРЎРўР РћР™РљР Р§РђРўРђ (СѓРїСЂР°РІР»РµРЅРёРµ)
    ============================================================ */
 let manageChatId = null;
 function openManageModal(chat) {
   manageChatId = chat.id;
-  $('#manageTitle').textContent = chat.type === 'private' ? 'Настройки чата' : 'Управление чатом';
+  $('#manageTitle').textContent = chat.type === 'private' ? 'РќР°СЃС‚СЂРѕР№РєРё С‡Р°С‚Р°' : 'РЈРїСЂР°РІР»РµРЅРёРµ С‡Р°С‚РѕРј';
   renderManageBody(chat);
   $('#manageModal').classList.add('open');
 }
@@ -6907,26 +6915,26 @@ function renderManageBody(chat) {
   const acc = accFromChat(chat);
   const frame = isPrivate ? selectedFrameClass(acc) : '';
   const SLOW_MODE_OPTIONS = [
-    [0, 'Выключен'],
-    [1, '1 сек'],
-    [5, '5 сек'],
-    [10, '10 сек'],
-    [30, '30 сек'],
-    [60, '1 минута'],
-    [600, '10 минут'],
-    [1800, '30 минут'],
-    [3600, '1 час'],
-    [7200, '2 часа'],
-    [10800, '3 часа'],
-    [18000, '5 часов'],
-    [86400, '24 часа (сутки)'],
+    [0, 'Р’С‹РєР»СЋС‡РµРЅ'],
+    [1, '1 СЃРµРє'],
+    [5, '5 СЃРµРє'],
+    [10, '10 СЃРµРє'],
+    [30, '30 СЃРµРє'],
+    [60, '1 РјРёРЅСѓС‚Р°'],
+    [600, '10 РјРёРЅСѓС‚'],
+    [1800, '30 РјРёРЅСѓС‚'],
+    [3600, '1 С‡Р°СЃ'],
+    [7200, '2 С‡Р°СЃР°'],
+    [10800, '3 С‡Р°СЃР°'],
+    [18000, '5 С‡Р°СЃРѕРІ'],
+    [86400, '24 С‡Р°СЃР° (СЃСѓС‚РєРё)'],
   ];
   let html = `
     <div class="manage-avatar" style="${avatarStyle(acc)}">${avatarInnerHtml(acc)}</div>
     <div class="manage-name">${chat.type === 'private' ? displayName(acc) : escapeHtml(chatTitle(chat))}</div>
     <div class="manage-sub">${isPrivate
-      ? `<span class="copy-id" data-copy="${escapeHtml(acc.id)}" title="Нажмите, чтобы скопировать ID">ID ${escapeHtml(acc.id)} 📋</span>`
-      : chat.type === 'group' ? `${chat.members.length} участников` : `${chat.members.length} подписчиков`}${!isPrivate && chat.handle ? ` · @${escapeHtml(chat.handle)}` : ''}</div>
+      ? `<span class="copy-id" data-copy="${escapeHtml(acc.id)}" title="РќР°Р¶РјРёС‚Рµ, С‡С‚РѕР±С‹ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ ID">ID ${escapeHtml(acc.id)} рџ“‹</span>`
+      : chat.type === 'group' ? `${chat.members.length} СѓС‡Р°СЃС‚РЅРёРєРѕРІ` : `${chat.members.length} РїРѕРґРїРёСЃС‡РёРєРѕРІ`}${!isPrivate && chat.handle ? ` В· @${escapeHtml(chat.handle)}` : ''}</div>
     ${chat.desc ? `<div class="manage-desc">${escapeHtml(chat.desc)}</div>` : ''}
   `;
 
@@ -6936,104 +6944,104 @@ function renderManageBody(chat) {
     const isBotChat = !!((userById(chat.userId) || {}).isBot);
     html += `
       <div class="manage-section">
-        <h4>Настройки чата</h4>
+        <h4>РќР°СЃС‚СЂРѕР№РєРё С‡Р°С‚Р°</h4>
         ${isBotChat ? `<div class="manage-row" id="mrEditBot">
           <svg viewBox="0 0 24 24"><path d="M21 16.5c0-.38-.21-.71-.53-.88l-7.9-4.44a1 1 0 0 0-.94 0L5.73 15.62c-.32.17-.53.5-.53.88s.21.71.53.88l7.9 4.44c.15.08.32.12.48.12s.33-.04.48-.12l7.9-4.44c.32-.17.53-.5.53-.88zM12 10.5 4.06 6.06 11.53 2.2a1.37 1.37 0 0 1 .94 0l7.47 3.86L12 10.5z"/></svg>
-          <div><div class="mr-label">Настроить бота</div><div class="mr-hint">Триггеры, ответы, имя и эмодзи</div></div>
+          <div><div class="mr-label">РќР°СЃС‚СЂРѕРёС‚СЊ Р±РѕС‚Р°</div><div class="mr-hint">РўСЂРёРіРіРµСЂС‹, РѕС‚РІРµС‚С‹, РёРјСЏ Рё СЌРјРѕРґР·Рё</div></div>
         </div>` : ''}
         <div class="manage-row" id="mrBlock">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>
-          <div><div class="mr-label">Заблокировать</div><div class="mr-hint">Пользователь не сможет вам писать</div></div>
-          <span class="tag-state ${isBlocked ? 'on' : 'off'}">${isBlocked ? 'заблокирован' : 'выключено'}</span>
+          <div><div class="mr-label">Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ</div><div class="mr-hint">РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ СЃРјРѕР¶РµС‚ РІР°Рј РїРёСЃР°С‚СЊ</div></div>
+          <span class="tag-state ${isBlocked ? 'on' : 'off'}">${isBlocked ? 'Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ' : 'РІС‹РєР»СЋС‡РµРЅРѕ'}</span>
         </div>
         <div class="manage-row" id="mrIgnore">
           <svg viewBox="0 0 24 24"><path d="M18.92 5.01C18.72 4.42 18.16 4 17.5 4h-11c-.66 0-1.21.42-1.42 1.01L3 11v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 6h10.3l1.04 3H5.81l1.04-3zM19 16H5v-4.66L5.13 10h13.74c.06.44.13.88.13 1.34V16z"/></svg>
-          <div><div class="mr-label">Игнорировать</div><div class="mr-hint">Без уведомлений и ответов</div></div>
-          <span class="tag-state ${isIgnored ? 'on' : 'off'}">${isIgnored ? 'игнорируется' : 'выключено'}</span>
+          <div><div class="mr-label">РРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ</div><div class="mr-hint">Р‘РµР· СѓРІРµРґРѕРјР»РµРЅРёР№ Рё РѕС‚РІРµС‚РѕРІ</div></div>
+          <span class="tag-state ${isIgnored ? 'on' : 'off'}">${isIgnored ? 'РёРіРЅРѕСЂРёСЂСѓРµС‚СЃСЏ' : 'РІС‹РєР»СЋС‡РµРЅРѕ'}</span>
         </div>
         <div class="manage-row" id="mrClearAll">
           <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-          <div><div class="mr-label">Очистить чат для всех</div><div class="mr-hint">Удалить историю у всех участников</div></div>
+          <div><div class="mr-label">РћС‡РёСЃС‚РёС‚СЊ С‡Р°С‚ РґР»СЏ РІСЃРµС…</div><div class="mr-hint">РЈРґР°Р»РёС‚СЊ РёСЃС‚РѕСЂРёСЋ Сѓ РІСЃРµС… СѓС‡Р°СЃС‚РЅРёРєРѕРІ</div></div>
         </div>
         <div class="manage-row" id="mrClearMe">
           <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-          <div><div class="mr-label">Очистить чат для себя</div><div class="mr-hint">Удалить историю только у себя</div></div>
+          <div><div class="mr-label">РћС‡РёСЃС‚РёС‚СЊ С‡Р°С‚ РґР»СЏ СЃРµР±СЏ</div><div class="mr-hint">РЈРґР°Р»РёС‚СЊ РёСЃС‚РѕСЂРёСЋ С‚РѕР»СЊРєРѕ Сѓ СЃРµР±СЏ</div></div>
         </div>
       </div>`;
     html += `
       <div class="manage-section">
-        <h4>Опасная зона</h4>
-        <button class="danger-btn" id="mrDeleteChat">Удалить чат</button>
+        <h4>РћРїР°СЃРЅР°СЏ Р·РѕРЅР°</h4>
+        <button class="danger-btn" id="mrDeleteChat">РЈРґР°Р»РёС‚СЊ С‡Р°С‚</button>
       </div>`;
     html += `
       <div class="manage-section">
-        <h4>Инструменты</h4>
+        <h4>РРЅСЃС‚СЂСѓРјРµРЅС‚С‹</h4>
         <div class="manage-row" id="mrPoll">
           <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h11v2H7v-2zm-4 6h18v2H3v-2z"/></svg>
-          <div><div class="mr-label">Создать опрос</div><div class="mr-hint">Голосование с вариантами ответов</div></div>
+          <div><div class="mr-label">РЎРѕР·РґР°С‚СЊ РѕРїСЂРѕСЃ</div><div class="mr-hint">Р“РѕР»РѕСЃРѕРІР°РЅРёРµ СЃ РІР°СЂРёР°РЅС‚Р°РјРё РѕС‚РІРµС‚РѕРІ</div></div>
         </div>
         <div class="manage-row" id="mrContact">
           <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          <div><div class="mr-label">Поделиться контактом</div><div class="mr-hint">Отправить карточку пользователя</div></div>
+          <div><div class="mr-label">РџРѕРґРµР»РёС‚СЊСЃСЏ РєРѕРЅС‚Р°РєС‚РѕРј</div><div class="mr-hint">РћС‚РїСЂР°РІРёС‚СЊ РєР°СЂС‚РѕС‡РєСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div></div>
         </div>
       </div>`;
   } else {
     if (isAdmin) {
-      html += `<div class="manage-section"><h4>О чате</h4>
+      html += `<div class="manage-section"><h4>Рћ С‡Р°С‚Рµ</h4>
         <div class="manage-row" id="mrEditInfo">
           <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-          <div><div class="mr-label">Название и описание</div><div class="mr-hint">Изменить информацию</div></div>
+          <div><div class="mr-label">РќР°Р·РІР°РЅРёРµ Рё РѕРїРёСЃР°РЅРёРµ</div><div class="mr-hint">РР·РјРµРЅРёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ</div></div>
         </div>
         <div class="manage-row" id="mrChatAvatar">
           <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          <div><div class="mr-label">Сменить аватар</div><div class="mr-hint">Загрузить фото или картинку</div></div>
+          <div><div class="mr-label">РЎРјРµРЅРёС‚СЊ Р°РІР°С‚Р°СЂ</div><div class="mr-hint">Р—Р°РіСЂСѓР·РёС‚СЊ С„РѕС‚Рѕ РёР»Рё РєР°СЂС‚РёРЅРєСѓ</div></div>
         </div>
         <div class="manage-row" id="mrChatCard">
           <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg>
-          <div><div class="mr-label">Карточка ${chat.type === 'channel' ? 'канала' : 'группы'}</div><div class="mr-hint">QR-код, информация, ссылка</div></div>
+          <div><div class="mr-label">РљР°СЂС‚РѕС‡РєР° ${chat.type === 'channel' ? 'РєР°РЅР°Р»Р°' : 'РіСЂСѓРїРїС‹'}</div><div class="mr-hint">QR-РєРѕРґ, РёРЅС„РѕСЂРјР°С†РёСЏ, СЃСЃС‹Р»РєР°</div></div>
         </div>
       </div>`;
     }
     html += `<div class="manage-section">
-      <h4>Настройки доступа</h4>
+      <h4>РќР°СЃС‚СЂРѕР№РєРё РґРѕСЃС‚СѓРїР°</h4>
       ${isOwner ? `<div class="manage-row" id="mrAccess">
           <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-          <div><div class="mr-label">Тип доступа</div><div class="mr-hint">Публичная — вступить может любой, приватная — только по приглашению</div></div>
-          <span class="tag-state ${chat.access === 'public' ? 'on' : 'off'}">${chat.access === 'public' ? 'публичная' : 'приватная'}</span>
+          <div><div class="mr-label">РўРёРї РґРѕСЃС‚СѓРїР°</div><div class="mr-hint">РџСѓР±Р»РёС‡РЅР°СЏ вЂ” РІСЃС‚СѓРїРёС‚СЊ РјРѕР¶РµС‚ Р»СЋР±РѕР№, РїСЂРёРІР°С‚РЅР°СЏ вЂ” С‚РѕР»СЊРєРѕ РїРѕ РїСЂРёРіР»Р°С€РµРЅРёСЋ</div></div>
+          <span class="tag-state ${chat.access === 'public' ? 'on' : 'off'}">${chat.access === 'public' ? 'РїСѓР±Р»РёС‡РЅР°СЏ' : 'РїСЂРёРІР°С‚РЅР°СЏ'}</span>
         </div>` : ''}
       <div class="manage-row" id="mrWhoInvite">
         <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-        <div><div class="mr-label">Кто может приглашать</div><div class="mr-hint">Ограничить права на приглашение участников</div></div>
-        <span class="tag-state ${chat.whoCanInvite === 'all' ? 'on' : 'off'}">${chat.whoCanInvite === 'all' ? 'все участники' : 'владелец и админы'}</span>
+        <div><div class="mr-label">РљС‚Рѕ РјРѕР¶РµС‚ РїСЂРёРіР»Р°С€Р°С‚СЊ</div><div class="mr-hint">РћРіСЂР°РЅРёС‡РёС‚СЊ РїСЂР°РІР° РЅР° РїСЂРёРіР»Р°С€РµРЅРёРµ СѓС‡Р°СЃС‚РЅРёРєРѕРІ</div></div>
+        <span class="tag-state ${chat.whoCanInvite === 'all' ? 'on' : 'off'}">${chat.whoCanInvite === 'all' ? 'РІСЃРµ СѓС‡Р°СЃС‚РЅРёРєРё' : 'РІР»Р°РґРµР»РµС† Рё Р°РґРјРёРЅС‹'}</span>
       </div>
     </div>`;
-    const label = chat.type === 'group' ? 'Участники' : 'Подписчики';
+    const label = chat.type === 'group' ? 'РЈС‡Р°СЃС‚РЅРёРєРё' : 'РџРѕРґРїРёСЃС‡РёРєРё';
     const canWriteHere = chat.type === 'group' ? true
       : (chat.id === NEWS_CHAT_ID ? newsFullAccess(currentUser) : (isAdmin || chat.whoCanWrite === 'all'));
     if (canWriteHere) {
       html += `<div class="manage-section">
-        <h4>Инструменты</h4>
+        <h4>РРЅСЃС‚СЂСѓРјРµРЅС‚С‹</h4>
         <div class="manage-row" id="mrPoll">
           <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h11v2H7v-2zm-4 6h18v2H3v-2z"/></svg>
-          <div><div class="mr-label">Создать опрос</div><div class="mr-hint">Голосование с вариантами ответов</div></div>
+          <div><div class="mr-label">РЎРѕР·РґР°С‚СЊ РѕРїСЂРѕСЃ</div><div class="mr-hint">Р“РѕР»РѕСЃРѕРІР°РЅРёРµ СЃ РІР°СЂРёР°РЅС‚Р°РјРё РѕС‚РІРµС‚РѕРІ</div></div>
         </div>
         <div class="manage-row" id="mrContact">
           <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-          <div><div class="mr-label">Поделиться контактом</div><div class="mr-hint">Отправить карточку пользователя</div></div>
+          <div><div class="mr-label">РџРѕРґРµР»РёС‚СЊСЃСЏ РєРѕРЅС‚Р°РєС‚РѕРј</div><div class="mr-hint">РћС‚РїСЂР°РІРёС‚СЊ РєР°СЂС‚РѕС‡РєСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div></div>
         </div>
       </div>`;
     }
     if (chat.type === 'group') {
       const cur = chat.slowMode || 0;
       html += `<div class="manage-section">
-        <h4>Медленный режим</h4>
-        <div class="admin-hint">Ограничивает, как часто участники могут отправлять сообщения в группу</div>
+        <h4>РњРµРґР»РµРЅРЅС‹Р№ СЂРµР¶РёРј</h4>
+        <div class="admin-hint">РћРіСЂР°РЅРёС‡РёРІР°РµС‚, РєР°Рє С‡Р°СЃС‚Рѕ СѓС‡Р°СЃС‚РЅРёРєРё РјРѕРіСѓС‚ РѕС‚РїСЂР°РІР»СЏС‚СЊ СЃРѕРѕР±С‰РµРЅРёСЏ РІ РіСЂСѓРїРїСѓ</div>
         <select class="rename-input" id="smSelect" style="margin-top:8px">
           ${SLOW_MODE_OPTIONS.map(o => `<option value="${o[0]}" ${cur === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}
         </select>
       </div>`;
     }
-    html += `<div class="manage-section"><h4>${label} — ${chat.members.length}</h4>`;
+    html += `<div class="manage-section"><h4>${label} вЂ” ${chat.members.length}</h4>`;
     chat.members.forEach(mid => {
       const u = userById(mid);
       if (!u) return;
@@ -7041,33 +7049,33 @@ function renderManageBody(chat) {
       const isOwnerC = mid === chat.owner;
       const isAdminC = (chat.admins || []).includes(mid);
       let tag = '';
-      if (isOwnerC) tag = '<span class="tag owner">владелец</span>';
-      else if (isAdminC) tag = '<span class="tag admin">админ</span>';
-      if (isMe) tag += ' <span class="tag you">вы</span>';
+      if (isOwnerC) tag = '<span class="tag owner">РІР»Р°РґРµР»РµС†</span>';
+      else if (isAdminC) tag = '<span class="tag admin">Р°РґРјРёРЅ</span>';
+      if (isMe) tag += ' <span class="tag you">РІС‹</span>';
       const canRemove = isAdmin && !isMe && !isOwnerC;
       const canToggle = isOwner && !isMe && !isOwnerC;
       html += `<div class="member-chip">
         ${avatarHtml(u)}
         <div class="mc-name">${displayName(u)} ${tag}</div>
-        ${!isMe ? `<button class="mini-btn mini-info" title="Карточка" data-action="card" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg></button>` : ''}
-        ${!isMe ? `<button class="mini-btn ${currentUser.blocked.includes(mid) ? 'mini-danger' : ''}" title="${currentUser.blocked.includes(mid) ? 'Разблокировать' : 'Заблокировать'}" data-action="block" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/></svg></button>` : ''}
-        ${!isMe ? `<button class="mini-btn ${currentUser.ignored.includes(mid) ? 'mini-danger' : ''}" title="${currentUser.ignored.includes(mid) ? 'Снять игнор' : 'Игнорировать'}" data-action="ignore" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button>` : ''}
-        ${canToggle ? `<button class="mini-btn" title="${isAdminC ? 'Снять с админов' : 'Сделать админом'}" data-action="toggle-admin" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></button>` : ''}
-        ${canRemove ? `<button class="mini-btn" title="Удалить" data-action="remove-member" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
+        ${!isMe ? `<button class="mini-btn mini-info" title="РљР°СЂС‚РѕС‡РєР°" data-action="card" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg></button>` : ''}
+        ${!isMe ? `<button class="mini-btn ${currentUser.blocked.includes(mid) ? 'mini-danger' : ''}" title="${currentUser.blocked.includes(mid) ? 'Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ' : 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ'}" data-action="block" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/></svg></button>` : ''}
+        ${!isMe ? `<button class="mini-btn ${currentUser.ignored.includes(mid) ? 'mini-danger' : ''}" title="${currentUser.ignored.includes(mid) ? 'РЎРЅСЏС‚СЊ РёРіРЅРѕСЂ' : 'РРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ'}" data-action="ignore" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button>` : ''}
+        ${canToggle ? `<button class="mini-btn" title="${isAdminC ? 'РЎРЅСЏС‚СЊ СЃ Р°РґРјРёРЅРѕРІ' : 'РЎРґРµР»Р°С‚СЊ Р°РґРјРёРЅРѕРј'}" data-action="toggle-admin" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></button>` : ''}
+        ${canRemove ? `<button class="mini-btn" title="РЈРґР°Р»РёС‚СЊ" data-action="remove-member" data-mid="${mid}"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
       </div>`;
     });
     if (isAdmin || chat.whoCanInvite === 'all') {
       html += `<div class="manage-row" id="mrAdd">
         <svg viewBox="0 0 24 24"><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-        <div><div class="mr-label">Добавить ${chat.type === 'group' ? 'участника' : 'подписчика'}</div><div class="mr-hint">Пригласить пользователя</div></div>
+        <div><div class="mr-label">Р”РѕР±Р°РІРёС‚СЊ ${chat.type === 'group' ? 'СѓС‡Р°СЃС‚РЅРёРєР°' : 'РїРѕРґРїРёСЃС‡РёРєР°'}</div><div class="mr-hint">РџСЂРёРіР»Р°СЃРёС‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div></div>
       </div>`;
     }
     html += `</div>`;
     if (chat.id !== NEWS_CHAT_ID && chat.id !== AI_CHAT_ID) {
       html += `<div class="manage-section">
         ${isOwner
-          ? `<button class="danger-btn" id="mrDeleteChat">${chat.type === 'group' ? 'Удалить группу' : 'Удалить канал'}</button>`
-          : `<button class="danger-btn" id="mrLeave">${chat.type === 'group' ? 'Покинуть группу' : 'Отписаться'}</button>`}
+          ? `<button class="danger-btn" id="mrDeleteChat">${chat.type === 'group' ? 'РЈРґР°Р»РёС‚СЊ РіСЂСѓРїРїСѓ' : 'РЈРґР°Р»РёС‚СЊ РєР°РЅР°Р»'}</button>`
+          : `<button class="danger-btn" id="mrLeave">${chat.type === 'group' ? 'РџРѕРєРёРЅСѓС‚СЊ РіСЂСѓРїРїСѓ' : 'РћС‚РїРёСЃР°С‚СЊСЃСЏ'}</button>`}
       </div>`;
     }
   }
@@ -7091,7 +7099,7 @@ function bindManageEvents(chat) {
     persistCurrentUser();
     renderManageBody(chat);
     renderChat();
-    toast(i >= 0 ? 'Пользователь разблокирован' : 'Пользователь заблокирован', chatTitle(chat));
+    toast(i >= 0 ? 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЂР°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅ' : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ', chatTitle(chat));
   });
 
   const mrIgnore = body.querySelector('#mrIgnore');
@@ -7102,26 +7110,26 @@ function bindManageEvents(chat) {
     persistCurrentUser();
     renderManageBody(chat);
     renderChat();
-    toast(i >= 0 ? 'Игнорирование снято' : 'Пользователь в игноре', chatTitle(chat));
+    toast(i >= 0 ? 'РРіРЅРѕСЂРёСЂРѕРІР°РЅРёРµ СЃРЅСЏС‚Рѕ' : 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РІ РёРіРЅРѕСЂРµ', chatTitle(chat));
   });
 
   const mrClearAll = body.querySelector('#mrClearAll');
   if (mrClearAll) mrClearAll.addEventListener('click', () => {
-    if (!confirm('Очистить историю для всех?')) return;
+    if (!confirm('РћС‡РёСЃС‚РёС‚СЊ РёСЃС‚РѕСЂРёСЋ РґР»СЏ РІСЃРµС…?')) return;
     chat.messages = [];
     saveState();
     renderChat();
     renderChatList();
-    toast('Чат очищен для всех');
+    toast('Р§Р°С‚ РѕС‡РёС‰РµРЅ РґР»СЏ РІСЃРµС…');
   });
   const mrClearMe = body.querySelector('#mrClearMe');
   if (mrClearMe) mrClearMe.addEventListener('click', () => {
-    if (!confirm('Очистить историю для себя?')) return;
+    if (!confirm('РћС‡РёСЃС‚РёС‚СЊ РёСЃС‚РѕСЂРёСЋ РґР»СЏ СЃРµР±СЏ?')) return;
     chat.messages = [];
     saveState();
     renderChat();
     renderChatList();
-    toast('Чат очищен для себя');
+    toast('Р§Р°С‚ РѕС‡РёС‰РµРЅ РґР»СЏ СЃРµР±СЏ');
   });
 
   const mrPoll = body.querySelector('#mrPoll');
@@ -7138,7 +7146,7 @@ function bindManageEvents(chat) {
     renderManageBody(chat);
     renderChatList();
     renderChat();
-    toast(chat.access === 'public' ? 'Группа теперь публичная' : 'Группа теперь приватная', chatTitle(chat));
+    toast(chat.access === 'public' ? 'Р“СЂСѓРїРїР° С‚РµРїРµСЂСЊ РїСѓР±Р»РёС‡РЅР°СЏ' : 'Р“СЂСѓРїРїР° С‚РµРїРµСЂСЊ РїСЂРёРІР°С‚РЅР°СЏ', chatTitle(chat));
   });
 
   const mrWhoInvite = body.querySelector('#mrWhoInvite');
@@ -7148,7 +7156,7 @@ function bindManageEvents(chat) {
         chat.whoCanInvite = chat.whoCanInvite === 'all' ? 'admins' : 'all';
         saveState();
         renderManageBody(chat);
-        toast(chat.whoCanInvite === 'all' ? 'Приглашать могут все участники' : 'Приглашать могут владелец и админы', chatTitle(chat));
+        toast(chat.whoCanInvite === 'all' ? 'РџСЂРёРіР»Р°С€Р°С‚СЊ РјРѕРіСѓС‚ РІСЃРµ СѓС‡Р°СЃС‚РЅРёРєРё' : 'РџСЂРёРіР»Р°С€Р°С‚СЊ РјРѕРіСѓС‚ РІР»Р°РґРµР»РµС† Рё Р°РґРјРёРЅС‹', chatTitle(chat));
       });
     } else {
       mrWhoInvite.style.opacity = .5;
@@ -7163,7 +7171,7 @@ function bindManageEvents(chat) {
       if (chat.slowMode === 0) delete chat.slowLast;
       saveState();
       pushChatMeta(chat);
-      toast('Медленный режим', chat.slowMode === 0 ? 'Выключен' : 'Включён: ' + (SLOW_MODE_OPTIONS.find(o => o[0] === chat.slowMode) || ['', ''])[1]);
+      toast('РњРµРґР»РµРЅРЅС‹Р№ СЂРµР¶РёРј', chat.slowMode === 0 ? 'Р’С‹РєР»СЋС‡РµРЅ' : 'Р’РєР»СЋС‡С‘РЅ: ' + (SLOW_MODE_OPTIONS.find(o => o[0] === chat.slowMode) || ['', ''])[1]);
     });
   }
 
@@ -7175,7 +7183,7 @@ function bindManageEvents(chat) {
     renderManageBody(chat);
     renderChat();
     renderChatList();
-    toast('Участник удалён', userById(mid).name);
+    toast('РЈС‡Р°СЃС‚РЅРёРє СѓРґР°Р»С‘РЅ', userById(mid).name);
   }));
   body.querySelectorAll('[data-action="toggle-admin"]').forEach(btn => btn.addEventListener('click', () => {
     const mid = btn.dataset.mid;
@@ -7184,7 +7192,7 @@ function bindManageEvents(chat) {
     else chat.admins.push(mid);
     saveState();
     renderManageBody(chat);
-    toast('Права обновлены', userById(mid).name);
+    toast('РџСЂР°РІР° РѕР±РЅРѕРІР»РµРЅС‹', userById(mid).name);
   }));
 
   body.querySelectorAll('[data-action="block"]').forEach(btn => btn.addEventListener('click', () => {
@@ -7195,7 +7203,7 @@ function bindManageEvents(chat) {
     persistCurrentUser();
     renderManageBody(chat);
     renderChat();
-    toast(i >= 0 ? 'Разблокирован' : 'Заблокирован', (userById(mid) || {}).name || mid);
+    toast(i >= 0 ? 'Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅ' : 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ', (userById(mid) || {}).name || mid);
   }));
   body.querySelectorAll('[data-action="ignore"]').forEach(btn => btn.addEventListener('click', () => {
     const mid = btn.dataset.mid;
@@ -7205,7 +7213,7 @@ function bindManageEvents(chat) {
     persistCurrentUser();
     renderManageBody(chat);
     renderChat();
-    toast(i >= 0 ? 'Игнор снят' : 'В игноре', (userById(mid) || {}).name || mid);
+    toast(i >= 0 ? 'РРіРЅРѕСЂ СЃРЅСЏС‚' : 'Р’ РёРіРЅРѕСЂРµ', (userById(mid) || {}).name || mid);
   }));
 
   body.querySelectorAll('[data-action="card"]').forEach(btn => btn.addEventListener('click', () => {
@@ -7223,15 +7231,15 @@ function bindManageEvents(chat) {
   const mrDeleteChat = body.querySelector('#mrDeleteChat');
   if (mrDeleteChat) mrDeleteChat.addEventListener('click', () => {
     if (chat.id === NEWS_CHAT_ID) {
-      toast('Нельзя', 'Канал Nebula News нельзя удалить');
+      toast('РќРµР»СЊР·СЏ', 'РљР°РЅР°Р» Nebula News РЅРµР»СЊР·СЏ СѓРґР°Р»РёС‚СЊ');
       return;
     }
     if (chat.id === AI_CHAT_ID) {
-      toast('Нельзя', 'Nebula AI всегда с вами 😉');
+      toast('РќРµР»СЊР·СЏ', 'Nebula AI РІСЃРµРіРґР° СЃ РІР°РјРё рџ‰');
       return;
     }
-    const label = chat.type === 'private' ? 'чат' : chat.type === 'group' ? 'группу' : 'канал';
-    if (!confirm(`Удалить ${label} «${chatTitle(chat)}»?`)) return;
+    const label = chat.type === 'private' ? 'С‡Р°С‚' : chat.type === 'group' ? 'РіСЂСѓРїРїСѓ' : 'РєР°РЅР°Р»';
+    if (!confirm(`РЈРґР°Р»РёС‚СЊ ${label} В«${chatTitle(chat)}В»?`)) return;
     state.chats = state.chats.filter(c => c.id !== chat.id);
     state.pinned = state.pinned.filter(p => p !== chat.id);
     if (state.currentChatId === chat.id) state.currentChatId = null;
@@ -7239,19 +7247,19 @@ function bindManageEvents(chat) {
     closeManageModal();
     renderChatList();
     renderChat();
-    toast(label.charAt(0).toUpperCase() + label.slice(1) + ' удалён(а)', chatTitle(chat));
+    toast(label.charAt(0).toUpperCase() + label.slice(1) + ' СѓРґР°Р»С‘РЅ(Р°)', chatTitle(chat));
   });
   const mrLeave = body.querySelector('#mrLeave');
   if (mrLeave) mrLeave.addEventListener('click', () => {
     if (chat.id === NEWS_CHAT_ID) {
-      toast('Нельзя', 'Отписаться от Nebula News невозможно — канал обязателен');
+      toast('РќРµР»СЊР·СЏ', 'РћС‚РїРёСЃР°С‚СЊСЃСЏ РѕС‚ Nebula News РЅРµРІРѕР·РјРѕР¶РЅРѕ вЂ” РєР°РЅР°Р» РѕР±СЏР·Р°С‚РµР»РµРЅ');
       return;
     }
     if (chat.id === AI_CHAT_ID) {
-      toast('Нельзя', 'Nebula AI всегда с вами 😉');
+      toast('РќРµР»СЊР·СЏ', 'Nebula AI РІСЃРµРіРґР° СЃ РІР°РјРё рџ‰');
       return;
     }
-    toast(chat.type === 'group' ? 'Вы покинули группу' : 'Вы отписались', chatTitle(chat));
+    toast(chat.type === 'group' ? 'Р’С‹ РїРѕРєРёРЅСѓР»Рё РіСЂСѓРїРїСѓ' : 'Р’С‹ РѕС‚РїРёСЃР°Р»РёСЃСЊ', chatTitle(chat));
     state.leftChats = state.leftChats || [];
     if (!state.leftChats.includes(chat.id)) state.leftChats.push(chat.id);
     state.chats = state.chats.filter(c => c.id !== chat.id);
@@ -7267,8 +7275,8 @@ function bindManageEvents(chat) {
 function openAddMember(chat) {
   const body = $('#manageBody');
   const available = accountsList().filter(u => u.username !== currentUser.username && !chat.members.includes(u.username));
-  if (!available.length) { toast('Нет доступных пользователей'); return; }
-  body.innerHTML = `<div class="manage-section"><h4>Добавить участников</h4>${contactListHtml(available, false)}</div>`;
+  if (!available.length) { toast('РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№'); return; }
+  body.innerHTML = `<div class="manage-section"><h4>Р”РѕР±Р°РІРёС‚СЊ СѓС‡Р°СЃС‚РЅРёРєРѕРІ</h4>${contactListHtml(available, false)}</div>`;
   body.querySelectorAll('.member-item').forEach(item => item.addEventListener('click', () => {
     const mid = item.dataset.id;
     if (!chat.members.includes(mid)) chat.members.push(mid);
@@ -7277,7 +7285,7 @@ function openAddMember(chat) {
     renderManageBody(chat);
     renderChat();
     renderChatList();
-    toast('Добавлено', userById(mid).name);
+    toast('Р”РѕР±Р°РІР»РµРЅРѕ', userById(mid).name);
   }));
 }
 
@@ -7285,17 +7293,17 @@ function openEditInfo(chat) {
   const body = $('#manageBody');
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Название и описание</h4>
-      <input type="text" id="editName" placeholder="Название" maxlength="${LIMITS.name}" value="${escapeHtml(chat.name)}">
-      <textarea id="editDesc" rows="3" placeholder="Описание" maxlength="${LIMITS.desc}">${escapeHtml(chat.desc || '')}</textarea>
+      <h4>РќР°Р·РІР°РЅРёРµ Рё РѕРїРёСЃР°РЅРёРµ</h4>
+      <input type="text" id="editName" placeholder="РќР°Р·РІР°РЅРёРµ" maxlength="${LIMITS.name}" value="${escapeHtml(chat.name)}">
+      <textarea id="editDesc" rows="3" placeholder="РћРїРёСЃР°РЅРёРµ" maxlength="${LIMITS.desc}">${escapeHtml(chat.desc || '')}</textarea>
       ${chat.type === 'channel' ? `
-        <input type="text" id="editHandle" placeholder="@юзернейм канала" value="${escapeHtml(chat.handle || '')}" style="margin-top:8px">
-        <div class="mr-hint" style="margin-top:4px">3-14 символов (a-z, 0-9, _). Пусто — без юзернейма.</div>` : ''}
+        <input type="text" id="editHandle" placeholder="@СЋР·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р°" value="${escapeHtml(chat.handle || '')}" style="margin-top:8px">
+        <div class="mr-hint" style="margin-top:4px">3-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _). РџСѓСЃС‚Рѕ вЂ” Р±РµР· СЋР·РµСЂРЅРµР№РјР°.</div>` : ''}
       <div class="color-palette" id="editPalette"></div>
     </div>
     <div class="modal-footer" style="padding:0;border:none">
-      <button class="btn btn-primary" id="saveInfo">Сохранить</button>
-      <button class="btn btn-ghost" id="cancelInfo">Отмена</button>
+      <button class="btn btn-primary" id="saveInfo">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+      <button class="btn btn-ghost" id="cancelInfo">РћС‚РјРµРЅР°</button>
     </div>`;
   $('#editPalette').innerHTML = COLOR_PALETTE.map((p, i) =>
     `<button type="button" class="color-swatch ${chat.color && chat.color[0] === p[0] ? 'selected' : ''}" data-i="${i}" style="background:linear-gradient(135deg,${p[0]},${p[1]})"></button>`
@@ -7310,12 +7318,12 @@ function openEditInfo(chat) {
   $('#saveInfo').addEventListener('click', () => {
     const n = $('#editName').value.trim() || chat.name;
     const d = $('#editDesc').value.trim();
-    if (n.length > LIMITS.name) return toast('Ошибка', `Название — максимум ${LIMITS.name} символов`);
-    if (d.length > LIMITS.desc) return toast('Ошибка', `Описание — максимум ${LIMITS.desc} символов`);
+    if (n.length > LIMITS.name) return toast('РћС€РёР±РєР°', `РќР°Р·РІР°РЅРёРµ вЂ” РјР°РєСЃРёРјСѓРј ${LIMITS.name} СЃРёРјРІРѕР»РѕРІ`);
+    if (d.length > LIMITS.desc) return toast('РћС€РёР±РєР°', `РћРїРёСЃР°РЅРёРµ вЂ” РјР°РєСЃРёРјСѓРј ${LIMITS.desc} СЃРёРјРІРѕР»РѕРІ`);
     if (chat.type === 'channel' && chat.id !== NEWS_CHAT_ID) {
       const h = $('#editHandle').value.trim().replace(/^@/, '').toLowerCase();
-      if (h && !/^[a-z0-9_]{3,14}$/.test(h)) return toast('Ошибка', 'Юзернейм канала: 3-14 символов (a-z, 0-9, _)');
-      if (h && channelHandleTaken(h, chat.id)) return toast('Ошибка', 'Этот юзернейм канала уже занят');
+      if (h && !/^[a-z0-9_]{3,14}$/.test(h)) return toast('РћС€РёР±РєР°', 'Р®Р·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р°: 3-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _)');
+      if (h && channelHandleTaken(h, chat.id)) return toast('РћС€РёР±РєР°', 'Р­С‚РѕС‚ СЋР·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р° СѓР¶Рµ Р·Р°РЅСЏС‚');
       chat.handle = h || null;
     }
     chat.name = n;
@@ -7324,7 +7332,7 @@ function openEditInfo(chat) {
     renderManageBody(chat);
     renderChat();
     renderChatList();
-    toast('Сохранено');
+    toast('РЎРѕС…СЂР°РЅРµРЅРѕ');
   });
   $('#cancelInfo').addEventListener('click', () => renderManageBody(chat));
 }
@@ -7335,7 +7343,7 @@ function bindManageModal() {
 }
 
 /* ============================================================
-   КАРТОЧКА КАНАЛА / ГРУППЫ (QR, информация, ссылка)
+   РљРђР РўРћР§РљРђ РљРђРќРђР›Рђ / Р“Р РЈРџРџР« (QR, РёРЅС„РѕСЂРјР°С†РёСЏ, СЃСЃС‹Р»РєР°)
    ============================================================ */
 function channelLink(chat) {
   const h = chat && chat.handle;
@@ -7364,33 +7372,33 @@ function openChatCard(chatId) {
         <span class="avatar cc-avatar" style="${avatarStyle(accFromChat(chat))}">${avatarInnerHtml(accFromChat(chat))}</span>
         <div class="cc-titles">
           <div class="cc-name">${escapeHtml(chatTitle(chat))}</div>
-          <div class="cc-sub">${chat.type === 'channel' ? 'Канал' : 'Группа'}${chat.handle ? ' · @' + escapeHtml(chat.handle) : ''}</div>
+          <div class="cc-sub">${chat.type === 'channel' ? 'РљР°РЅР°Р»' : 'Р“СЂСѓРїРїР°'}${chat.handle ? ' В· @' + escapeHtml(chat.handle) : ''}</div>
         </div>
-        <button class="se-close" id="ccClose">✕</button>
+        <button class="se-close" id="ccClose">вњ•</button>
       </div>
       ${qr ? `
       <div class="cc-qr">
-        <img src="${qr}" alt="QR-код">
-        <div class="cc-qr-hint">Отсканируйте, чтобы открыть канал</div>
+        <img src="${qr}" alt="QR-РєРѕРґ">
+        <div class="cc-qr-hint">РћС‚СЃРєР°РЅРёСЂСѓР№С‚Рµ, С‡С‚РѕР±С‹ РѕС‚РєСЂС‹С‚СЊ РєР°РЅР°Р»</div>
       </div>` : ''}
       <div class="cc-links">
-        <button class="btn btn-primary" id="ccCopy">🔗 Скопировать ссылку</button>
-        <button class="btn" id="ccOpen">Открыть</button>
+        <button class="btn btn-primary" id="ccCopy">рџ”— РЎРєРѕРїРёСЂРѕРІР°С‚СЊ СЃСЃС‹Р»РєСѓ</button>
+        <button class="btn" id="ccOpen">РћС‚РєСЂС‹С‚СЊ</button>
       </div>
       <div class="manage-section">
-        <h4>Информация</h4>
-        <div class="bn-row"><span>Тип</span><b>${chat.type === 'channel' ? 'Канал' : 'Группа'}</b></div>
-        <div class="bn-row"><span>${chat.type === 'channel' ? 'Подписчиков' : 'Участников'}</span><b>${chat.members.length}</b></div>
-        ${chat.handle ? `<div class="bn-row"><span>Ссылка</span><b>@${escapeHtml(chat.handle)}</b></div>` : ''}
-        <div class="bn-row"><span>Создатель</span><b>${owner ? '@' + escapeHtml(owner.username) : '—'}</b></div>
-        ${chat.createdAt ? `<div class="bn-row"><span>Создан</span><b>${new Date(chat.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })}</b></div>` : ''}
+        <h4>РРЅС„РѕСЂРјР°С†РёСЏ</h4>
+        <div class="bn-row"><span>РўРёРї</span><b>${chat.type === 'channel' ? 'РљР°РЅР°Р»' : 'Р“СЂСѓРїРїР°'}</b></div>
+        <div class="bn-row"><span>${chat.type === 'channel' ? 'РџРѕРґРїРёСЃС‡РёРєРѕРІ' : 'РЈС‡Р°СЃС‚РЅРёРєРѕРІ'}</span><b>${chat.members.length}</b></div>
+        ${chat.handle ? `<div class="bn-row"><span>РЎСЃС‹Р»РєР°</span><b>@${escapeHtml(chat.handle)}</b></div>` : ''}
+        <div class="bn-row"><span>РЎРѕР·РґР°С‚РµР»СЊ</span><b>${owner ? '@' + escapeHtml(owner.username) : 'вЂ”'}</b></div>
+        ${chat.createdAt ? `<div class="bn-row"><span>РЎРѕР·РґР°РЅ</span><b>${new Date(chat.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })}</b></div>` : ''}
       </div>
       <div class="manage-section">
-        <h4>Дополнительная информация</h4>
-        ${chat.desc ? `<div class="bn-row"><span>Описание</span><b>${escapeHtml(chat.desc)}</b></div>` : ''}
-        <div class="bn-row"><span>Доступ</span><b>${chat.access === 'public' ? 'Публичный' : 'Приватный'}</b></div>
-        <div class="bn-row"><span>Кто может писать</span><b>${chat.whoCanWrite === 'all' ? 'Все' : 'Владелец и админы'}</b></div>
-        <div class="bn-row"><span>Админы</span><b>${(chat.admins || []).map(x => x === 'me' ? 'Вы' : '@' + x).join(', ') || '—'}</b></div>
+        <h4>Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ</h4>
+        ${chat.desc ? `<div class="bn-row"><span>РћРїРёСЃР°РЅРёРµ</span><b>${escapeHtml(chat.desc)}</b></div>` : ''}
+        <div class="bn-row"><span>Р”РѕСЃС‚СѓРї</span><b>${chat.access === 'public' ? 'РџСѓР±Р»РёС‡РЅС‹Р№' : 'РџСЂРёРІР°С‚РЅС‹Р№'}</b></div>
+        <div class="bn-row"><span>РљС‚Рѕ РјРѕР¶РµС‚ РїРёСЃР°С‚СЊ</span><b>${chat.whoCanWrite === 'all' ? 'Р’СЃРµ' : 'Р’Р»Р°РґРµР»РµС† Рё Р°РґРјРёРЅС‹'}</b></div>
+        <div class="bn-row"><span>РђРґРјРёРЅС‹</span><b>${(chat.admins || []).map(x => x === 'me' ? 'Р’С‹' : '@' + x).join(', ') || 'вЂ”'}</b></div>
       </div>
     </div>`;
   document.body.appendChild(ov);
@@ -7398,13 +7406,13 @@ function openChatCard(chatId) {
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
   ov.querySelector('#ccClose').addEventListener('click', close);
   ov.querySelector('#ccCopy').addEventListener('click', () => {
-    copyTextPlain(link, 'Ссылка скопирована');
-    toast('Ссылка скопирована', link);
+    copyTextPlain(link, 'РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР°');
+    toast('РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР°', link);
   });
   ov.querySelector('#ccOpen').addEventListener('click', () => { close(); openChannelByLink(chat.id); });
 }
 
-/* Смена аватара канала/группы */
+/* РЎРјРµРЅР° Р°РІР°С‚Р°СЂР° РєР°РЅР°Р»Р°/РіСЂСѓРїРїС‹ */
 function changeChatAvatar(chat) {
   const input = document.createElement('input');
   input.type = 'file';
@@ -7415,7 +7423,7 @@ function changeChatAvatar(chat) {
     const f = input.files && input.files[0];
     input.remove();
     if (!f) return;
-    if (f.size > 6 * 1024 * 1024) return toast('Ошибка', 'Файл слишком большой');
+    if (f.size > 6 * 1024 * 1024) return toast('РћС€РёР±РєР°', 'Р¤Р°Р№Р» СЃР»РёС€РєРѕРј Р±РѕР»СЊС€РѕР№');
     const rd = new FileReader();
     rd.onload = () => {
       const img = new Image();
@@ -7434,9 +7442,9 @@ function changeChatAvatar(chat) {
         renderManageBody(chat);
         renderChat();
         renderChatList();
-        toast('Аватар обновлён', chatTitle(chat));
+        toast('РђРІР°С‚Р°СЂ РѕР±РЅРѕРІР»С‘РЅ', chatTitle(chat));
       };
-      img.onerror = () => toast('Ошибка', 'Не удалось прочитать изображение');
+      img.onerror = () => toast('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ');
       img.src = rd.result;
     };
     rd.readAsDataURL(f);
@@ -7445,7 +7453,7 @@ function changeChatAvatar(chat) {
 }
 
 /* ============================================================
-   НАСТРОЙКИ АККАУНТА
+   РќРђРЎРўР РћР™РљР РђРљРљРђРЈРќРўРђ
    ============================================================ */
 function canAdmin() {
   return !!(currentUser && (isAdmin(currentUser.username) || isOwnerAcc(currentUser)));
@@ -7497,24 +7505,24 @@ function renderSettingsProfile(body) {
       </div>
       <div>
         <div class="sprofile-name">${displayName(u)}</div>
-        <div class="sprofile-id"><span class="copy-id" data-copy="${escapeHtml(u.id)}" title="Нажмите, чтобы скопировать ID">ID: <b>${u.id}</b> 📋</span> · @${escapeHtml(u.username)}</div>
-        <div class="sprofile-email">${escapeHtml(u.email)} · подтверждена ✓</div>
+        <div class="sprofile-id"><span class="copy-id" data-copy="${escapeHtml(u.id)}" title="РќР°Р¶РјРёС‚Рµ, С‡С‚РѕР±С‹ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ ID">ID: <b>${u.id}</b> рџ“‹</span> В· @${escapeHtml(u.username)}</div>
+        <div class="sprofile-email">${escapeHtml(u.email)} В· РїРѕРґС‚РІРµСЂР¶РґРµРЅР° вњ“</div>
       </div>
     </div>
     <div class="manage-section">
-      <div class="setting-row" id="srAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><div><span class="sr-label">Сменить аватар</span><span class="sr-hint">Выберите фото или загрузите своё</span></div></div>
-      <div class="setting-row" id="srCard"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg><div><span class="sr-label">Моя карточка</span><span class="sr-hint">Посмотреть, как вас видят другие</span></div></div>
-      <div class="setting-row" id="srName"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg><div><span class="sr-label">Изменить имя</span><span class="sr-hint">Текущее: ${escapeHtml(u.name)}</span></div></div>
-      <div class="setting-row" id="srUsername"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v6a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5zm7 9h-2v2a5 5 0 0 1-10 0v-2H5v2a7 7 0 0 0 6 6.92V22h2v-2.08A7 7 0 0 0 19 13v-2z"/></svg><div><span class="sr-label">Изменить юзернейм</span><span class="sr-hint">Текущий: @${escapeHtml(u.username)}</span></div></div>
-      <div class="setting-row" id="srBio"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg><div><span class="sr-label">Описание</span><span class="sr-hint">${u.bio ? escapeHtml(u.bio) : 'Расскажите о себе (показывается в карточке)'}</span></div></div>
-      <div class="setting-row" id="srStatus"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm1-13h-2v6l5.25 3.15L17 12.2l-4-2.4V7z"/></svg><div><span class="sr-label">Статус</span><span class="sr-hint">${escapeHtml(statusOf(u).label + (statusOf(u).text ? ' · ' + statusOf(u).text : ''))}</span></div></div>
-      <div class="setting-row" id="srStickers"><svg viewBox="0 0 24 24"><path d="M18.5 2H5.5C4.12 2 3 3.12 3 4.5v15C3 20.88 4.12 22 5.5 22h13c1.38 0 2.5-1.12 2.5-2.5v-15C21 3.12 19.88 2 18.5 2zm0 17.5h-13v-15h13v15zM7.5 6h9v2h-9V6zm0 4h9v2h-9v-2zm0 4h6v2h-6v-2z"/></svg><div><span class="sr-label">Мои стикер-паки</span><span class="sr-hint">Создать пак из фото, избранное, паки друзей</span></div></div>
-      <div class="setting-row" id="srTracks"><svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg><div><span class="sr-label">Мои треки (MP3)</span><span class="sr-hint">Загрузите музыку — она появится в вашей карточке</span></div></div>
-      <div class="setting-row" id="srEmail"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><div><span class="sr-label">Сменить почту</span><span class="sr-hint">Текущая: ${escapeHtml(u.email)}</span></div></div>
-      <div class="setting-row" id="srPassword"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg><div><span class="sr-label">Сменить пароль</span><span class="sr-hint">Обновите пароль аккаунта</span></div></div>
-      <div class="setting-row" id="srSwitch"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><div><span class="sr-label">Сменить аккаунт</span><span class="sr-hint">Войти под другим юзернеймом</span></div></div>
-      <div class="setting-row" id="srLogout"><svg viewBox="0 0 24 24"><path d="M10.09 15.59 11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><div><span class="sr-label">Выйти из аккаунта</span></div></div>
-      <div class="setting-row danger-row" id="srDelete"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><div><span class="sr-label">Удалить аккаунт</span><span class="sr-hint">Требуется подтверждение по почте</span></div></div>
+      <div class="setting-row" id="srAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><div><span class="sr-label">РЎРјРµРЅРёС‚СЊ Р°РІР°С‚Р°СЂ</span><span class="sr-hint">Р’С‹Р±РµСЂРёС‚Рµ С„РѕС‚Рѕ РёР»Рё Р·Р°РіСЂСѓР·РёС‚Рµ СЃРІРѕС‘</span></div></div>
+      <div class="setting-row" id="srCard"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg><div><span class="sr-label">РњРѕСЏ РєР°СЂС‚РѕС‡РєР°</span><span class="sr-hint">РџРѕСЃРјРѕС‚СЂРµС‚СЊ, РєР°Рє РІР°СЃ РІРёРґСЏС‚ РґСЂСѓРіРёРµ</span></div></div>
+      <div class="setting-row" id="srName"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg><div><span class="sr-label">РР·РјРµРЅРёС‚СЊ РёРјСЏ</span><span class="sr-hint">РўРµРєСѓС‰РµРµ: ${escapeHtml(u.name)}</span></div></div>
+      <div class="setting-row" id="srUsername"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 0-5 5v6a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5zm7 9h-2v2a5 5 0 0 1-10 0v-2H5v2a7 7 0 0 0 6 6.92V22h2v-2.08A7 7 0 0 0 19 13v-2z"/></svg><div><span class="sr-label">РР·РјРµРЅРёС‚СЊ СЋР·РµСЂРЅРµР№Рј</span><span class="sr-hint">РўРµРєСѓС‰РёР№: @${escapeHtml(u.username)}</span></div></div>
+      <div class="setting-row" id="srBio"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg><div><span class="sr-label">РћРїРёСЃР°РЅРёРµ</span><span class="sr-hint">${u.bio ? escapeHtml(u.bio) : 'Р Р°СЃСЃРєР°Р¶РёС‚Рµ Рѕ СЃРµР±Рµ (РїРѕРєР°Р·С‹РІР°РµС‚СЃСЏ РІ РєР°СЂС‚РѕС‡РєРµ)'}</span></div></div>
+      <div class="setting-row" id="srStatus"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm1-13h-2v6l5.25 3.15L17 12.2l-4-2.4V7z"/></svg><div><span class="sr-label">РЎС‚Р°С‚СѓСЃ</span><span class="sr-hint">${escapeHtml(statusOf(u).label + (statusOf(u).text ? ' В· ' + statusOf(u).text : ''))}</span></div></div>
+      <div class="setting-row" id="srStickers"><svg viewBox="0 0 24 24"><path d="M18.5 2H5.5C4.12 2 3 3.12 3 4.5v15C3 20.88 4.12 22 5.5 22h13c1.38 0 2.5-1.12 2.5-2.5v-15C21 3.12 19.88 2 18.5 2zm0 17.5h-13v-15h13v15zM7.5 6h9v2h-9V6zm0 4h9v2h-9v-2zm0 4h6v2h-6v-2z"/></svg><div><span class="sr-label">РњРѕРё СЃС‚РёРєРµСЂ-РїР°РєРё</span><span class="sr-hint">РЎРѕР·РґР°С‚СЊ РїР°Рє РёР· С„РѕС‚Рѕ, РёР·Р±СЂР°РЅРЅРѕРµ, РїР°РєРё РґСЂСѓР·РµР№</span></div></div>
+      <div class="setting-row" id="srTracks"><svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg><div><span class="sr-label">РњРѕРё С‚СЂРµРєРё (MP3)</span><span class="sr-hint">Р—Р°РіСЂСѓР·РёС‚Рµ РјСѓР·С‹РєСѓ вЂ” РѕРЅР° РїРѕСЏРІРёС‚СЃСЏ РІ РІР°С€РµР№ РєР°СЂС‚РѕС‡РєРµ</span></div></div>
+      <div class="setting-row" id="srEmail"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg><div><span class="sr-label">РЎРјРµРЅРёС‚СЊ РїРѕС‡С‚Сѓ</span><span class="sr-hint">РўРµРєСѓС‰Р°СЏ: ${escapeHtml(u.email)}</span></div></div>
+      <div class="setting-row" id="srPassword"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg><div><span class="sr-label">РЎРјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ</span><span class="sr-hint">РћР±РЅРѕРІРёС‚Рµ РїР°СЂРѕР»СЊ Р°РєРєР°СѓРЅС‚Р°</span></div></div>
+      <div class="setting-row" id="srSwitch"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><div><span class="sr-label">РЎРјРµРЅРёС‚СЊ Р°РєРєР°СѓРЅС‚</span><span class="sr-hint">Р’РѕР№С‚Рё РїРѕРґ РґСЂСѓРіРёРј СЋР·РµСЂРЅРµР№РјРѕРј</span></div></div>
+      <div class="setting-row" id="srLogout"><svg viewBox="0 0 24 24"><path d="M10.09 15.59 11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><div><span class="sr-label">Р’С‹Р№С‚Рё РёР· Р°РєРєР°СѓРЅС‚Р°</span></div></div>
+      <div class="setting-row danger-row" id="srDelete"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><div><span class="sr-label">РЈРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚</span><span class="sr-hint">РўСЂРµР±СѓРµС‚СЃСЏ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїРѕ РїРѕС‡С‚Рµ</span></div></div>
     </div>`;
 
   body.querySelector('#spAvatarWrap').addEventListener('click', openAvatarModal);
@@ -7531,18 +7539,18 @@ function renderSettingsProfile(body) {
   body.querySelector('#srEmail').addEventListener('click', viewChangeEmail);
   body.querySelector('#srPassword').addEventListener('click', viewChangePassword);
   body.querySelector('#srSwitch').addEventListener('click', () => { closeSettings(); openSwitchMenu(); });
-  body.querySelector('#srLogout').addEventListener('click', () => { closeSettings(); if (confirm('Выйти из аккаунта?')) logout(); });
+  body.querySelector('#srLogout').addEventListener('click', () => { closeSettings(); if (confirm('Р’С‹Р№С‚Рё РёР· Р°РєРєР°СѓРЅС‚Р°?')) logout(); });
   body.querySelector('#srDelete').addEventListener('click', () => {
     closeSettings();
     openVerifyModal({
-      title: 'Удаление аккаунта',
-      desc: `Для подтверждения мы отправили код на <b>${escapeHtml(u.email)}</b>. Это действие нельзя отменить — все чаты будут удалены.`,
+      title: 'РЈРґР°Р»РµРЅРёРµ Р°РєРєР°СѓРЅС‚Р°',
+      desc: `Р”Р»СЏ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ РјС‹ РѕС‚РїСЂР°РІРёР»Рё РєРѕРґ РЅР° <b>${escapeHtml(u.email)}</b>. Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ вЂ” РІСЃРµ С‡Р°С‚С‹ Р±СѓРґСѓС‚ СѓРґР°Р»РµРЅС‹.`,
       email: u.email,
       onSuccess: () => {
         deleteAccountEverywhere(u.username);
         try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
         logout();
-        toast('Аккаунт удалён');
+        toast('РђРєРєР°СѓРЅС‚ СѓРґР°Р»С‘РЅ');
       }
     });
   });
@@ -7553,25 +7561,25 @@ function viewChangeEmail() {
   clearInterval(settingsTicker);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Сменить почту</h4>
-      <input type="email" id="newEmail" placeholder="Новая почта">
+      <h4>РЎРјРµРЅРёС‚СЊ РїРѕС‡С‚Сѓ</h4>
+      <input type="email" id="newEmail" placeholder="РќРѕРІР°СЏ РїРѕС‡С‚Р°">
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="sendNewEmailCode">Отправить код</button>
-        <button class="btn btn-ghost" id="backToProfile">Назад</button>
+        <button class="btn btn-primary" id="sendNewEmailCode">РћС‚РїСЂР°РІРёС‚СЊ РєРѕРґ</button>
+        <button class="btn btn-ghost" id="backToProfile">РќР°Р·Р°Рґ</button>
       </div>
     </div>`;
   body.querySelector('#sendNewEmailCode').addEventListener('click', () => {
     const email = $('#newEmail').value.trim().toLowerCase();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('Ошибка', 'Некорректная почта');
-    if (accountsList().some(a => a.username !== currentUser.username && a.email === email)) return toast('Ошибка', 'Эта почта уже занята');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast('РћС€РёР±РєР°', 'РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РїРѕС‡С‚Р°');
+    if (accountsList().some(a => a.username !== currentUser.username && a.email === email)) return toast('РћС€РёР±РєР°', 'Р­С‚Р° РїРѕС‡С‚Р° СѓР¶Рµ Р·Р°РЅСЏС‚Р°');
     openVerifyModal({
-      title: 'Смена почты',
-      desc: `Код отправлен на <b>${escapeHtml(email)}</b>`,
+      title: 'РЎРјРµРЅР° РїРѕС‡С‚С‹',
+      desc: `РљРѕРґ РѕС‚РїСЂР°РІР»РµРЅ РЅР° <b>${escapeHtml(email)}</b>`,
       email,
       onSuccess: () => {
         currentUser.email = email;
         persistCurrentUser();
-        toast('Почта изменена', email);
+        toast('РџРѕС‡С‚Р° РёР·РјРµРЅРµРЅР°', email);
         renderSettings('profile');
       }
     });
@@ -7584,29 +7592,29 @@ function viewChangeName() {
   clearInterval(settingsTicker);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Изменить имя</h4>
-      <div class="admin-hint">Имя (никнейм) видят все пользователи в чатах, звонках и на карточке. До 24 символов.</div>
-      <input type="text" id="newName" placeholder="Новое имя" maxlength="24" autocomplete="off" value="${escapeHtml(currentUser.name)}">
+      <h4>РР·РјРµРЅРёС‚СЊ РёРјСЏ</h4>
+      <div class="admin-hint">РРјСЏ (РЅРёРєРЅРµР№Рј) РІРёРґСЏС‚ РІСЃРµ РїРѕР»СЊР·РѕРІР°С‚РµР»Рё РІ С‡Р°С‚Р°С…, Р·РІРѕРЅРєР°С… Рё РЅР° РєР°СЂС‚РѕС‡РєРµ. Р”Рѕ 24 СЃРёРјРІРѕР»РѕРІ.</div>
+      <input type="text" id="newName" placeholder="РќРѕРІРѕРµ РёРјСЏ" maxlength="24" autocomplete="off" value="${escapeHtml(currentUser.name)}">
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="saveName">Сохранить</button>
-        <button class="btn btn-ghost" id="backToProfileN">Назад</button>
+        <button class="btn btn-primary" id="saveName">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="backToProfileN">РќР°Р·Р°Рґ</button>
       </div>
     </div>`;
   body.querySelector('#saveName').addEventListener('click', () => {
     const v = $('#newName').value.trim();
-    if (!v) return toast('Ошибка', 'Введите имя');
+    if (!v) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ РёРјСЏ');
     currentUser.name = v;
     persistCurrentUser();
     persistOther(currentUser);
     const d = loadAccounts();
     if (d.users[currentUser.username]) d.users[currentUser.username].name = v;
     saveAccounts(d);
-    addLog(currentUser.username, `Сменил имя на «${v}»`);
+    addLog(currentUser.username, `РЎРјРµРЅРёР» РёРјСЏ РЅР° В«${v}В»`);
     renderSettings('profile');
     renderChatList();
     renderChat();
     updateProfileHeader();
-    toast('Имя изменено', v);
+    toast('РРјСЏ РёР·РјРµРЅРµРЅРѕ', v);
   });
   body.querySelector('#backToProfileN').addEventListener('click', () => renderSettings('profile'));
 }
@@ -7616,27 +7624,27 @@ function viewChangeUsername() {
   clearInterval(settingsTicker);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Изменить юзернейм</h4>
-      <div class="admin-hint">3-14 символов: латиница, цифры и _. По новому юзернейму вас можно будет найти.</div>
-      <input type="text" id="newUsername" placeholder="Новый юзернейм" maxlength="14" autocomplete="off" value="${escapeHtml(currentUser.username)}">
+      <h4>РР·РјРµРЅРёС‚СЊ СЋР·РµСЂРЅРµР№Рј</h4>
+      <div class="admin-hint">3-14 СЃРёРјРІРѕР»РѕРІ: Р»Р°С‚РёРЅРёС†Р°, С†РёС„СЂС‹ Рё _. РџРѕ РЅРѕРІРѕРјСѓ СЋР·РµСЂРЅРµР№РјСѓ РІР°СЃ РјРѕР¶РЅРѕ Р±СѓРґРµС‚ РЅР°Р№С‚Рё.</div>
+      <input type="text" id="newUsername" placeholder="РќРѕРІС‹Р№ СЋР·РµСЂРЅРµР№Рј" maxlength="14" autocomplete="off" value="${escapeHtml(currentUser.username)}">
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="saveUsername">Сохранить</button>
-        <button class="btn btn-ghost" id="backToProfile3">Назад</button>
+        <button class="btn btn-primary" id="saveUsername">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="backToProfile3">РќР°Р·Р°Рґ</button>
       </div>
     </div>`;
   body.querySelector('#saveUsername').addEventListener('click', () => {
     const v = $('#newUsername').value.trim().toLowerCase();
-    if (!/^[a-z0-9_]{3,14}$/.test(v)) return toast('Ошибка', 'Юзернейм: 3-14 символов (a-z, 0-9, _)');
-    if (v === currentUser.username) return toast('Ошибка', 'Это уже ваш юзернейм');
-    if (accountsList().some(a => a.username === v)) return toast('Ошибка', 'Этот юзернейм уже занят');
+    if (!/^[a-z0-9_]{3,14}$/.test(v)) return toast('РћС€РёР±РєР°', 'Р®Р·РµСЂРЅРµР№Рј: 3-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _)');
+    if (v === currentUser.username) return toast('РћС€РёР±РєР°', 'Р­С‚Рѕ СѓР¶Рµ РІР°С€ СЋР·РµСЂРЅРµР№Рј');
+    if (accountsList().some(a => a.username === v)) return toast('РћС€РёР±РєР°', 'Р­С‚РѕС‚ СЋР·РµСЂРЅРµР№Рј СѓР¶Рµ Р·Р°РЅСЏС‚');
     renameUsernameEverywhere(currentUser.username, v);
     persistCurrentUser();
-    addLog(currentUser.username, `Сменил юзернейм на @${v}`);
+    addLog(currentUser.username, `РЎРјРµРЅРёР» СЋР·РµСЂРЅРµР№Рј РЅР° @${v}`);
     renderSettings('profile');
     renderChatList();
     renderChat();
     updateProfileHeader();
-    toast('Юзернейм изменён', '@' + v);
+    toast('Р®Р·РµСЂРЅРµР№Рј РёР·РјРµРЅС‘РЅ', '@' + v);
   });
   body.querySelector('#backToProfile3').addEventListener('click', () => renderSettings('profile'));
 }
@@ -7684,21 +7692,21 @@ function viewChangeStatus() {
   const cur = (currentUser.status && currentUser.status.t) || 'online';
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Статус</h4>
-      <div class="admin-hint">Другие пользователи видят ваш статус в списке чатов, в звонках и на карточке</div>
+      <h4>РЎС‚Р°С‚СѓСЃ</h4>
+      <div class="admin-hint">Р”СЂСѓРіРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»Рё РІРёРґСЏС‚ РІР°С€ СЃС‚Р°С‚СѓСЃ РІ СЃРїРёСЃРєРµ С‡Р°С‚РѕРІ, РІ Р·РІРѕРЅРєР°С… Рё РЅР° РєР°СЂС‚РѕС‡РєРµ</div>
       <div class="status-opts" id="stOpts">${statusChoiceHtml(cur)}</div>
-      <input type="text" class="rename-input" id="stText" placeholder="Текст статуса (необязательно)" maxlength="40" value="${escapeHtml((currentUser.status && currentUser.status.s) || '')}">
+      <input type="text" class="rename-input" id="stText" placeholder="РўРµРєСЃС‚ СЃС‚Р°С‚СѓСЃР° (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)" maxlength="40" value="${escapeHtml((currentUser.status && currentUser.status.s) || '')}">
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="saveStatus">Сохранить</button>
-        <button class="btn btn-ghost" id="backToProfile4">Назад</button>
+        <button class="btn btn-primary" id="saveStatus">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="backToProfile4">РќР°Р·Р°Рґ</button>
       </div>
     </div>
     <div class="manage-section">
-      <h4>Опубликовать статус (сторис)</h4>
-      <div class="admin-hint">Статусы создаются по клику на вашу аватарку вверху списка чатов. Фото, видео или текст — видны 24 часа тем, кто вместе с вами в группах и каналах</div>
+      <h4>РћРїСѓР±Р»РёРєРѕРІР°С‚СЊ СЃС‚Р°С‚СѓСЃ (СЃС‚РѕСЂРёСЃ)</h4>
+      <div class="admin-hint">РЎС‚Р°С‚СѓСЃС‹ СЃРѕР·РґР°СЋС‚СЃСЏ РїРѕ РєР»РёРєСѓ РЅР° РІР°С€Сѓ Р°РІР°С‚Р°СЂРєСѓ РІРІРµСЂС…Сѓ СЃРїРёСЃРєР° С‡Р°С‚РѕРІ. Р¤РѕС‚Рѕ, РІРёРґРµРѕ РёР»Рё С‚РµРєСЃС‚ вЂ” РІРёРґРЅС‹ 24 С‡Р°СЃР° С‚РµРј, РєС‚Рѕ РІРјРµСЃС‚Рµ СЃ РІР°РјРё РІ РіСЂСѓРїРїР°С… Рё РєР°РЅР°Р»Р°С…</div>
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="openStatusEditorBtn">➕ Создать статус</button>
-        ${currentUser.statusPost ? '<button class="btn btn-ghost" id="clearPost">Удалить мой статус</button>' : ''}
+        <button class="btn btn-primary" id="openStatusEditorBtn">вћ• РЎРѕР·РґР°С‚СЊ СЃС‚Р°С‚СѓСЃ</button>
+        ${currentUser.statusPost ? '<button class="btn btn-ghost" id="clearPost">РЈРґР°Р»РёС‚СЊ РјРѕР№ СЃС‚Р°С‚СѓСЃ</button>' : ''}
       </div>
     </div>`;
   let pick = cur;
@@ -7707,19 +7715,19 @@ function viewChangeStatus() {
     body.querySelectorAll('.status-opt').forEach(x => {
       x.classList.toggle('sel', x.dataset.t === pick);
       const ch = x.querySelector('.st-check');
-      if (ch) ch.textContent = x.dataset.t === pick ? '✓' : '';
+      if (ch) ch.textContent = x.dataset.t === pick ? 'вњ“' : '';
     });
   }));
   body.querySelector('#saveStatus').addEventListener('click', () => {
     currentUser.status = { t: pick, s: $('#stText').value.trim() };
     persistCurrentUser();
     persistOther(currentUser);
-    addLog(currentUser.username, `Поставил статус «${pick}»${currentUser.status.s ? ': ' + currentUser.status.s : ''}`);
+    addLog(currentUser.username, `РџРѕСЃС‚Р°РІРёР» СЃС‚Р°С‚СѓСЃ В«${pick}В»${currentUser.status.s ? ': ' + currentUser.status.s : ''}`);
     renderSettings('profile');
     renderChatList();
     renderChat();
     updateProfileHeader();
-    toast('Статус сохранён', statusOf(currentUser).label);
+    toast('РЎС‚Р°С‚СѓСЃ СЃРѕС…СЂР°РЅС‘РЅ', statusOf(currentUser).label);
   });
   const savePost = body.querySelector('#openStatusEditorBtn');
   if (savePost) savePost.addEventListener('click', () => openStatusEditor());
@@ -7728,15 +7736,15 @@ function viewChangeStatus() {
     delete currentUser.statusPost;
     persistCurrentUser();
     persistOther(currentUser);
-    addLog(currentUser.username, 'Удалил опубликованный статус');
+    addLog(currentUser.username, 'РЈРґР°Р»РёР» РѕРїСѓР±Р»РёРєРѕРІР°РЅРЅС‹Р№ СЃС‚Р°С‚СѓСЃ');
     renderSettings('profile');
     renderChatList();
-    toast('Статус удалён');
+    toast('РЎС‚Р°С‚СѓСЃ СѓРґР°Р»С‘РЅ');
   });
   body.querySelector('#backToProfile4').addEventListener('click', () => renderSettings('profile'));
 }
 
-/* ===== СТАТУСЫ (сторис) как в Telegram ===== */
+/* ===== РЎРўРђРўРЈРЎР« (СЃС‚РѕСЂРёСЃ) РєР°Рє РІ Telegram ===== */
 function statusVisibleFor(u) {
   if (!u || u.username === currentUser.username) return false;
   const me = currentUser.username;
@@ -7768,8 +7776,8 @@ function statusBarHtml() {
       <span class="story-name">${name}</span>
     </div>`;
   const myHtml = mine
-    ? item(`<span class="st-ring st-ring-mine">${avatarHtml(currentUser, '', selectedFrameClass(currentUser))}</span>`, 'Мой статус', 'data-mine="1"')
-    : item(`<span class="story-add-avatar">${avatarHtml(currentUser)}<i class="story-plus">＋</i></span>`, 'Создать статус', 'data-mine="1"');
+    ? item(`<span class="st-ring st-ring-mine">${avatarHtml(currentUser, '', selectedFrameClass(currentUser))}</span>`, 'РњРѕР№ СЃС‚Р°С‚СѓСЃ', 'data-mine="1"')
+    : item(`<span class="story-add-avatar">${avatarHtml(currentUser)}<i class="story-plus">пј‹</i></span>`, 'РЎРѕР·РґР°С‚СЊ СЃС‚Р°С‚СѓСЃ', 'data-mine="1"');
   let h = '<div class="stories-row" id="storiesRow"><div class="stories-scroll">' + myHtml;
   h += users.map(u => item(
     `<span class="st-ring">${avatarHtml(u, '', selectedFrameClass(u))}</span>`,
@@ -7788,23 +7796,23 @@ function openStatusEditor() {
   ov.innerHTML = `
     <div class="status-editor-box">
       <div class="se-head">
-        <div class="se-title">➕ Новый статус</div>
-        <button type="button" class="se-close" title="Закрыть">✕</button>
+        <div class="se-title">вћ• РќРѕРІС‹Р№ СЃС‚Р°С‚СѓСЃ</div>
+        <button type="button" class="se-close" title="Р—Р°РєСЂС‹С‚СЊ">вњ•</button>
       </div>
       <div class="se-media" id="seMedia" style="display:none"></div>
       <div class="se-actions">
         <input type="file" id="sePhoto" accept="image/*" hidden>
         <input type="file" id="seVideo" accept="video/*" hidden>
-        <button type="button" class="se-btn" id="sePhotoBtn">📷 Фото</button>
-        <button type="button" class="se-btn" id="seVideoBtn">🎬 Видео</button>
-        <button type="button" class="se-btn" id="seClearMedia" style="display:none">✕ Убрать</button>
+        <button type="button" class="se-btn" id="sePhotoBtn">рџ“· Р¤РѕС‚Рѕ</button>
+        <button type="button" class="se-btn" id="seVideoBtn">рџЋ¬ Р’РёРґРµРѕ</button>
+        <button type="button" class="se-btn" id="seClearMedia" style="display:none">вњ• РЈР±СЂР°С‚СЊ</button>
       </div>
-      <textarea id="seText" rows="3" maxlength="120" placeholder="Что у вас нового? 🎉"></textarea>
-      <div class="se-hint">👁 Статус увидят только те, кто вместе с вами в группах и каналах. Пропадёт через 24 часа.</div>
+      <textarea id="seText" rows="3" maxlength="120" placeholder="Р§С‚Рѕ Сѓ РІР°СЃ РЅРѕРІРѕРіРѕ? рџЋ‰"></textarea>
+      <div class="se-hint">рџ‘Ѓ РЎС‚Р°С‚СѓСЃ СѓРІРёРґСЏС‚ С‚РѕР»СЊРєРѕ С‚Рµ, РєС‚Рѕ РІРјРµСЃС‚Рµ СЃ РІР°РјРё РІ РіСЂСѓРїРїР°С… Рё РєР°РЅР°Р»Р°С…. РџСЂРѕРїР°РґС‘С‚ С‡РµСЂРµР· 24 С‡Р°СЃР°.</div>
       <div class="se-btns">
-        <button type="button" class="btn btn-primary" id="sePublish">Опубликовать</button>
-        ${has ? '<button type="button" class="btn se-del" id="seDelete">Удалить мой статус</button>' : ''}
-        <button type="button" class="btn" id="seCancel">Отмена</button>
+        <button type="button" class="btn btn-primary" id="sePublish">РћРїСѓР±Р»РёРєРѕРІР°С‚СЊ</button>
+        ${has ? '<button type="button" class="btn se-del" id="seDelete">РЈРґР°Р»РёС‚СЊ РјРѕР№ СЃС‚Р°С‚СѓСЃ</button>' : ''}
+        <button type="button" class="btn" id="seCancel">РћС‚РјРµРЅР°</button>
       </div>
     </div>`;
   document.body.appendChild(ov);
@@ -7819,7 +7827,7 @@ function openStatusEditor() {
   };
   const addFile = (f, type) => {
     if (!f) return;
-    if (f.size > 12 * 1024 * 1024) return toast('Ошибка', 'Файл слишком большой');
+    if (f.size > 12 * 1024 * 1024) return toast('РћС€РёР±РєР°', 'Р¤Р°Р№Р» СЃР»РёС€РєРѕРј Р±РѕР»СЊС€РѕР№');
     if (type === 'video') {
       const rd = new FileReader();
       rd.onload = () => { media.push({ dataUrl: rd.result, type }); renderMedia(); };
@@ -7857,25 +7865,25 @@ function openStatusEditor() {
   ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
   ov.querySelector('#sePublish').addEventListener('click', () => {
     const text = ov.querySelector('#seText').value.trim();
-    if (!media.length && !text) return toast('Ошибка', 'Добавьте фото, видео или текст');
+    if (!media.length && !text) return toast('РћС€РёР±РєР°', 'Р”РѕР±Р°РІСЊС‚Рµ С„РѕС‚Рѕ, РІРёРґРµРѕ РёР»Рё С‚РµРєСЃС‚');
     currentUser.statusPost = { time: Date.now(), text, media };
     persistCurrentUser();
     persistOther(currentUser);
-    addLog(currentUser.username, `Опубликовал статус${media.length ? ' (фото/видео)' : ''}${text ? ': "' + shortText(text, 45) + '"' : ''}`);
+    addLog(currentUser.username, `РћРїСѓР±Р»РёРєРѕРІР°Р» СЃС‚Р°С‚СѓСЃ${media.length ? ' (С„РѕС‚Рѕ/РІРёРґРµРѕ)' : ''}${text ? ': "' + shortText(text, 45) + '"' : ''}`);
     renderChatList();
     renderChat();
     ov.remove();
-    toast('Статус опубликован', 'Виден 24 часа');
+    toast('РЎС‚Р°С‚СѓСЃ РѕРїСѓР±Р»РёРєРѕРІР°РЅ', 'Р’РёРґРµРЅ 24 С‡Р°СЃР°');
   });
   const del = ov.querySelector('#seDelete');
   if (del) del.addEventListener('click', () => {
     delete currentUser.statusPost;
     persistCurrentUser();
     persistOther(currentUser);
-    addLog(currentUser.username, 'Удалил статус');
+    addLog(currentUser.username, 'РЈРґР°Р»РёР» СЃС‚Р°С‚СѓСЃ');
     renderChatList();
     ov.remove();
-    toast('Статус удалён');
+    toast('РЎС‚Р°С‚СѓСЃ СѓРґР°Р»С‘РЅ');
   });
   ov.querySelector('#seText').value = has && has.text && !has.media ? has.text : '';
   ov.querySelector('#seText').focus();
@@ -7901,7 +7909,7 @@ function openStatusView(username) {
   const frame = selectedFrameClass(u);
   const media = post.media || [];
   const reactions = post.reactions || {};
-  const REACT_EMOJIS = ['👍', '❤️', '🔥', '😂', '😮', '😢'];
+  const REACT_EMOJIS = ['рџ‘Ќ', 'вќ¤пёЏ', 'рџ”Ґ', 'рџ‚', 'рџ®', 'рџў'];
   let ov = $('#statusViewOverlay');
   if (ov) ov.remove();
   ov = document.createElement('div');
@@ -7915,13 +7923,13 @@ function openStatusView(username) {
           <div class="sv-name">${displayName(u)}</div>
           <div class="sv-time">${new Date(post.time).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</div>
         </div>
-        <button type="button" class="btn btn-ghost sv-close" title="Закрыть">✕</button>
+        <button type="button" class="btn btn-ghost sv-close" title="Р—Р°РєСЂС‹С‚СЊ">вњ•</button>
       </div>
       ${media.length ? `
         <div class="sv-progress">${media.map(() => '<i class="sv-bar"></i>').join('')}</div>
         <div class="sv-media" id="svMedia"></div>
-        <button type="button" class="sv-nav sv-prev">‹</button>
-        <button type="button" class="sv-nav sv-next">›</button>
+        <button type="button" class="sv-nav sv-prev">вЂ№</button>
+        <button type="button" class="sv-nav sv-next">вЂє</button>
       ` : ''}
       ${post.text ? `<div class="sv-text">${escapeHtml(post.text)}</div>` : ''}
       <div class="sv-extra">
@@ -7929,14 +7937,14 @@ function openStatusView(username) {
           ${REACT_EMOJIS.map(e => {
             const who = reactions[e] || [];
             const mine = currentUser && who.includes(currentUser.username);
-            return `<button type="button" class="sv-react ${mine ? 'mine' : ''}" data-emoji="${e}" title="${who.join(', ') || 'Реакция'}">${e}<span class="sv-react-n">${who.length || ''}</span></button>`;
+            return `<button type="button" class="sv-react ${mine ? 'mine' : ''}" data-emoji="${e}" title="${who.join(', ') || 'Р РµР°РєС†РёСЏ'}">${e}<span class="sv-react-n">${who.length || ''}</span></button>`;
           }).join('')}
         </div>
-        <div class="sv-viewers" id="svViewers">👁 Просмотры: ${(post.viewers || []).length}</div>
+        <div class="sv-viewers" id="svViewers">рџ‘Ѓ РџСЂРѕСЃРјРѕС‚СЂС‹: ${(post.viewers || []).length}</div>
         <div class="sv-comments" id="svComments"></div>
         <div class="sv-compose">
-          <input type="text" id="svCommentInput" placeholder="Оставьте комментарий..." maxlength="120" autocomplete="off">
-          <button type="button" class="btn btn-primary" id="svCommentSend">Отправить</button>
+          <input type="text" id="svCommentInput" placeholder="РћСЃС‚Р°РІСЊС‚Рµ РєРѕРјРјРµРЅС‚Р°СЂРёР№..." maxlength="120" autocomplete="off">
+          <button type="button" class="btn btn-primary" id="svCommentSend">РћС‚РїСЂР°РІРёС‚СЊ</button>
         </div>
       </div>
     </div>`;
@@ -7949,17 +7957,17 @@ function openStatusView(username) {
           const cu = accountByUsername(c.user);
           return `<div class="sv-comment"><span class="avatar svc-avatar" style="${avatarStyle(cu || {})}">${avatarInnerHtml(cu || {})}</span><div class="svc-body"><div class="svc-top"><b>${escapeHtml((cu ? cu.name : c.user) || c.user)}</b><span>${new Date(c.time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span></div><div>${escapeHtml(c.text)}</div></div></div>`;
         }).join('')
-      : '<div class="sv-no-comments">Пока нет комментариев</div>';
+      : '<div class="sv-no-comments">РџРѕРєР° РЅРµС‚ РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ</div>';
   };
   const renderViewers = () => {
     const box = ov.querySelector('#svViewers');
     const vs = post.viewers || [];
-    box.innerHTML = '👁 Просмотры: ' + (vs.length
+    box.innerHTML = 'рџ‘Ѓ РџСЂРѕСЃРјРѕС‚СЂС‹: ' + (vs.length
       ? vs.map(v => {
           const vu = accountByUsername(v.user);
           return `<span class="avatar sv-viewer" style="${avatarStyle(vu || {})}" title="${escapeHtml((vu ? vu.name : v.user) || v.user)}">${avatarInnerHtml(vu || {})}</span>`;
         }).join('')
-      : '<span class="sv-no-viewers">пока никого</span>');
+      : '<span class="sv-no-viewers">РїРѕРєР° РЅРёРєРѕРіРѕ</span>');
   };
   renderComments();
   renderViewers();
@@ -7976,7 +7984,7 @@ function openStatusView(username) {
       const mine = who.includes(currentUser.username);
       rb.classList.toggle('mine', mine);
       rb.querySelector('.sv-react-n').textContent = who.length || '';
-      rb.title = who.join(', ') || 'Реакция';
+      rb.title = who.join(', ') || 'Р РµР°РєС†РёСЏ';
     });
   }));
   const sendComment = () => {
@@ -8020,20 +8028,20 @@ function viewChangeBio() {
   clearInterval(settingsTicker);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Описание</h4>
-      <div class="admin-hint">Показывается на вашей карточке у всех пользователей</div>
-      <textarea id="newBio" rows="3" maxlength="90" placeholder="Например: Люблю дельфинов 🐬">${escapeHtml(currentUser.bio || '')}</textarea>
+      <h4>РћРїРёСЃР°РЅРёРµ</h4>
+      <div class="admin-hint">РџРѕРєР°Р·С‹РІР°РµС‚СЃСЏ РЅР° РІР°С€РµР№ РєР°СЂС‚РѕС‡РєРµ Сѓ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</div>
+      <textarea id="newBio" rows="3" maxlength="90" placeholder="РќР°РїСЂРёРјРµСЂ: Р›СЋР±Р»СЋ РґРµР»СЊС„РёРЅРѕРІ рџђ¬">${escapeHtml(currentUser.bio || '')}</textarea>
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="saveBio">Сохранить</button>
-        <button class="btn btn-ghost" id="backToProfile4">Назад</button>
+        <button class="btn btn-primary" id="saveBio">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="backToProfile4">РќР°Р·Р°Рґ</button>
       </div>
     </div>`;
   body.querySelector('#saveBio').addEventListener('click', () => {
     currentUser.bio = $('#newBio').value.trim();
     persistCurrentUser();
-    addLog(currentUser.username, 'Обновил описание');
+    addLog(currentUser.username, 'РћР±РЅРѕРІРёР» РѕРїРёСЃР°РЅРёРµ');
     renderSettings('profile');
-    toast('Описание сохранено');
+    toast('РћРїРёСЃР°РЅРёРµ СЃРѕС…СЂР°РЅРµРЅРѕ');
   });
   body.querySelector('#backToProfile4').addEventListener('click', () => renderSettings('profile'));
 }
@@ -8043,27 +8051,27 @@ function viewChangePassword() {
   clearInterval(settingsTicker);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Сменить пароль</h4>
-      <input type="password" id="curPass" placeholder="Текущий пароль">
-      <input type="password" id="newPass" placeholder="Новый пароль (до 24 символов)" maxlength="24">
-      <input type="password" id="newPass2" placeholder="Повторите новый пароль" maxlength="24">
+      <h4>РЎРјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ</h4>
+      <input type="password" id="curPass" placeholder="РўРµРєСѓС‰РёР№ РїР°СЂРѕР»СЊ">
+      <input type="password" id="newPass" placeholder="РќРѕРІС‹Р№ РїР°СЂРѕР»СЊ (РґРѕ 24 СЃРёРјРІРѕР»РѕРІ)" maxlength="24">
+      <input type="password" id="newPass2" placeholder="РџРѕРІС‚РѕСЂРёС‚Рµ РЅРѕРІС‹Р№ РїР°СЂРѕР»СЊ" maxlength="24">
       <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
-        <button class="btn btn-primary" id="savePass">Сохранить</button>
-        <button class="btn btn-ghost" id="backToProfile2">Назад</button>
+        <button class="btn btn-primary" id="savePass">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="backToProfile2">РќР°Р·Р°Рґ</button>
       </div>
     </div>`;
   body.querySelector('#savePass').addEventListener('click', () => {
     const cur = $('#curPass').value;
     const np = $('#newPass').value;
     const np2 = $('#newPass2').value;
-    if (cur !== currentUser.password) return toast('Ошибка', 'Неверный текущий пароль');
-    if (np.length < 8 || np.length > LIMITS.password) return toast('Ошибка', `Пароль должен быть 8-${LIMITS.password} символов`);
-    if (!/[a-z]/.test(np) || !/[A-Z]/.test(np) || !/\d/.test(np) || !/[^a-zA-Z0-9]/.test(np)) return toast('Ошибка', 'Пароль: нужны a-z, A-Z, цифра и символ');
-    if (weakPasswordDetect(np)) return toast('Ошибка', 'Пароль слишком простой — придумайте сложнее');
-    if (np !== np2) return toast('Ошибка', 'Пароли не совпадают');
+    if (cur !== currentUser.password) return toast('РћС€РёР±РєР°', 'РќРµРІРµСЂРЅС‹Р№ С‚РµРєСѓС‰РёР№ РїР°СЂРѕР»СЊ');
+    if (np.length < 8 || np.length > LIMITS.password) return toast('РћС€РёР±РєР°', `РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ 8-${LIMITS.password} СЃРёРјРІРѕР»РѕРІ`);
+    if (!/[a-z]/.test(np) || !/[A-Z]/.test(np) || !/\d/.test(np) || !/[^a-zA-Z0-9]/.test(np)) return toast('РћС€РёР±РєР°', 'РџР°СЂРѕР»СЊ: РЅСѓР¶РЅС‹ a-z, A-Z, С†РёС„СЂР° Рё СЃРёРјРІРѕР»');
+    if (weakPasswordDetect(np)) return toast('РћС€РёР±РєР°', 'РџР°СЂРѕР»СЊ СЃР»РёС€РєРѕРј РїСЂРѕСЃС‚РѕР№ вЂ” РїСЂРёРґСѓРјР°Р№С‚Рµ СЃР»РѕР¶РЅРµРµ');
+    if (np !== np2) return toast('РћС€РёР±РєР°', 'РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚');
     currentUser.password = np;
     persistCurrentUser();
-    toast('Пароль изменён');
+    toast('РџР°СЂРѕР»СЊ РёР·РјРµРЅС‘РЅ');
     renderSettings('profile');
   });
   body.querySelector('#backToProfile2').addEventListener('click', () => renderSettings('profile'));
@@ -8072,14 +8080,14 @@ function viewChangePassword() {
 function renderSettingsPrivacy(body) {
   const u = currentUser;
   const opts = [
-    { v: 'all', t: 'Все', d: 'Любой пользователь может писать вам' },
-    { v: 'contacts', t: 'Контакты', d: 'Только те, с кем вы уже общались' },
-    { v: 'nobody', t: 'Никто', d: 'Никто не сможет писать вам' },
+    { v: 'all', t: 'Р’СЃРµ', d: 'Р›СЋР±РѕР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РјРѕР¶РµС‚ РїРёСЃР°С‚СЊ РІР°Рј' },
+    { v: 'contacts', t: 'РљРѕРЅС‚Р°РєС‚С‹', d: 'РўРѕР»СЊРєРѕ С‚Рµ, СЃ РєРµРј РІС‹ СѓР¶Рµ РѕР±С‰Р°Р»РёСЃСЊ' },
+    { v: 'nobody', t: 'РќРёРєС‚Рѕ', d: 'РќРёРєС‚Рѕ РЅРµ СЃРјРѕР¶РµС‚ РїРёСЃР°С‚СЊ РІР°Рј' },
   ];
   const w = u.settings.whoCanWrite || 'all';
 body.innerHTML = `
     <div class="manage-section">
-      <h4>Кто может вам писать</h4>
+      <h4>РљС‚Рѕ РјРѕР¶РµС‚ РІР°Рј РїРёСЃР°С‚СЊ</h4>
       <div class="radio-group" id="whoCanWrite">
         ${opts.map(o => `<div class="radio-item ${w === o.v ? 'selected' : ''}" data-v="${o.v}">
           <span class="radio-circle"></span>
@@ -8088,47 +8096,47 @@ body.innerHTML = `
       </div>
     </div>
     <div class="manage-section">
-      <h4>Заблокированные (${u.blocked.length})</h4>
+      <h4>Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅРЅС‹Рµ (${u.blocked.length})</h4>
       ${u.blocked.length ? u.blocked.map(name => {
         const acc = userById(name);
         const nm = acc ? acc.name : name;
-        return `<div class="member-chip">${acc ? avatarHtml(acc) : ''}<div class="mc-name">${escapeHtml(nm)}</div><button class="mini-btn" data-unblock="${name}" title="Разблокировать">${CHECK_ICON}</button></div>`;
-      }).join('') : '<div class="empty-list">Никого нет</div>'}
+        return `<div class="member-chip">${acc ? avatarHtml(acc) : ''}<div class="mc-name">${escapeHtml(nm)}</div><button class="mini-btn" data-unblock="${name}" title="Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ">${CHECK_ICON}</button></div>`;
+      }).join('') : '<div class="empty-list">РќРёРєРѕРіРѕ РЅРµС‚</div>'}
     </div>
     <div class="manage-section">
-      <h4>В игноре (${u.ignored.length})</h4>
+      <h4>Р’ РёРіРЅРѕСЂРµ (${u.ignored.length})</h4>
       ${u.ignored.length ? u.ignored.map(name => {
         const acc = userById(name);
         const nm = acc ? acc.name : name;
-        return `<div class="member-chip">${acc ? avatarHtml(acc) : ''}<div class="mc-name">${escapeHtml(nm)}</div><button class="mini-btn" data-unignore="${name}" title="Убрать из игнора">${CHECK_ICON}</button></div>`;
-      }).join('') : '<div class="empty-list">Никого нет</div>'}
+        return `<div class="member-chip">${acc ? avatarHtml(acc) : ''}<div class="mc-name">${escapeHtml(nm)}</div><button class="mini-btn" data-unignore="${name}" title="РЈР±СЂР°С‚СЊ РёР· РёРіРЅРѕСЂР°">${CHECK_ICON}</button></div>`;
+      }).join('') : '<div class="empty-list">РќРёРєРѕРіРѕ РЅРµС‚</div>'}
     </div>`;
 
   body.querySelectorAll('#whoCanWrite .radio-item').forEach(item => item.addEventListener('click', () => {
     u.settings.whoCanWrite = item.dataset.v;
     persistCurrentUser();
     body.querySelectorAll('#whoCanWrite .radio-item').forEach(r => r.classList.toggle('selected', r === item));
-    toast('Настройки приватности обновлены');
+    toast('РќР°СЃС‚СЂРѕР№РєРё РїСЂРёРІР°С‚РЅРѕСЃС‚Рё РѕР±РЅРѕРІР»РµРЅС‹');
   }));
   body.querySelectorAll('[data-unblock]').forEach(b => b.addEventListener('click', () => {
     u.blocked = u.blocked.filter(x => x !== b.dataset.unblock);
     persistCurrentUser();
     renderSettings('privacy');
     renderChat();
-    toast('Разблокировано');
+    toast('Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°РЅРѕ');
   }));
   body.querySelectorAll('[data-unignore]').forEach(b => b.addEventListener('click', () => {
     u.ignored = u.ignored.filter(x => x !== b.dataset.unignore);
     persistCurrentUser();
     renderSettings('privacy');
-    toast('Убрано из игнора');
+    toast('РЈР±СЂР°РЅРѕ РёР· РёРіРЅРѕСЂР°');
   }));
 }
 
 /* ============================================================
-   АДМИН-ПАНЕЛЬ
+   РђР”РњРРќ-РџРђРќР•Р›Р¬
    ============================================================ */
-const BADGE_LABELS = { scam: 'СКАМ', admin: 'АДМИН', owner: 'Владелец', tester: 'ТЕСТЕР', blue: 'Синяя галочка', gray: 'Серая галочка', clock: '🕐 Часы' };
+const BADGE_LABELS = { scam: 'РЎРљРђРњ', admin: 'РђР”РњРРќ', owner: 'Р’Р»Р°РґРµР»РµС†', tester: 'РўР•РЎРўР•Р ', blue: 'РЎРёРЅСЏСЏ РіР°Р»РѕС‡РєР°', gray: 'РЎРµСЂР°СЏ РіР°Р»РѕС‡РєР°', clock: 'рџ•ђ Р§Р°СЃС‹' };
 const TICK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>';
 
 function loadAnnouncement() { try { return JSON.parse(localStorage.getItem(ANN_KEY)); } catch (e) { return null; } }
@@ -8150,72 +8158,72 @@ function renderSettingsAdmin(body) {
   const privs = Object.values(privMap);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Поиск пользователя</h4>
-      <div class="admin-hint">Найдите по ID, @юзернейму или имени — разделы ниже покажут только этого пользователя</div>
-      <input type="text" class="rename-input admin-user-search" placeholder="ID, @юзернейм или имя..." style="margin-top:8px">
+      <h4>РџРѕРёСЃРє РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</h4>
+      <div class="admin-hint">РќР°Р№РґРёС‚Рµ РїРѕ ID, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё РёРјРµРЅРё вЂ” СЂР°Р·РґРµР»С‹ РЅРёР¶Рµ РїРѕРєР°Р¶СѓС‚ С‚РѕР»СЊРєРѕ СЌС‚РѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div>
+      <input type="text" class="rename-input admin-user-search" placeholder="ID, @СЋР·РµСЂРЅРµР№Рј РёР»Рё РёРјСЏ..." style="margin-top:8px">
     </div>
 
     <div class="manage-section">
-      <h4>Статистика мессенджера</h4>
+      <h4>РЎС‚Р°С‚РёСЃС‚РёРєР° РјРµСЃСЃРµРЅРґР¶РµСЂР°</h4>
       <div class="stat-grid">
-        <div class="stat-card"><div class="sc-num">${accs.length}</div><div class="sc-label">аккаунтов</div></div>
-        <div class="stat-card"><div class="sc-num">${admins.length}</div><div class="sc-label">админов</div></div>
-        <div class="stat-card"><div class="sc-num">${allChats.filter(c => c.type === 'group').length}</div><div class="sc-label">групп</div></div>
-        <div class="stat-card"><div class="sc-num">${allChats.filter(c => c.type === 'channel').length}</div><div class="sc-label">каналов</div></div>
-        <div class="stat-card"><div class="sc-num">${totalMsgs}</div><div class="sc-label">сообщений</div></div>
-        <div class="stat-card"><div class="sc-num">${accs.filter(a => a.banned).length}</div><div class="sc-label">забанено</div></div>
+        <div class="stat-card"><div class="sc-num">${accs.length}</div><div class="sc-label">Р°РєРєР°СѓРЅС‚РѕРІ</div></div>
+        <div class="stat-card"><div class="sc-num">${admins.length}</div><div class="sc-label">Р°РґРјРёРЅРѕРІ</div></div>
+        <div class="stat-card"><div class="sc-num">${allChats.filter(c => c.type === 'group').length}</div><div class="sc-label">РіСЂСѓРїРї</div></div>
+        <div class="stat-card"><div class="sc-num">${allChats.filter(c => c.type === 'channel').length}</div><div class="sc-label">РєР°РЅР°Р»РѕРІ</div></div>
+        <div class="stat-card"><div class="sc-num">${totalMsgs}</div><div class="sc-label">СЃРѕРѕР±С‰РµРЅРёР№</div></div>
+        <div class="stat-card"><div class="sc-num">${accs.filter(a => a.banned).length}</div><div class="sc-label">Р·Р°Р±Р°РЅРµРЅРѕ</div></div>
       </div>
     </div>
 
     <div class="manage-section">
-      <h4>Регистрации и учётные данные</h4>
-      <div class="admin-hint">Все аккаунты: ID, логин, почта, пароль и даты регистрации/входа (хранятся локально и в облачной базе)</div>
+      <h4>Р РµРіРёСЃС‚СЂР°С†РёРё Рё СѓС‡С‘С‚РЅС‹Рµ РґР°РЅРЅС‹Рµ</h4>
+      <div class="admin-hint">Р’СЃРµ Р°РєРєР°СѓРЅС‚С‹: ID, Р»РѕРіРёРЅ, РїРѕС‡С‚Р°, РїР°СЂРѕР»СЊ Рё РґР°С‚С‹ СЂРµРіРёСЃС‚СЂР°С†РёРё/РІС…РѕРґР° (С…СЂР°РЅСЏС‚СЃСЏ Р»РѕРєР°Р»СЊРЅРѕ Рё РІ РѕР±Р»Р°С‡РЅРѕР№ Р±Р°Р·Рµ)</div>
       ${accs.slice().sort((a, b) => (b.created || 0) - (a.created || 0)).map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
-            <div class="au-name">${displayName(a)} ${a.banned ? '<span class="tag" style="color:#e74c3c">ЗАБАНЕН</span>' : ''}</div>
+            <div class="au-name">${displayName(a)} ${a.banned ? '<span class="tag" style="color:#e74c3c">Р—РђР‘РђРќР•Рќ</span>' : ''}</div>
             <div class="au-reg">
-              <span class="au-reg-k">ID</span><span class="au-reg-v copy-id" data-copy="${escapeHtml(a.id)}">${escapeHtml(a.id)} 📋</span>
-              <span class="au-reg-k">Логин</span><span class="au-reg-v">@${escapeHtml(a.username)}</span>
-              <span class="au-reg-k">Имя</span><span class="au-reg-v">${escapeHtml(a.name)}</span>
-              <span class="au-reg-k">Почта</span><span class="au-reg-v">${escapeHtml(a.email || '—')}</span>
-              <span class="au-reg-k">Пароль</span><span class="au-reg-v">${escapeHtml(a.password || '—')}</span>
-              <span class="au-reg-k">Регистрация</span><span class="au-reg-v">${a.created ? fmtNoticeDate(a.created) : '—'}</span>
-              <span class="au-reg-k">Последний вход</span><span class="au-reg-v">${a.lastSeen ? fmtNoticeDate(a.lastSeen) : '—'}</span>
+              <span class="au-reg-k">ID</span><span class="au-reg-v copy-id" data-copy="${escapeHtml(a.id)}">${escapeHtml(a.id)} рџ“‹</span>
+              <span class="au-reg-k">Р›РѕРіРёРЅ</span><span class="au-reg-v">@${escapeHtml(a.username)}</span>
+              <span class="au-reg-k">РРјСЏ</span><span class="au-reg-v">${escapeHtml(a.name)}</span>
+              <span class="au-reg-k">РџРѕС‡С‚Р°</span><span class="au-reg-v">${escapeHtml(a.email || 'вЂ”')}</span>
+              <span class="au-reg-k">РџР°СЂРѕР»СЊ</span><span class="au-reg-v">${escapeHtml(a.password || 'вЂ”')}</span>
+              <span class="au-reg-k">Р РµРіРёСЃС‚СЂР°С†РёСЏ</span><span class="au-reg-v">${a.created ? fmtNoticeDate(a.created) : 'вЂ”'}</span>
+              <span class="au-reg-k">РџРѕСЃР»РµРґРЅРёР№ РІС…РѕРґ</span><span class="au-reg-v">${a.lastSeen ? fmtNoticeDate(a.lastSeen) : 'вЂ”'}</span>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Доступ к админ-панели</h4>
-      <div class="admin-hint">Выдайте или заберите доступ к этой панели</div>
+      <h4>Р”РѕСЃС‚СѓРї Рє Р°РґРјРёРЅ-РїР°РЅРµР»Рё</h4>
+      <div class="admin-hint">Р’С‹РґР°Р№С‚Рµ РёР»Рё Р·Р°Р±РµСЂРёС‚Рµ РґРѕСЃС‚СѓРї Рє СЌС‚РѕР№ РїР°РЅРµР»Рё</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-actions">
-              <button type="button" class="btn ${admins.includes(a.username) ? 'btn-ghost' : 'btn-primary'} au-admin">${admins.includes(a.username) ? 'Забрать админку' : 'Дать админку'}</button>
-              <button type="button" class="btn btn-danger au-kick">Кикнуть</button>
-              <button type="button" class="btn ${a.banned ? 'btn-ghost' : 'btn-danger'} au-ban">${a.banned ? 'Разбанить' : 'Забанить'}</button>
-              <button type="button" class="btn btn-danger au-del" ${a.username === currentUser.username ? 'style="opacity:.4;pointer-events:none"' : ''}>Удалить аккаунт</button>
+              <button type="button" class="btn ${admins.includes(a.username) ? 'btn-ghost' : 'btn-primary'} au-admin">${admins.includes(a.username) ? 'Р—Р°Р±СЂР°С‚СЊ Р°РґРјРёРЅРєСѓ' : 'Р”Р°С‚СЊ Р°РґРјРёРЅРєСѓ'}</button>
+              <button type="button" class="btn btn-danger au-kick">РљРёРєРЅСѓС‚СЊ</button>
+              <button type="button" class="btn ${a.banned ? 'btn-ghost' : 'btn-danger'} au-ban">${a.banned ? 'Р Р°Р·Р±Р°РЅРёС‚СЊ' : 'Р—Р°Р±Р°РЅРёС‚СЊ'}</button>
+              <button type="button" class="btn btn-danger au-del" ${a.username === currentUser.username ? 'style="opacity:.4;pointer-events:none"' : ''}>РЈРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Бейджи</h4>
-      <div class="admin-hint">Отметки: СКАМ, АДМИН, ВЛАДЕЛЕЦ (анимированный), ТЕСТЕР, синяя и серая галочки, часы</div>
+      <h4>Р‘РµР№РґР¶Рё</h4>
+      <div class="admin-hint">РћС‚РјРµС‚РєРё: РЎРљРђРњ, РђР”РњРРќ, Р’Р›РђР”Р•Р›Р•Р¦ (Р°РЅРёРјРёСЂРѕРІР°РЅРЅС‹Р№), РўР•РЎРўР•Р , СЃРёРЅСЏСЏ Рё СЃРµСЂР°СЏ РіР°Р»РѕС‡РєРё, С‡Р°СЃС‹</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-badges">
               ${['scam', 'admin', 'owner', 'tester', 'blue', 'gray', 'clock'].map(b => {
                 const on = !!(a.badges || {})[b];
@@ -8229,36 +8237,36 @@ function renderSettingsAdmin(body) {
     </div>
 
     <div class="manage-section">
-      <h4>Тех поддержка</h4>
-      <div class="admin-hint">Сотрудник тех поддержки может разбирать тикеты — видеть все обращения и отвечать в них</div>
+      <h4>РўРµС… РїРѕРґРґРµСЂР¶РєР°</h4>
+      <div class="admin-hint">РЎРѕС‚СЂСѓРґРЅРёРє С‚РµС… РїРѕРґРґРµСЂР¶РєРё РјРѕР¶РµС‚ СЂР°Р·Р±РёСЂР°С‚СЊ С‚РёРєРµС‚С‹ вЂ” РІРёРґРµС‚СЊ РІСЃРµ РѕР±СЂР°С‰РµРЅРёСЏ Рё РѕС‚РІРµС‡Р°С‚СЊ РІ РЅРёС…</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-badges">
-              <button type="button" class="badge-chip ${a.support ? 'on' : ''}" data-sup="${a.username}">🎧 Тех поддержка</button>
+              <button type="button" class="badge-chip ${a.support ? 'on' : ''}" data-sup="${a.username}">рџЋ§ РўРµС… РїРѕРґРґРµСЂР¶РєР°</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Разобранные тикеты</h4>
-      <div class="admin-hint">Сколько тикетов решил каждый сотрудник тех поддержки — за день, неделю, месяц, год и за всё время</div>
+      <h4>Р Р°Р·РѕР±СЂР°РЅРЅС‹Рµ С‚РёРєРµС‚С‹</h4>
+      <div class="admin-hint">РЎРєРѕР»СЊРєРѕ С‚РёРєРµС‚РѕРІ СЂРµС€РёР» РєР°Р¶РґС‹Р№ СЃРѕС‚СЂСѓРґРЅРёРє С‚РµС… РїРѕРґРґРµСЂР¶РєРё вЂ” Р·Р° РґРµРЅСЊ, РЅРµРґРµР»СЋ, РјРµСЃСЏС†, РіРѕРґ Рё Р·Р° РІСЃС‘ РІСЂРµРјСЏ</div>
       ${supportStatsHtml()}
     </div>
 
     <div class="manage-section">
-      <h4>Рамки аватара</h4>
-      <div class="admin-hint">Выдайте или заберите любую рамку пользователю (действует поверх достижений)</div>
+      <h4>Р Р°РјРєРё Р°РІР°С‚Р°СЂР°</h4>
+      <div class="admin-hint">Р’С‹РґР°Р№С‚Рµ РёР»Рё Р·Р°Р±РµСЂРёС‚Рµ Р»СЋР±СѓСЋ СЂР°РјРєСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ (РґРµР№СЃС‚РІСѓРµС‚ РїРѕРІРµСЂС… РґРѕСЃС‚РёР¶РµРЅРёР№)</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-badges">
               ${FRAME_ORDER.map(f => {
                 const on = !!((a.frameOverride || []).includes(f));
@@ -8271,19 +8279,19 @@ function renderSettingsAdmin(body) {
     </div>
 
     <div class="manage-section">
-      <h4>Никнеймы</h4>
-      <div class="admin-hint">Измените никнейм любого пользователя</div>
+      <h4>РќРёРєРЅРµР№РјС‹</h4>
+      <div class="admin-hint">РР·РјРµРЅРёС‚Рµ РЅРёРєРЅРµР№Рј Р»СЋР±РѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div>
       ${accs.map(a => `
         <div class="admin-rename" data-u="${a.username}">
           <span class="au-name">${displayName(a)}</span>
           <input type="text" class="rename-input" value="${escapeHtml(a.name)}" maxlength="${LIMITS.name}">
-          <button type="button" class="btn btn-primary rename-save">Сохранить</button>
+          <button type="button" class="btn btn-primary rename-save">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Данные пользователя</h4>
-      <div class="admin-hint">Смена ID, @юзернейма, почты и био. Юзернейм обновится во всех чатах, контактах и списке админов</div>
+      <h4>Р”Р°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</h4>
+      <div class="admin-hint">РЎРјРµРЅР° ID, @СЋР·РµСЂРЅРµР№РјР°, РїРѕС‡С‚С‹ Рё Р±РёРѕ. Р®Р·РµСЂРЅРµР№Рј РѕР±РЅРѕРІРёС‚СЃСЏ РІРѕ РІСЃРµС… С‡Р°С‚Р°С…, РєРѕРЅС‚Р°РєС‚Р°С… Рё СЃРїРёСЃРєРµ Р°РґРјРёРЅРѕРІ</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${escapeHtml(a.username)}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
@@ -8291,102 +8299,102 @@ function renderSettingsAdmin(body) {
             <div class="au-name">${displayName(a)}</div>
             <div class="admin-edit-grid">
               <label>ID<input type="text" class="rename-input ae-id" value="${escapeHtml(a.id)}" maxlength="24"></label>
-              <label>@юзернейм<input type="text" class="rename-input ae-username" value="${escapeHtml(a.username)}" maxlength="${LIMITS.username}"></label>
-              <label>Почта<input type="text" class="rename-input ae-email" value="${escapeHtml(a.email)}"></label>
-              <label>Био<input type="text" class="rename-input ae-bio" value="${escapeHtml(a.bio || '')}" maxlength="90" placeholder="Кратко о себе"></label>
+              <label>@СЋР·РµСЂРЅРµР№Рј<input type="text" class="rename-input ae-username" value="${escapeHtml(a.username)}" maxlength="${LIMITS.username}"></label>
+              <label>РџРѕС‡С‚Р°<input type="text" class="rename-input ae-email" value="${escapeHtml(a.email)}"></label>
+              <label>Р‘РёРѕ<input type="text" class="rename-input ae-bio" value="${escapeHtml(a.bio || '')}" maxlength="90" placeholder="РљСЂР°С‚РєРѕ Рѕ СЃРµР±Рµ"></label>
             </div>
             <div class="au-actions">
-              <button type="button" class="btn btn-primary ae-save">Сохранить</button>
+              <button type="button" class="btn btn-primary ae-save">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Сброс пароля</h4>
-      <div class="admin-hint">Установите новый пароль пользователю (8-24 символа)</div>
+      <h4>РЎР±СЂРѕСЃ РїР°СЂРѕР»СЏ</h4>
+      <div class="admin-hint">РЈСЃС‚Р°РЅРѕРІРёС‚Рµ РЅРѕРІС‹Р№ РїР°СЂРѕР»СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ (8-24 СЃРёРјРІРѕР»Р°)</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-actions">
-              <input type="password" class="rename-input admin-pw-input" placeholder="Новый пароль" maxlength="${LIMITS.password}" autocomplete="off">
-              <button type="button" class="btn btn-primary admin-pw-save">Сбросить</button>
+              <input type="password" class="rename-input admin-pw-input" placeholder="РќРѕРІС‹Р№ РїР°СЂРѕР»СЊ" maxlength="${LIMITS.password}" autocomplete="off">
+              <button type="button" class="btn btn-primary admin-pw-save">РЎР±СЂРѕСЃРёС‚СЊ</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Объявление для всех</h4>
-      <div class="admin-hint">${ann ? `Текущее объявление (${fmtLogTime(ann.t)}): «${escapeHtml(shortText(ann.text, 90))}»` : 'Пока объявлений нет'}</div>
-      <textarea id="annText" rows="2" placeholder="Текст объявления..." maxlength="200"></textarea>
+      <h4>РћР±СЉСЏРІР»РµРЅРёРµ РґР»СЏ РІСЃРµС…</h4>
+      <div class="admin-hint">${ann ? `РўРµРєСѓС‰РµРµ РѕР±СЉСЏРІР»РµРЅРёРµ (${fmtLogTime(ann.t)}): В«${escapeHtml(shortText(ann.text, 90))}В»` : 'РџРѕРєР° РѕР±СЉСЏРІР»РµРЅРёР№ РЅРµС‚'}</div>
+      <textarea id="annText" rows="2" placeholder="РўРµРєСЃС‚ РѕР±СЉСЏРІР»РµРЅРёСЏ..." maxlength="200"></textarea>
       <div class="au-actions" style="display:flex;gap:8px;margin-top:8px">
-        <button type="button" class="btn btn-primary" id="annSend">Отправить объявление</button>
-        ${ann ? '<button type="button" class="btn btn-ghost" id="annClear">Снять объявление</button>' : ''}
+        <button type="button" class="btn btn-primary" id="annSend">РћС‚РїСЂР°РІРёС‚СЊ РѕР±СЉСЏРІР»РµРЅРёРµ</button>
+        ${ann ? '<button type="button" class="btn btn-ghost" id="annClear">РЎРЅСЏС‚СЊ РѕР±СЉСЏРІР»РµРЅРёРµ</button>' : ''}
       </div>
     </div>
 
     <div class="manage-section">
-      <h4>Канал Nebula News</h4>
-      <div class="admin-hint">Опубликуйте уведомление в канал Nebula News — его увидят все пользователи. Сообщение придёт от вашего имени.</div>
-      <textarea id="newsText" rows="2" placeholder="Текст уведомления..." maxlength="300"></textarea>
+      <h4>РљР°РЅР°Р» Nebula News</h4>
+      <div class="admin-hint">РћРїСѓР±Р»РёРєСѓР№С‚Рµ СѓРІРµРґРѕРјР»РµРЅРёРµ РІ РєР°РЅР°Р» Nebula News вЂ” РµРіРѕ СѓРІРёРґСЏС‚ РІСЃРµ РїРѕР»СЊР·РѕРІР°С‚РµР»Рё. РЎРѕРѕР±С‰РµРЅРёРµ РїСЂРёРґС‘С‚ РѕС‚ РІР°С€РµРіРѕ РёРјРµРЅРё.</div>
+      <textarea id="newsText" rows="2" placeholder="РўРµРєСЃС‚ СѓРІРµРґРѕРјР»РµРЅРёСЏ..." maxlength="300"></textarea>
       <div class="au-actions" style="display:flex;gap:8px;margin-top:8px">
-        <button type="button" class="btn btn-primary" id="newsSend">Опубликовать в Nebula News</button>
+        <button type="button" class="btn btn-primary" id="newsSend">РћРїСѓР±Р»РёРєРѕРІР°С‚СЊ РІ Nebula News</button>
       </div>
     </div>
 
     <div class="manage-section">
-      <h4>Каналы и группы</h4>
-      <div class="admin-hint">Найдите по названию, @юзернейму или типу. Можно переименовать или удалить у всех.</div>
-      <input type="text" class="rename-input admin-chat-search" placeholder="Название, @юзернейм, канал/группа..." style="margin-top:8px">
+      <h4>РљР°РЅР°Р»С‹ Рё РіСЂСѓРїРїС‹</h4>
+      <div class="admin-hint">РќР°Р№РґРёС‚Рµ РїРѕ РЅР°Р·РІР°РЅРёСЋ, @СЋР·РµСЂРЅРµР№РјСѓ РёР»Рё С‚РёРїСѓ. РњРѕР¶РЅРѕ РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РёР»Рё СѓРґР°Р»РёС‚СЊ Сѓ РІСЃРµС….</div>
+      <input type="text" class="rename-input admin-chat-search" placeholder="РќР°Р·РІР°РЅРёРµ, @СЋР·РµСЂРЅРµР№Рј, РєР°РЅР°Р»/РіСЂСѓРїРїР°..." style="margin-top:8px">
       <div class="admin-chats">
         ${allChats.filter(c => c.id !== NEWS_CHAT_ID && (c.type === 'channel' || c.type === 'group')).length ? allChats.filter(c => c.id !== NEWS_CHAT_ID && (c.type === 'channel' || c.type === 'group')).map(c => `
           <div class="admin-chat" data-id="${c.id}" data-t="${c.type}">
-            <span class="chat-type-tag t-${c.type}">${c.type === 'channel' ? 'КАНАЛ' : 'ГРУППА'}</span>
+            <span class="chat-type-tag t-${c.type}">${c.type === 'channel' ? 'РљРђРќРђР›' : 'Р“Р РЈРџРџРђ'}</span>
             <div class="ac-info">
               <span class="au-name">${escapeHtml(c.name)}</span>
               ${c.handle ? `<span class="au-sub">@${escapeHtml(c.handle)}</span>` : ''}
             </div>
             <div class="au-actions">
-              <button type="button" class="btn btn-ghost admin-members-chat">👥</button>
-              <button type="button" class="btn btn-ghost admin-rename-chat">✎</button>
-              <button type="button" class="btn btn-danger admin-del-chat" data-id="${c.id}" data-t="${c.type}">Удалить</button>
+              <button type="button" class="btn btn-ghost admin-members-chat">рџ‘Ґ</button>
+              <button type="button" class="btn btn-ghost admin-rename-chat">вњЋ</button>
+              <button type="button" class="btn btn-danger admin-del-chat" data-id="${c.id}" data-t="${c.type}">РЈРґР°Р»РёС‚СЊ</button>
             </div>
             <div class="am-panel hidden"></div>
-          </div>`).join('') : '<div class="empty-list">Каналов и групп пока нет</div>'}
+          </div>`).join('') : '<div class="empty-list">РљР°РЅР°Р»РѕРІ Рё РіСЂСѓРїРї РїРѕРєР° РЅРµС‚</div>'}
       </div>
     </div>
 
     <div class="manage-section">
-      <h4>Личные чаты</h4>
-      <div class="admin-hint">Пары собеседников. Можно создать недостающие чаты между всеми аккаунтами или удалить лишние.</div>
-      <button type="button" class="btn btn-primary" id="adminPrivAll">Создать чаты между всеми</button>
+      <h4>Р›РёС‡РЅС‹Рµ С‡Р°С‚С‹</h4>
+      <div class="admin-hint">РџР°СЂС‹ СЃРѕР±РµСЃРµРґРЅРёРєРѕРІ. РњРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ РЅРµРґРѕСЃС‚Р°СЋС‰РёРµ С‡Р°С‚С‹ РјРµР¶РґСѓ РІСЃРµРјРё Р°РєРєР°СѓРЅС‚Р°РјРё РёР»Рё СѓРґР°Р»РёС‚СЊ Р»РёС€РЅРёРµ.</div>
+      <button type="button" class="btn btn-primary" id="adminPrivAll">РЎРѕР·РґР°С‚СЊ С‡Р°С‚С‹ РјРµР¶РґСѓ РІСЃРµРјРё</button>
       <div class="admin-chats" style="margin-top:10px">
         ${privs.length ? privs.map(p => `
           <div class="admin-chat">
-            <span class="chat-type-tag t-private">ЛИЧНЫЙ</span>
+            <span class="chat-type-tag t-private">Р›РР§РќР«Р™</span>
             <div class="ac-info">
-              <span class="au-name">@${escapeHtml(p.owner)} ↔ @${escapeHtml(p.other)}</span>
+              <span class="au-name">@${escapeHtml(p.owner)} в†” @${escapeHtml(p.other)}</span>
             </div>
             <div class="au-actions">
-              <button type="button" class="btn btn-danger admin-del-priv" data-a="${escapeHtml(p.owner)}" data-b="${escapeHtml(p.other)}">Удалить</button>
+              <button type="button" class="btn btn-danger admin-del-priv" data-a="${escapeHtml(p.owner)}" data-b="${escapeHtml(p.other)}">РЈРґР°Р»РёС‚СЊ</button>
             </div>
-          </div>`).join('') : '<div class="empty-list">Личных чатов пока нет</div>'}
+          </div>`).join('') : '<div class="empty-list">Р›РёС‡РЅС‹С… С‡Р°С‚РѕРІ РїРѕРєР° РЅРµС‚</div>'}
       </div>
     </div>
 
     <div class="manage-section">
-      <h4>Темы пользователей</h4>
-      <div class="admin-hint">Выдайте пользователю любую тему, включая специальные</div>
+      <h4>РўРµРјС‹ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</h4>
+      <div class="admin-hint">Р’С‹РґР°Р№С‚Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ Р»СЋР±СѓСЋ С‚РµРјСѓ, РІРєР»СЋС‡Р°СЏ СЃРїРµС†РёР°Р»СЊРЅС‹Рµ</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-actions">
               <select class="admin-theme-select">
                 ${ALL_THEMES.map(t => `<option value="${t.v}" ${(a.settings && a.settings.theme) === t.v ? 'selected' : ''}>${t.t}</option>`).join('')}
@@ -8397,89 +8405,89 @@ function renderSettingsAdmin(body) {
     </div>
 
     <div class="manage-section">
-      <h4>Стикер-паки пользователей</h4>
-      <div class="admin-hint">Можно удалить стикер-пак любого пользователя</div>
+      <h4>РЎС‚РёРєРµСЂ-РїР°РєРё РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</h4>
+      <div class="admin-hint">РњРѕР¶РЅРѕ СѓРґР°Р»РёС‚СЊ СЃС‚РёРєРµСЂ-РїР°Рє Р»СЋР±РѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div>
       ${accountsList().filter(u => (u.stickerPacks || []).length).map(u => u.stickerPacks.map(p => `
         <div class="admin-user">
           <span class="avatar" style="${avatarStyle(u)}">${avatarInnerHtml(u)}</span>
           <div class="au-info">
             <div class="au-name">${escapeHtml(p.name)}</div>
-            <div class="au-sub">@${escapeHtml(u.username)} · ${p.stickers.length} стик.</div>
+            <div class="au-sub">@${escapeHtml(u.username)} В· ${p.stickers.length} СЃС‚РёРє.</div>
             <div class="au-actions">
-              <button type="button" class="btn btn-danger admin-del-pack" data-u="${escapeHtml(u.username)}" data-pk="${escapeHtml(p.id)}">Удалить пак</button>
+              <button type="button" class="btn btn-danger admin-del-pack" data-u="${escapeHtml(u.username)}" data-pk="${escapeHtml(p.id)}">РЈРґР°Р»РёС‚СЊ РїР°Рє</button>
             </div>
           </div>
-        </div>`).join('')).join('') || '<div class="empty-list">Ни у кого нет стикер-паков</div>'}
+        </div>`).join('')).join('') || '<div class="empty-list">РќРё Сѓ РєРѕРіРѕ РЅРµС‚ СЃС‚РёРєРµСЂ-РїР°РєРѕРІ</div>'}
     </div>
 
     <div class="manage-section">
-      <h4>Дельфины пользователей</h4>
-      <div class="admin-hint">Добавьте XP сильнейшему дельфину или обнулите всех дельфинов</div>
+      <h4>Р”РµР»СЊС„РёРЅС‹ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</h4>
+      <div class="admin-hint">Р”РѕР±Р°РІСЊС‚Рµ XP СЃРёР»СЊРЅРµР№С€РµРјСѓ РґРµР»СЊС„РёРЅСѓ РёР»Рё РѕР±РЅСѓР»РёС‚Рµ РІСЃРµС… РґРµР»СЊС„РёРЅРѕРІ</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)} · макс. ур. ${dolphinsMaxLevelFor(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)} В· РјР°РєСЃ. СѓСЂ. ${dolphinsMaxLevelFor(a.username)}</div>
             <div class="au-actions">
               <button type="button" class="btn btn-primary admin-dolphin-xp">+500 XP</button>
-              <button type="button" class="btn btn-danger admin-dolphin-reset">Сбросить</button>
+              <button type="button" class="btn btn-danger admin-dolphin-reset">РЎР±СЂРѕСЃРёС‚СЊ</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Статистика пользователей</h4>
-      <div class="admin-hint">Выдайте часы в статистику или обнулите учтённое время в мессенджере</div>
+      <h4>РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</h4>
+      <div class="admin-hint">Р’С‹РґР°Р№С‚Рµ С‡Р°СЃС‹ РІ СЃС‚Р°С‚РёСЃС‚РёРєСѓ РёР»Рё РѕР±РЅСѓР»РёС‚Рµ СѓС‡С‚С‘РЅРЅРѕРµ РІСЂРµРјСЏ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ</div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)} · время ${fmtDuration((a.stats && a.stats.seconds) || 0)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)} В· РІСЂРµРјСЏ ${fmtDuration((a.stats && a.stats.seconds) || 0)}</div>
             <div class="au-actions">
-              <input type="number" class="rename-input admin-add-hours-input" placeholder="Часы" min="0" max="99999" style="width:90px">
-              <button type="button" class="btn btn-primary admin-add-hours">Добавить часы</button>
-              <button type="button" class="btn btn-ghost admin-reset-stats">Сбросить время</button>
+              <input type="number" class="rename-input admin-add-hours-input" placeholder="Р§Р°СЃС‹" min="0" max="99999" style="width:90px">
+              <button type="button" class="btn btn-primary admin-add-hours">Р”РѕР±Р°РІРёС‚СЊ С‡Р°СЃС‹</button>
+              <button type="button" class="btn btn-ghost admin-reset-stats">РЎР±СЂРѕСЃРёС‚СЊ РІСЂРµРјСЏ</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Сообщение от Nebula</h4>
-      <div class="admin-hint">Отправьте сообщение от имени Nebula AI в ИИ-чат пользователя</div>
+      <h4>РЎРѕРѕР±С‰РµРЅРёРµ РѕС‚ Nebula</h4>
+      <div class="admin-hint">РћС‚РїСЂР°РІСЊС‚Рµ СЃРѕРѕР±С‰РµРЅРёРµ РѕС‚ РёРјРµРЅРё Nebula AI РІ РР-С‡Р°С‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</div>
       <div class="nebula-all-row">
-        <input type="text" class="rename-input" id="nebulaAllText" placeholder="Уведомление для всех пользователей..." maxlength="300">
-        <button type="button" class="btn btn-primary" id="nebulaAllSend">Отправить всем</button>
+        <input type="text" class="rename-input" id="nebulaAllText" placeholder="РЈРІРµРґРѕРјР»РµРЅРёРµ РґР»СЏ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№..." maxlength="300">
+        <button type="button" class="btn btn-primary" id="nebulaAllSend">РћС‚РїСЂР°РІРёС‚СЊ РІСЃРµРј</button>
       </div>
       ${accs.map(a => `
         <div class="admin-user" data-u="${a.username}">
           <span class="avatar" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <div class="au-info">
             <div class="au-name">${displayName(a)}</div>
-            <div class="au-sub">ID ${a.id} · @${escapeHtml(a.username)}</div>
+            <div class="au-sub">ID ${a.id} В· @${escapeHtml(a.username)}</div>
             <div class="au-actions">
-              <input type="text" class="rename-input admin-nebula-text" placeholder="Текст сообщения..." maxlength="300">
-              <button type="button" class="btn btn-primary admin-nebula-send">Отправить</button>
+              <input type="text" class="rename-input admin-nebula-text" placeholder="РўРµРєСЃС‚ СЃРѕРѕР±С‰РµРЅРёСЏ..." maxlength="300">
+              <button type="button" class="btn btn-primary admin-nebula-send">РћС‚РїСЂР°РІРёС‚СЊ</button>
             </div>
           </div>
         </div>`).join('')}
     </div>
 
     <div class="manage-section">
-      <h4>Логи действий</h4>
-      <div class="admin-hint">Последние ${Math.min(loadLog().length, 300)} из ${loadLog().length} записей</div>
+      <h4>Р›РѕРіРё РґРµР№СЃС‚РІРёР№</h4>
+      <div class="admin-hint">РџРѕСЃР»РµРґРЅРёРµ ${Math.min(loadLog().length, 300)} РёР· ${loadLog().length} Р·Р°РїРёСЃРµР№</div>
       <div class="admin-logs">
         ${loadLog().length ? loadLog().map(l => `
           <div class="log-row">
             <span class="log-time">${fmtLogTime(l.t)}</span>
             <span class="log-user">@${escapeHtml(l.user)}</span>
             <span class="log-action">${escapeHtml(l.action)}</span>
-          </div>`).join('') : '<div class="empty-list">Логи пусты</div>'}
+          </div>`).join('') : '<div class="empty-list">Р›РѕРіРё РїСѓСЃС‚С‹</div>'}
       </div>
-      ${loadLog().length ? '<button type="button" class="btn btn-danger admin-clear-logs" style="margin-top:10px">Очистить логи</button>' : ''}
+      ${loadLog().length ? '<button type="button" class="btn btn-danger admin-clear-logs" style="margin-top:10px">РћС‡РёСЃС‚РёС‚СЊ Р»РѕРіРё</button>' : ''}
     </div>`;
 
   body.querySelectorAll('.au-admin').forEach(btn => {
@@ -8488,10 +8496,10 @@ function renderSettingsAdmin(body) {
       const admins = adminList();
       const has = admins.includes(u.username);
       saveAdminList(has ? admins.filter(x => x !== u.username) : [...admins, u.username].sort());
-      addLog(currentUser.username, `${has ? 'Забран' : 'Выдан'} доступ к админ-панели — @${u.username}`);
+      addLog(currentUser.username, `${has ? 'Р—Р°Р±СЂР°РЅ' : 'Р’С‹РґР°РЅ'} РґРѕСЃС‚СѓРї Рє Р°РґРјРёРЅ-РїР°РЅРµР»Рё вЂ” @${u.username}`);
       renderSettingsAdmin(body);
       openAdminPanel();
-      toast(has ? 'Доступ забран' : 'Доступ выдан', '@' + u.username);
+      toast(has ? 'Р”РѕСЃС‚СѓРї Р·Р°Р±СЂР°РЅ' : 'Р”РѕСЃС‚СѓРї РІС‹РґР°РЅ', '@' + u.username);
     });
   });
   body.querySelectorAll('.au-kick').forEach(btn => {
@@ -8499,8 +8507,8 @@ function renderSettingsAdmin(body) {
       const u = accountByUsername(btn.closest('.admin-user').dataset.u);
       const was = (() => { try { return localStorage.getItem(SESSION_KEY) === u.username; } catch (e) { return false; } })();
       kickUser(u.username);
-      addLog(currentUser.username, `Кикнут — @${u.username}`);
-      toast('Кикнут', '@' + u.username + (was ? ' (был онлайн)' : ''));
+      addLog(currentUser.username, `РљРёРєРЅСѓС‚ вЂ” @${u.username}`);
+      toast('РљРёРєРЅСѓС‚', '@' + u.username + (was ? ' (Р±С‹Р» РѕРЅР»Р°Р№РЅ)' : ''));
     });
   });
   body.querySelectorAll('.au-ban').forEach(btn => {
@@ -8511,10 +8519,10 @@ function renderSettingsAdmin(body) {
         u.banInfo = null;
         clearNotice(u.username);
         persistOther(u);
-        addLog(currentUser.username, `Аккаунт @${u.username} разбанен`);
+        addLog(currentUser.username, `РђРєРєР°СѓРЅС‚ @${u.username} СЂР°Р·Р±Р°РЅРµРЅ`);
         renderSettingsAdmin(body);
         renderChatList();
-        toast('Аккаунт разбанен', '@' + u.username);
+        toast('РђРєРєР°СѓРЅС‚ СЂР°Р·Р±Р°РЅРµРЅ', '@' + u.username);
         return;
       }
       adminBanPrompt(u, body);
@@ -8525,21 +8533,21 @@ function renderSettingsAdmin(body) {
     ov.className = 'status-editor-overlay';
     ov.innerHTML = `
       <div class="modal-box stickers-modal">
-        <h3>⛔ Блокировка @${escapeHtml(u.username)}</h3>
-        <textarea id="banReason" rows="2" maxlength="120" placeholder="Причина блокировки..." style="width:100%;box-sizing:border-box;resize:none;border-radius:12px;padding:10px 12px;background:var(--bg-hover);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit"></textarea>
-        <label class="bn-label">Длительность</label>
+        <h3>в›” Р‘Р»РѕРєРёСЂРѕРІРєР° @${escapeHtml(u.username)}</h3>
+        <textarea id="banReason" rows="2" maxlength="120" placeholder="РџСЂРёС‡РёРЅР° Р±Р»РѕРєРёСЂРѕРІРєРё..." style="width:100%;box-sizing:border-box;resize:none;border-radius:12px;padding:10px 12px;background:var(--bg-hover);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit"></textarea>
+        <label class="bn-label">Р”Р»РёС‚РµР»СЊРЅРѕСЃС‚СЊ</label>
         <select id="banDur" class="admin-theme-select" style="width:100%">
-          <option value="3600000">1 час</option>
-          <option value="43200000">12 часов</option>
-          <option value="86400000">1 день</option>
-          <option value="259200000" selected>3 дня</option>
-          <option value="604800000">7 дней</option>
-          <option value="2592000000">30 дней</option>
-          <option value="0">Навсегда</option>
+          <option value="3600000">1 С‡Р°СЃ</option>
+          <option value="43200000">12 С‡Р°СЃРѕРІ</option>
+          <option value="86400000">1 РґРµРЅСЊ</option>
+          <option value="259200000" selected>3 РґРЅСЏ</option>
+          <option value="604800000">7 РґРЅРµР№</option>
+          <option value="2592000000">30 РґРЅРµР№</option>
+          <option value="0">РќР°РІСЃРµРіРґР°</option>
         </select>
         <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-primary" id="banDo">Заблокировать</button>
-          <button class="btn" id="banNo">Отмена</button>
+          <button class="btn btn-primary" id="banDo">Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ</button>
+          <button class="btn" id="banNo">РћС‚РјРµРЅР°</button>
         </div>
       </div>`;
     document.body.appendChild(ov);
@@ -8549,7 +8557,7 @@ function renderSettingsAdmin(body) {
     ov.querySelector('#banDo').addEventListener('click', () => {
       const reason = ov.querySelector('#banReason').value.trim();
       const dur = Number(ov.querySelector('#banDur').value);
-      if (!reason) return toast('Ошибка', 'Укажите причину блокировки');
+      if (!reason) return toast('РћС€РёР±РєР°', 'РЈРєР°Р¶РёС‚Рµ РїСЂРёС‡РёРЅСѓ Р±Р»РѕРєРёСЂРѕРІРєРё');
       const now = Date.now();
       const unbanAt = dur > 0 ? now + dur : null;
       u.banned = true;
@@ -8558,12 +8566,12 @@ function renderSettingsAdmin(body) {
       const notices = loadNotices();
       notices[u.username] = { type: 'ban', admin: currentUser.username, reason, bannedAt: now, unbanAt };
       saveNotices(notices);
-      addLog(currentUser.username, `Аккаунт @${u.username} забанен (${unbanAt ? 'до ' + fmtNoticeDate(unbanAt) : 'навсегда'}): ${reason}`);
+      addLog(currentUser.username, `РђРєРєР°СѓРЅС‚ @${u.username} Р·Р°Р±Р°РЅРµРЅ (${unbanAt ? 'РґРѕ ' + fmtNoticeDate(unbanAt) : 'РЅР°РІСЃРµРіРґР°'}): ${reason}`);
       kickUser(u.username);
       close();
       renderSettingsAdmin(body);
       renderChatList();
-      toast('Аккаунт забанен', '@' + u.username);
+      toast('РђРєРєР°СѓРЅС‚ Р·Р°Р±Р°РЅРµРЅ', '@' + u.username);
     });
   }
   body.querySelectorAll('.badge-chip').forEach(ch => {
@@ -8578,12 +8586,12 @@ function renderSettingsAdmin(body) {
         currentUser.badges[b] = u.badges[b];
         persistCurrentUser();
       }
-      addLog(currentUser.username, `Бейдж «${BADGE_LABELS[b]}» ${u.badges[b] ? 'выдан' : 'снят'} — @${u.username}`);
+      addLog(currentUser.username, `Р‘РµР№РґР¶ В«${BADGE_LABELS[b]}В» ${u.badges[b] ? 'РІС‹РґР°РЅ' : 'СЃРЅСЏС‚'} вЂ” @${u.username}`);
       renderSettingsAdmin(body);
       updateProfileHeader();
       renderChatList();
       renderChat();
-      toast(u.badges[b] ? 'Бейдж выдан' : 'Бейдж снят', '@' + u.username);
+      toast(u.badges[b] ? 'Р‘РµР№РґР¶ РІС‹РґР°РЅ' : 'Р‘РµР№РґР¶ СЃРЅСЏС‚', '@' + u.username);
     });
   });
   body.querySelectorAll('.badge-chip[data-sup]').forEach(ch => {
@@ -8596,9 +8604,9 @@ function renderSettingsAdmin(body) {
         currentUser.support = u.support;
         persistCurrentUser();
       }
-      addLog(currentUser.username, `Права тех поддержки ${u.support ? 'выданы' : 'сняты'} — @${u.username}`);
+      addLog(currentUser.username, `РџСЂР°РІР° С‚РµС… РїРѕРґРґРµСЂР¶РєРё ${u.support ? 'РІС‹РґР°РЅС‹' : 'СЃРЅСЏС‚С‹'} вЂ” @${u.username}`);
       renderSettingsAdmin(body);
-      toast(u.support ? 'Права тех поддержки выданы' : 'Права тех поддержки сняты', '@' + u.username);
+      toast(u.support ? 'РџСЂР°РІР° С‚РµС… РїРѕРґРґРµСЂР¶РєРё РІС‹РґР°РЅС‹' : 'РџСЂР°РІР° С‚РµС… РїРѕРґРґРµСЂР¶РєРё СЃРЅСЏС‚С‹', '@' + u.username);
     });
   });
   body.querySelectorAll('.frame-chip').forEach(ch => {
@@ -8615,11 +8623,11 @@ function renderSettingsAdmin(body) {
         renderSettingsFrames(body.parentElement === $('#settingsBody') ? $('#settingsBody') : body);
         updateProfileHeader();
       }
-      addLog(currentUser.username, `Рамка «${FRAMES.find(x => x.id === f).name}» ${i >= 0 ? 'снята' : 'выдана'} — @${u.username}`);
+      addLog(currentUser.username, `Р Р°РјРєР° В«${FRAMES.find(x => x.id === f).name}В» ${i >= 0 ? 'СЃРЅСЏС‚Р°' : 'РІС‹РґР°РЅР°'} вЂ” @${u.username}`);
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast(i >= 0 ? 'Рамка снята' : 'Рамка выдана', '@' + u.username);
+      toast(i >= 0 ? 'Р Р°РјРєР° СЃРЅСЏС‚Р°' : 'Р Р°РјРєР° РІС‹РґР°РЅР°', '@' + u.username);
     });
   });
   body.querySelectorAll('.ae-save').forEach(btn => {
@@ -8632,29 +8640,29 @@ function renderSettingsAdmin(body) {
       const nU = row.querySelector('.ae-username').value.trim().toLowerCase();
       const nE = row.querySelector('.ae-email').value.trim();
       const nB = row.querySelector('.ae-bio').value.trim();
-      if (!nU) return toast('Ошибка', 'Юзернейм не может быть пустым');
-      if (!/^[a-z0-9_]+$/.test(nU) || nU.length < 4) return toast('Ошибка', 'Юзернейм: 4-14 символов (a-z, 0-9, _)');
-      if (nU.length > LIMITS.username) return toast('Ошибка', `Юзернейм максимум ${LIMITS.username} символов`);
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(nE)) return toast('Ошибка', 'Некорректная почта');
-      if (!nId) return toast('Ошибка', 'ID не может быть пустым');
+      if (!nU) return toast('РћС€РёР±РєР°', 'Р®Р·РµСЂРЅРµР№Рј РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј');
+      if (!/^[a-z0-9_]+$/.test(nU) || nU.length < 4) return toast('РћС€РёР±РєР°', 'Р®Р·РµСЂРЅРµР№Рј: 4-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _)');
+      if (nU.length > LIMITS.username) return toast('РћС€РёР±РєР°', `Р®Р·РµСЂРЅРµР№Рј РјР°РєСЃРёРјСѓРј ${LIMITS.username} СЃРёРјРІРѕР»РѕРІ`);
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(nE)) return toast('РћС€РёР±РєР°', 'РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ РїРѕС‡С‚Р°');
+      if (!nId) return toast('РћС€РёР±РєР°', 'ID РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј');
       if (nU !== oldU) {
-        if (accountByUsername(nU)) return toast('Ошибка', 'Этот юзернейм уже занят');
-        if (!adminRenameUser(oldU, nU)) return toast('Ошибка', 'Не удалось переименовать');
+        if (accountByUsername(nU)) return toast('РћС€РёР±РєР°', 'Р­С‚РѕС‚ СЋР·РµСЂРЅРµР№Рј СѓР¶Рµ Р·Р°РЅСЏС‚');
+        if (!adminRenameUser(oldU, nU)) return toast('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ');
       }
       const acc2 = accountByUsername(nU);
       const d2 = loadAccounts();
       const emailTaken = Object.values(d2.users).some(x => x.username !== nU && x.email === nE);
-      if (emailTaken) return toast('Ошибка', 'Эта почта уже используется');
+      if (emailTaken) return toast('РћС€РёР±РєР°', 'Р­С‚Р° РїРѕС‡С‚Р° СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ');
       acc2.id = nId;
       acc2.email = nE;
       acc2.bio = nB;
       saveAccounts(d2);
       if (currentUser && currentUser.username === nU) { currentUser = acc2; persistCurrentUser(); updateProfileHeader(); }
-      addLog(currentUser.username, `Обновил данные @${nU}: ID ${nId}${nB ? ', био' : ''}`);
+      addLog(currentUser.username, `РћР±РЅРѕРІРёР» РґР°РЅРЅС‹Рµ @${nU}: ID ${nId}${nB ? ', Р±РёРѕ' : ''}`);
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast('Данные обновлены', '@' + nU);
+      toast('Р”Р°РЅРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅС‹', '@' + nU);
     });
   });
   body.querySelectorAll('.admin-rename .rename-save').forEach(btn => {
@@ -8663,52 +8671,52 @@ function renderSettingsAdmin(body) {
       const u = accountByUsername(row.dataset.u);
       const v = row.querySelector('.rename-input').value.trim();
       if (!u || !v) return;
-      if (v.length > LIMITS.name) return toast('Ошибка', `Максимум ${LIMITS.name} символов`);
+      if (v.length > LIMITS.name) return toast('РћС€РёР±РєР°', `РњР°РєСЃРёРјСѓРј ${LIMITS.name} СЃРёРјРІРѕР»РѕРІ`);
       u.name = v;
       persistOther(u);
-      addLog(currentUser.username, `Никнейм изменён: @${u.username} → ${v}`);
+      addLog(currentUser.username, `РќРёРєРЅРµР№Рј РёР·РјРµРЅС‘РЅ: @${u.username} в†’ ${v}`);
       if (currentUser.username === u.username) { currentUser.name = v; updateProfileHeader(); ME.name = v; }
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast('Никнейм изменён', v);
+      toast('РќРёРєРЅРµР№Рј РёР·РјРµРЅС‘РЅ', v);
     });
   });
   body.querySelectorAll('.admin-pw-save').forEach(btn => {
     btn.addEventListener('click', () => {
       const u = accountByUsername(btn.closest('.admin-user').dataset.u);
       const v = btn.closest('.admin-user').querySelector('.admin-pw-input').value;
-      if (!v) return toast('Ошибка', 'Введите новый пароль');
-      if (v.length < 8 || v.length > LIMITS.password) return toast('Ошибка', `Пароль: 8-${LIMITS.password} символов`);
+      if (!v) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ РЅРѕРІС‹Р№ РїР°СЂРѕР»СЊ');
+      if (v.length < 8 || v.length > LIMITS.password) return toast('РћС€РёР±РєР°', `РџР°СЂРѕР»СЊ: 8-${LIMITS.password} СЃРёРјРІРѕР»РѕРІ`);
       u.password = v;
       persistOther(u);
       if (currentUser.username === u.username) { currentUser.password = v; persistCurrentUser(); }
-      addLog(currentUser.username, `Сброшен пароль — @${u.username}`);
+      addLog(currentUser.username, `РЎР±СЂРѕС€РµРЅ РїР°СЂРѕР»СЊ вЂ” @${u.username}`);
       renderSettingsAdmin(body);
-      toast('Пароль изменён', '@' + u.username);
+      toast('РџР°СЂРѕР»СЊ РёР·РјРµРЅС‘РЅ', '@' + u.username);
     });
   });
   const annSend = body.querySelector('#annSend');
   if (annSend) annSend.addEventListener('click', () => {
     const v = body.querySelector('#annText').value.trim();
-    if (!v) return toast('Ошибка', 'Введите текст объявления');
+    if (!v) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ РѕР±СЉСЏРІР»РµРЅРёСЏ');
     saveAnnouncement({ text: v, by: currentUser.username, t: Date.now() });
-    addLog(currentUser.username, `Сделал объявление: "${shortText(v, 45)}"`);
+    addLog(currentUser.username, `РЎРґРµР»Р°Р» РѕР±СЉСЏРІР»РµРЅРёРµ: "${shortText(v, 45)}"`);
     renderSettingsAdmin(body);
-    toast('Объявление отправлено', 'Пользователи увидят его при входе');
+    toast('РћР±СЉСЏРІР»РµРЅРёРµ РѕС‚РїСЂР°РІР»РµРЅРѕ', 'РџРѕР»СЊР·РѕРІР°С‚РµР»Рё СѓРІРёРґСЏС‚ РµРіРѕ РїСЂРё РІС…РѕРґРµ');
   });
   const annClear = body.querySelector('#annClear');
   if (annClear) annClear.addEventListener('click', () => {
     saveAnnouncement(null);
-    addLog(currentUser.username, 'Снял объявление');
+    addLog(currentUser.username, 'РЎРЅСЏР» РѕР±СЉСЏРІР»РµРЅРёРµ');
     renderSettingsAdmin(body);
-    toast('Объявление снято');
+    toast('РћР±СЉСЏРІР»РµРЅРёРµ СЃРЅСЏС‚Рѕ');
   });
   const newsSend = body.querySelector('#newsSend');
   if (newsSend) newsSend.addEventListener('click', () => {
     const v = body.querySelector('#newsText').value.trim();
-    if (!v) return toast('Ошибка', 'Введите текст уведомления');
-    if (v.length > 300) return toast('Ошибка', 'Максимум 300 символов');
+    if (!v) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ СѓРІРµРґРѕРјР»РµРЅРёСЏ');
+    if (v.length > 300) return toast('РћС€РёР±РєР°', 'РњР°РєСЃРёРјСѓРј 300 СЃРёРјРІРѕР»РѕРІ');
     let posted = 0;
     accountsList().filter(a => !a.isBot).forEach(u => {
       const st = getStateFor(u.username);
@@ -8720,18 +8728,18 @@ function renderSettingsAdmin(body) {
       posted++;
       saveStateFor(u.username, st);
     });
-    addLog(currentUser.username, `Опубликовано в Nebula News: "${shortText(v, 45)}"`);
+    addLog(currentUser.username, `РћРїСѓР±Р»РёРєРѕРІР°РЅРѕ РІ Nebula News: "${shortText(v, 45)}"`);
     renderSettingsAdmin(body);
     renderChat();
     renderChatList();
-    toast('Опубликовано в Nebula News', posted ? `${posted} пользователей увидят` : 'Никто не подписан');
+    toast('РћРїСѓР±Р»РёРєРѕРІР°РЅРѕ РІ Nebula News', posted ? `${posted} РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ СѓРІРёРґСЏС‚` : 'РќРёРєС‚Рѕ РЅРµ РїРѕРґРїРёСЃР°РЅ');
   });
 
   body.querySelectorAll('.au-del').forEach(btn => {
     btn.addEventListener('click', () => {
       const u = accountByUsername(btn.closest('.admin-user').dataset.u);
       if (!u) return;
-      if (u.username === currentUser.username) return toast('Нельзя', 'Нельзя удалить собственный аккаунт');
+      if (u.username === currentUser.username) return toast('РќРµР»СЊР·СЏ', 'РќРµР»СЊР·СЏ СѓРґР°Р»РёС‚СЊ СЃРѕР±СЃС‚РІРµРЅРЅС‹Р№ Р°РєРєР°СѓРЅС‚');
       adminDeletePrompt(u, body);
     });
   });
@@ -8740,12 +8748,12 @@ function renderSettingsAdmin(body) {
     ov.className = 'status-editor-overlay';
     ov.innerHTML = `
       <div class="modal-box stickers-modal">
-        <h3>⛔ Удаление аккаунта @${escapeHtml(u.username)}</h3>
-        <div class="admin-hint" style="margin-top:2px">Личные чаты будут удалены, из групп он будет исключён. Это действие нельзя отменить.</div>
-        <textarea id="delReason" rows="2" maxlength="120" placeholder="Причина удаления..." style="width:100%;box-sizing:border-box;resize:none;border-radius:12px;padding:10px 12px;background:var(--bg-hover);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit"></textarea>
+        <h3>в›” РЈРґР°Р»РµРЅРёРµ Р°РєРєР°СѓРЅС‚Р° @${escapeHtml(u.username)}</h3>
+        <div class="admin-hint" style="margin-top:2px">Р›РёС‡РЅС‹Рµ С‡Р°С‚С‹ Р±СѓРґСѓС‚ СѓРґР°Р»РµРЅС‹, РёР· РіСЂСѓРїРї РѕРЅ Р±СѓРґРµС‚ РёСЃРєР»СЋС‡С‘РЅ. Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.</div>
+        <textarea id="delReason" rows="2" maxlength="120" placeholder="РџСЂРёС‡РёРЅР° СѓРґР°Р»РµРЅРёСЏ..." style="width:100%;box-sizing:border-box;resize:none;border-radius:12px;padding:10px 12px;background:var(--bg-hover);border:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit"></textarea>
         <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-danger" id="delDo">Удалить аккаунт</button>
-          <button class="btn" id="delNo">Отмена</button>
+          <button class="btn btn-danger" id="delDo">РЈРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚</button>
+          <button class="btn" id="delNo">РћС‚РјРµРЅР°</button>
         </div>
       </div>`;
     document.body.appendChild(ov);
@@ -8753,19 +8761,19 @@ function renderSettingsAdmin(body) {
     ov.addEventListener('click', e => { if (e.target === ov) close(); });
     ov.querySelector('#delNo').addEventListener('click', close);
     ov.querySelector('#delDo').addEventListener('click', () => {
-      const reason = ov.querySelector('#delReason').value.trim() || '—';
+      const reason = ov.querySelector('#delReason').value.trim() || 'вЂ”';
       const now = Date.now();
       const notices = loadNotices();
       notices[u.username] = { type: 'delete', admin: currentUser.username, reason, bannedAt: now, unbanAt: null };
       saveNotices(notices);
       kickUser(u.username);
       deleteAccountEverywhere(u.username);
-      addLog(currentUser.username, `Аккаунт удалён — @${u.username} (ID ${u.id}): ${reason}`);
+      addLog(currentUser.username, `РђРєРєР°СѓРЅС‚ СѓРґР°Р»С‘РЅ вЂ” @${u.username} (ID ${u.id}): ${reason}`);
       close();
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast('Аккаунт удалён', '@' + u.username);
+      toast('РђРєРєР°СѓРЅС‚ СѓРґР°Р»С‘РЅ', '@' + u.username);
     });
   }
 
@@ -8780,32 +8788,32 @@ function renderSettingsAdmin(body) {
         made++;
       }
     }
-    addLog(currentUser.username, `Создал личные чаты между всеми (новых: ${made})`);
+    addLog(currentUser.username, `РЎРѕР·РґР°Р» Р»РёС‡РЅС‹Рµ С‡Р°С‚С‹ РјРµР¶РґСѓ РІСЃРµРјРё (РЅРѕРІС‹С…: ${made})`);
     renderSettingsAdmin(body);
     renderChatList();
-    toast(made ? `Создано новых чатов: ${made}` : 'Все личные чаты уже существуют');
+    toast(made ? `РЎРѕР·РґР°РЅРѕ РЅРѕРІС‹С… С‡Р°С‚РѕРІ: ${made}` : 'Р’СЃРµ Р»РёС‡РЅС‹Рµ С‡Р°С‚С‹ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‚');
   });
   body.querySelectorAll('.admin-del-priv').forEach(btn => btn.addEventListener('click', () => {
     const a = btn.dataset.a, b = btn.dataset.b;
-    if (!confirm(`Удалить личный чат @${a} ↔ @${b} у всех пользователей?`)) return;
+    if (!confirm(`РЈРґР°Р»РёС‚СЊ Р»РёС‡РЅС‹Р№ С‡Р°С‚ @${a} в†” @${b} Сѓ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№?`)) return;
     deletePrivateChatEverywhere(a, b);
-    addLog(currentUser.username, `Удалил личный чат @${a} ↔ @${b}`);
+    addLog(currentUser.username, `РЈРґР°Р»РёР» Р»РёС‡РЅС‹Р№ С‡Р°С‚ @${a} в†” @${b}`);
     renderSettingsAdmin(body);
     renderChatList();
     renderChat();
-    toast('Чат удалён', '@' + a + ' ↔ @' + b);
+    toast('Р§Р°С‚ СѓРґР°Р»С‘РЅ', '@' + a + ' в†” @' + b);
   }));
   body.querySelectorAll('.admin-del-pack').forEach(btn => btn.addEventListener('click', () => {
     const u = accountByUsername(btn.dataset.u);
     if (!u) return;
     const p = (u.stickerPacks || []).find(x => x.id === btn.dataset.pk);
     if (!p) return;
-    if (!confirm(`Удалить стикер-пак «${p.name}» у @${u.username}?`)) return;
+    if (!confirm(`РЈРґР°Р»РёС‚СЊ СЃС‚РёРєРµСЂ-РїР°Рє В«${p.name}В» Сѓ @${u.username}?`)) return;
     u.stickerPacks = u.stickerPacks.filter(x => x.id !== btn.dataset.pk);
     persistOther(u);
-    addLog(currentUser.username, `Удалил стикер-пак «${p.name}» у @${u.username}`);
+    addLog(currentUser.username, `РЈРґР°Р»РёР» СЃС‚РёРєРµСЂ-РїР°Рє В«${p.name}В» Сѓ @${u.username}`);
     renderSettingsAdmin(body);
-    toast('Пак удалён', p.name);
+    toast('РџР°Рє СѓРґР°Р»С‘РЅ', p.name);
   }));
   body.querySelectorAll('.admin-theme-select').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -8813,14 +8821,14 @@ function renderSettingsAdmin(body) {
       u.settings = u.settings || {};
       u.settings.theme = sel.value;
       persistOther(u);
-      addLog(currentUser.username, `Тема «${(ALL_THEMES.find(t => t.v === sel.value) || {}).t}» — @${u.username}`);
+      addLog(currentUser.username, `РўРµРјР° В«${(ALL_THEMES.find(t => t.v === sel.value) || {}).t}В» вЂ” @${u.username}`);
       if (currentUser.username === u.username) {
         currentUser.settings = currentUser.settings || {};
         currentUser.settings.theme = sel.value;
         persistCurrentUser();
         applyTheme(sel.value);
       }
-      toast('Тема назначена', '@' + u.username);
+      toast('РўРµРјР° РЅР°Р·РЅР°С‡РµРЅР°', '@' + u.username);
     });
   });
   body.querySelectorAll('.admin-dolphin-xp').forEach(btn => {
@@ -8834,25 +8842,25 @@ function renderSettingsAdmin(body) {
         const d = store[k];
         if (d && d.xp > bestXp) { bestXp = d.xp; bestId = k; }
       });
-      if (!bestId) return toast('Ошибка', 'У @' + u.username + ' нет дельфинов');
+      if (!bestId) return toast('РћС€РёР±РєР°', 'РЈ @' + u.username + ' РЅРµС‚ РґРµР»СЊС„РёРЅРѕРІ');
       store[bestId].xp = (store[bestId].xp || 0) + 500;
       saveDolphins(store);
-      addLog(currentUser.username, `Дельфину @${u.username} начислено +500 XP`);
+      addLog(currentUser.username, `Р”РµР»СЊС„РёРЅСѓ @${u.username} РЅР°С‡РёСЃР»РµРЅРѕ +500 XP`);
       renderSettingsAdmin(body);
-      toast('+500 XP дельфину', '@' + u.username);
+      toast('+500 XP РґРµР»СЊС„РёРЅСѓ', '@' + u.username);
     });
   });
   body.querySelectorAll('.admin-dolphin-reset').forEach(btn => {
     btn.addEventListener('click', () => {
       const u = accountByUsername(btn.closest('.admin-user').dataset.u);
-      if (!confirm(`Сбросить всех дельфинов @${u.username}?`)) return;
+      if (!confirm(`РЎР±СЂРѕСЃРёС‚СЊ РІСЃРµС… РґРµР»СЊС„РёРЅРѕРІ @${u.username}?`)) return;
       const st = getStateFor(u.username);
       const store = loadDolphins();
       if (st && st.chats) st.chats.forEach(c => { const k = dolphinKeyFor(c, u.username); if (store[k]) store[k].xp = 0; });
       saveDolphins(store);
-      addLog(currentUser.username, `Дельфины @${u.username} сброшены`);
+      addLog(currentUser.username, `Р”РµР»СЊС„РёРЅС‹ @${u.username} СЃР±СЂРѕС€РµРЅС‹`);
       renderSettingsAdmin(body);
-      toast('Дельфины сброшены', '@' + u.username);
+      toast('Р”РµР»СЊС„РёРЅС‹ СЃР±СЂРѕС€РµРЅС‹', '@' + u.username);
     });
   });
   body.querySelectorAll('.admin-add-hours').forEach(btn => {
@@ -8860,11 +8868,11 @@ function renderSettingsAdmin(body) {
       const u = accountByUsername(btn.closest('.admin-user').dataset.u);
       const inp = btn.closest('.admin-user').querySelector('.admin-add-hours-input');
       const h = parseInt(inp.value, 10);
-      if (isNaN(h) || h <= 0) return toast('Ошибка', 'Введите количество часов');
-      if (h > 99999) return toast('Ошибка', 'Максимум 99999 часов за раз');
+      if (isNaN(h) || h <= 0) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‡Р°СЃРѕРІ');
+      if (h > 99999) return toast('РћС€РёР±РєР°', 'РњР°РєСЃРёРјСѓРј 99999 С‡Р°СЃРѕРІ Р·Р° СЂР°Р·');
       const d = loadAccounts();
       const acc = d.users[u.username];
-      if (!acc) return toast('Ошибка', 'Пользователь не найден');
+      if (!acc) return toast('РћС€РёР±РєР°', 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ');
       acc.stats = acc.stats || {};
       acc.stats.seconds = (acc.stats.seconds || 0) + h * 3600;
       saveAccounts(d);
@@ -8872,11 +8880,11 @@ function renderSettingsAdmin(body) {
         currentUser.stats = acc.stats;
         persistCurrentUser();
       }
-      addLog(currentUser.username, `Выдано ${h} ч. статистики — @${u.username} (итого ${fmtDuration(acc.stats.seconds)})`);
+      addLog(currentUser.username, `Р’С‹РґР°РЅРѕ ${h} С‡. СЃС‚Р°С‚РёСЃС‚РёРєРё вЂ” @${u.username} (РёС‚РѕРіРѕ ${fmtDuration(acc.stats.seconds)})`);
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast('Часы выданы', `@${u.username} +${h} ч.`);
+      toast('Р§Р°СЃС‹ РІС‹РґР°РЅС‹', `@${u.username} +${h} С‡.`);
     });
   });
   body.querySelectorAll('.admin-reset-stats').forEach(btn => {
@@ -8885,16 +8893,16 @@ function renderSettingsAdmin(body) {
       u.stats = u.stats || {};
       u.stats.seconds = 0;
       persistOther(u);
-      addLog(currentUser.username, `Статистика @${u.username} сброшена`);
+      addLog(currentUser.username, `РЎС‚Р°С‚РёСЃС‚РёРєР° @${u.username} СЃР±СЂРѕС€РµРЅР°`);
       if (currentUser.username === u.username) persistCurrentUser();
       renderSettingsAdmin(body);
-      toast('Статистика сброшена', '@' + u.username);
+      toast('РЎС‚Р°С‚РёСЃС‚РёРєР° СЃР±СЂРѕС€РµРЅР°', '@' + u.username);
     });
   });
   const nebulaAllSend = body.querySelector('#nebulaAllSend');
   if (nebulaAllSend) nebulaAllSend.addEventListener('click', () => {
     const v = body.querySelector('#nebulaAllText').value.trim();
-    if (!v) return toast('Ошибка', 'Введите текст уведомления');
+    if (!v) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ СѓРІРµРґРѕРјР»РµРЅРёСЏ');
     const d = loadAccounts();
     let sent = 0;
     Object.values(d.users || {}).forEach(u => {
@@ -8910,15 +8918,15 @@ function renderSettingsAdmin(body) {
       saveStateFor(u.username, st);
       sent++;
     });
-    addLog(currentUser.username, `Уведомление от Nebula отправлено всем: "${shortText(v, 45)}"`);
+    addLog(currentUser.username, `РЈРІРµРґРѕРјР»РµРЅРёРµ РѕС‚ Nebula РѕС‚РїСЂР°РІР»РµРЅРѕ РІСЃРµРј: "${shortText(v, 45)}"`);
     renderSettingsAdmin(body);
-    toast('Отправлено всем', sent + ' пользователям');
+    toast('РћС‚РїСЂР°РІР»РµРЅРѕ РІСЃРµРј', sent + ' РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј');
   });
   body.querySelectorAll('.admin-nebula-send').forEach(btn => {
     btn.addEventListener('click', () => {
       const u = accountByUsername(btn.closest('.admin-user').dataset.u);
       const v = btn.closest('.admin-user').querySelector('.admin-nebula-text').value.trim();
-      if (!v) return toast('Ошибка', 'Введите текст сообщения');
+      if (!v) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ СЃРѕРѕР±С‰РµРЅРёСЏ');
       const st = getStateFor(u.username) || { chats: [] };
       let chat = st.chats.find(c => c.id === AI_CHAT_ID);
       if (!chat) {
@@ -8927,31 +8935,31 @@ function renderSettingsAdmin(body) {
       }
       chat.messages.push({ id: 'm' + Date.now(), from: 'nebula', text: v, read: false });
       saveStateFor(u.username, st);
-      addLog(currentUser.username, `Сообщение от Nebula → @${u.username}: "${shortText(v, 45)}"`);
+      addLog(currentUser.username, `РЎРѕРѕР±С‰РµРЅРёРµ РѕС‚ Nebula в†’ @${u.username}: "${shortText(v, 45)}"`);
       renderSettingsAdmin(body);
-      toast('Отправлено', '@' + u.username);
+      toast('РћС‚РїСЂР°РІР»РµРЅРѕ', '@' + u.username);
     });
   });
   const clearLogs = body.querySelector('.admin-clear-logs');
   if (clearLogs) clearLogs.addEventListener('click', () => {
-    if (!confirm('Очистить все логи действий?')) return;
+    if (!confirm('РћС‡РёСЃС‚РёС‚СЊ РІСЃРµ Р»РѕРіРё РґРµР№СЃС‚РІРёР№?')) return;
     saveLog([]);
-    addLog(currentUser.username, 'Логи действий очищены');
+    addLog(currentUser.username, 'Р›РѕРіРё РґРµР№СЃС‚РІРёР№ РѕС‡РёС‰РµРЅС‹');
     renderSettingsAdmin(body);
-    toast('Логи очищены');
+    toast('Р›РѕРіРё РѕС‡РёС‰РµРЅС‹');
   });
   body.querySelectorAll('.admin-del-chat').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
-      const t = btn.dataset.t === 'channel' ? 'канал' : 'группу';
+      const t = btn.dataset.t === 'channel' ? 'РєР°РЅР°Р»' : 'РіСЂСѓРїРїСѓ';
       const name = btn.closest('.admin-chat').querySelector('.au-name').textContent;
-      if (!confirm(`Удалить ${btn.dataset.t === 'channel' ? 'канал' : 'группу'} «${name}» у всех пользователей?`)) return;
+      if (!confirm(`РЈРґР°Р»РёС‚СЊ ${btn.dataset.t === 'channel' ? 'РєР°РЅР°Р»' : 'РіСЂСѓРїРїСѓ'} В«${name}В» Сѓ РІСЃРµС… РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№?`)) return;
       deleteChatEverywhere(id);
-      addLog(currentUser.username, `Удалена ${t} «${name}» (${id})`);
+      addLog(currentUser.username, `РЈРґР°Р»РµРЅР° ${t} В«${name}В» (${id})`);
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast('Удалено', name);
+      toast('РЈРґР°Р»РµРЅРѕ', name);
     });
   });
   const chatSearch = body.querySelector('.admin-chat-search');
@@ -8962,7 +8970,7 @@ function renderSettingsAdmin(body) {
       if (!ch) { row.classList.toggle('hidden', !!q); return; }
       const byName = ch.name.toLowerCase().includes(q);
       const byHandle = !!ch.handle && ch.handle.includes(q);
-      const byType = (ch.type === 'channel' ? 'канал' : 'группа').startsWith(q) || (ch.type === 'channel' ? 'каналов' : 'групп').startsWith(q);
+      const byType = (ch.type === 'channel' ? 'РєР°РЅР°Р»' : 'РіСЂСѓРїРїР°').startsWith(q) || (ch.type === 'channel' ? 'РєР°РЅР°Р»РѕРІ' : 'РіСЂСѓРїРї').startsWith(q);
       row.classList.toggle('hidden', !(!q || byName || byHandle || byType));
     });
     const box = body.querySelector('.admin-chats');
@@ -8992,31 +9000,31 @@ function renderSettingsAdmin(body) {
     if (!ch) return;
     const info = row.querySelector('.ac-info');
     info.innerHTML = `
-      <input type="text" class="rename-input ac-name-in" value="${escapeHtml(ch.name)}" maxlength="${LIMITS.name}" placeholder="Название">
-      ${isChannel ? `<input type="text" class="rename-input ac-handle-in" value="${escapeHtml(ch.handle || '')}" maxlength="14" placeholder="@юзернейм канала" style="margin-top:4px">` : ''}
+      <input type="text" class="rename-input ac-name-in" value="${escapeHtml(ch.name)}" maxlength="${LIMITS.name}" placeholder="РќР°Р·РІР°РЅРёРµ">
+      ${isChannel ? `<input type="text" class="rename-input ac-handle-in" value="${escapeHtml(ch.handle || '')}" maxlength="14" placeholder="@СЋР·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р°" style="margin-top:4px">` : ''}
       <div style="display:flex;gap:6px;margin-top:6px">
-        <button type="button" class="btn btn-primary ac-save">Сохранить</button>
-        <button type="button" class="btn btn-ghost ac-cancel">Отмена</button>
+        <button type="button" class="btn btn-primary ac-save">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button type="button" class="btn btn-ghost ac-cancel">РћС‚РјРµРЅР°</button>
       </div>`;
     info.querySelector('.ac-save').addEventListener('click', () => {
       const name = info.querySelector('.ac-name-in').value.trim();
-      if (!name) return toast('Ошибка', 'Введите название');
-      if (name.length > LIMITS.name) return toast('Ошибка', `Название — максимум ${LIMITS.name} символов`);
+      if (!name) return toast('РћС€РёР±РєР°', 'Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ');
+      if (name.length > LIMITS.name) return toast('РћС€РёР±РєР°', `РќР°Р·РІР°РЅРёРµ вЂ” РјР°РєСЃРёРјСѓРј ${LIMITS.name} СЃРёРјРІРѕР»РѕРІ`);
       let handle = null;
       if (isChannel) {
         const h = info.querySelector('.ac-handle-in').value.trim().replace(/^@/, '').toLowerCase();
         if (h) {
-          if (!/^[a-z0-9_]{3,14}$/.test(h)) return toast('Ошибка', 'Юзернейм канала: 3-14 символов (a-z, 0-9, _)');
-          if (channelHandleTaken(h, id)) return toast('Ошибка', 'Этот юзернейм канала уже занят');
+          if (!/^[a-z0-9_]{3,14}$/.test(h)) return toast('РћС€РёР±РєР°', 'Р®Р·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р°: 3-14 СЃРёРјРІРѕР»РѕРІ (a-z, 0-9, _)');
+          if (channelHandleTaken(h, id)) return toast('РћС€РёР±РєР°', 'Р­С‚РѕС‚ СЋР·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р° СѓР¶Рµ Р·Р°РЅСЏС‚');
           handle = h;
         }
       }
       renameChatEverywhere(id, name, handle, isChannel);
-      addLog(currentUser.username, `Переименовал ${isChannel ? 'канал' : 'группу'} «${name}» (${id})`);
+      addLog(currentUser.username, `РџРµСЂРµРёРјРµРЅРѕРІР°Р» ${isChannel ? 'РєР°РЅР°Р»' : 'РіСЂСѓРїРїСѓ'} В«${name}В» (${id})`);
       renderSettingsAdmin(body);
       renderChatList();
       renderChat();
-      toast('Сохранено', name);
+      toast('РЎРѕС…СЂР°РЅРµРЅРѕ', name);
     });
     info.querySelector('.ac-cancel').addEventListener('click', () => renderSettingsAdmin(body));
   }));
@@ -9048,8 +9056,8 @@ function renderSettingsAppearance(body) {
   const cur = u.settings.theme || 'default';
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Тема оформления</h4>
-      ${canSpecial ? '<div class="admin-hint" style="margin-bottom:10px">⭐ Вам доступны специальные темы тестеров и администраторов</div>' : '<div class="admin-hint" style="margin-bottom:10px">Специальные темы открываются тестерам и администраторам</div>'}
+      <h4>РўРµРјР° РѕС„РѕСЂРјР»РµРЅРёСЏ</h4>
+      ${canSpecial ? '<div class="admin-hint" style="margin-bottom:10px">в­ђ Р’Р°Рј РґРѕСЃС‚СѓРїРЅС‹ СЃРїРµС†РёР°Р»СЊРЅС‹Рµ С‚РµРјС‹ С‚РµСЃС‚РµСЂРѕРІ Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРІ</div>' : '<div class="admin-hint" style="margin-bottom:10px">РЎРїРµС†РёР°Р»СЊРЅС‹Рµ С‚РµРјС‹ РѕС‚РєСЂС‹РІР°СЋС‚СЃСЏ С‚РµСЃС‚РµСЂР°Рј Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°Рј</div>'}
       <div class="radio-group" id="themeGroup">
         ${themes.map(t => `<div class="radio-item ${cur === t.v ? 'selected' : ''}" data-v="${t.v}">
           <span class="radio-circle" style="${t.v !== 'default' && t.v !== 'black' && t.v !== 'light' ? 'background:linear-gradient(135deg,' + themePreview(t.v) + ');box-shadow:0 0 10px rgba(255,255,255,.25);' : ''}"></span>
@@ -9058,10 +9066,10 @@ function renderSettingsAppearance(body) {
       </div>
     </div>
     <div class="manage-section">
-      <h4>Размер курсора</h4>
-      <div class="admin-hint" style="margin-bottom:10px">Настройте размер кастомного курсора мессенджера</div>
+      <h4>Р Р°Р·РјРµСЂ РєСѓСЂСЃРѕСЂР°</h4>
+      <div class="admin-hint" style="margin-bottom:10px">РќР°СЃС‚СЂРѕР№С‚Рµ СЂР°Р·РјРµСЂ РєР°СЃС‚РѕРјРЅРѕРіРѕ РєСѓСЂСЃРѕСЂР° РјРµСЃСЃРµРЅРґР¶РµСЂР°</div>
       <div class="radio-group" id="cursorGroup">
-        ${[['s', 'Маленький'], ['m', 'Средний'], ['l', 'Большой']].map(o => `
+        ${[['s', 'РњР°Р»РµРЅСЊРєРёР№'], ['m', 'РЎСЂРµРґРЅРёР№'], ['l', 'Р‘РѕР»СЊС€РѕР№']].map(o => `
           <div class="radio-item ${(u.settings.cursorSize || 'm') === o[0] ? 'selected' : ''}" data-v="${o[0]}">
             <span class="radio-circle"></span>
             <div><span class="ri-label">${o[1]}</span></div>
@@ -9069,19 +9077,19 @@ function renderSettingsAppearance(body) {
       </div>
     </div>
     <div class="manage-section">
-      <h4>Свечение курсора</h4>
-      <div class="admin-hint" style="margin-bottom:10px">Насколько сильно курсор светится — от слабого до очень сильного</div>
+      <h4>РЎРІРµС‡РµРЅРёРµ РєСѓСЂСЃРѕСЂР°</h4>
+      <div class="admin-hint" style="margin-bottom:10px">РќР°СЃРєРѕР»СЊРєРѕ СЃРёР»СЊРЅРѕ РєСѓСЂСЃРѕСЂ СЃРІРµС‚РёС‚СЃСЏ вЂ” РѕС‚ СЃР»Р°Р±РѕРіРѕ РґРѕ РѕС‡РµРЅСЊ СЃРёР»СЊРЅРѕРіРѕ</div>
       <input type="range" id="cursorGlow" min="0" max="600" step="5" value="${Math.round((u.settings.cursorGlow !== undefined ? u.settings.cursorGlow : 0.45) * 100)}" style="width:100%">
-      <div class="admin-hint" style="margin-top:6px;text-align:center">Слабое <span id="cursorGlowVal" style="font-weight:700;color:var(--accent-hover)">${Math.round((u.settings.cursorGlow !== undefined ? u.settings.cursorGlow : 0.45) * 100)}%</span> · Очень сильное (до 600%)</div>
+      <div class="admin-hint" style="margin-top:6px;text-align:center">РЎР»Р°Р±РѕРµ <span id="cursorGlowVal" style="font-weight:700;color:var(--accent-hover)">${Math.round((u.settings.cursorGlow !== undefined ? u.settings.cursorGlow : 0.45) * 100)}%</span> В· РћС‡РµРЅСЊ СЃРёР»СЊРЅРѕРµ (РґРѕ 600%)</div>
     </div>
     <div class="manage-section">
-      <h4>Цвет курсора (RGB)</h4>
-      <div class="admin-hint" style="margin-bottom:8px">Цвет самой точки курсора</div>
+      <h4>Р¦РІРµС‚ РєСѓСЂСЃРѕСЂР° (RGB)</h4>
+      <div class="admin-hint" style="margin-bottom:8px">Р¦РІРµС‚ СЃР°РјРѕР№ С‚РѕС‡РєРё РєСѓСЂСЃРѕСЂР°</div>
       ${rgbSlider('cc', u.settings.cursorColor || [255, 255, 255])}
     </div>
     <div class="manage-section">
-      <h4>Цвет свечения (RGB)</h4>
-      <div class="admin-hint" style="margin-bottom:8px">Цвет ореола вокруг курсора</div>
+      <h4>Р¦РІРµС‚ СЃРІРµС‡РµРЅРёСЏ (RGB)</h4>
+      <div class="admin-hint" style="margin-bottom:8px">Р¦РІРµС‚ РѕСЂРµРѕР»Р° РІРѕРєСЂСѓРі РєСѓСЂСЃРѕСЂР°</div>
       ${rgbSlider('cg', u.settings.glowColor || [255, 255, 255])}
     </div>`;
   body.querySelectorAll('#themeGroup .radio-item').forEach(item => item.addEventListener('click', () => {
@@ -9089,14 +9097,14 @@ function renderSettingsAppearance(body) {
     persistCurrentUser();
     applyTheme(u.settings.theme);
     body.querySelectorAll('#themeGroup .radio-item').forEach(r => r.classList.toggle('selected', r === item));
-    toast('Тема обновлена');
+    toast('РўРµРјР° РѕР±РЅРѕРІР»РµРЅР°');
   }));
   body.querySelectorAll('#cursorGroup .radio-item').forEach(item => item.addEventListener('click', () => {
     u.settings.cursorSize = item.dataset.v;
     persistCurrentUser();
     applyCursorSize(u.settings.cursorSize);
     body.querySelectorAll('#cursorGroup .radio-item').forEach(r => r.classList.toggle('selected', r === item));
-    toast('Размер курсора обновлён');
+    toast('Р Р°Р·РјРµСЂ РєСѓСЂСЃРѕСЂР° РѕР±РЅРѕРІР»С‘РЅ');
   }));
   const gl = body.querySelector('#cursorGlow');
   if (gl) gl.addEventListener('input', () => {
@@ -9161,14 +9169,14 @@ function renderSettingsFrames(body) {
   const unlocked = frameUnlockedMap(u);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Рамки аватара</h4>
+      <h4>Р Р°РјРєРё Р°РІР°С‚Р°СЂР°</h4>
       <div class="frame-note" style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">
-        Рамки открываются за достижения и время в мессенджере. Выберите одну из доступных.
+        Р Р°РјРєРё РѕС‚РєСЂС‹РІР°СЋС‚СЃСЏ Р·Р° РґРѕСЃС‚РёР¶РµРЅРёСЏ Рё РІСЂРµРјСЏ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ. Р’С‹Р±РµСЂРёС‚Рµ РѕРґРЅСѓ РёР· РґРѕСЃС‚СѓРїРЅС‹С….
       </div>
       ${FRAMES.map(f => {
         const isUnlocked = unlocked[f.id];
         const isSelected = (u.settings.frame === f.id) || (!u.settings.frame && selectedFrameClass(u) === f.id);
-        const lockedReason = !isUnlocked ? `<div style="font-size:11.5px;color:var(--danger);margin-top:2px">🔒 ${lockedHint(f, u)}</div>` : '';
+        const lockedReason = !isUnlocked ? `<div style="font-size:11.5px;color:var(--danger);margin-top:2px">рџ”’ ${lockedHint(f, u)}</div>` : '';
         return `
         <div class="frame-item ${isSelected && isUnlocked ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}" data-f="${f.id}">
           ${avatarHtml(u, 'fs', isUnlocked ? f.id : '')}
@@ -9177,51 +9185,51 @@ function renderSettingsFrames(body) {
             <div class="fi-desc">${f.desc}</div>
             ${lockedReason}
           </div>
-          ${isUnlocked ? `<span class="tag ${isSelected ? 'you' : 'admin'}">${isSelected ? 'выбрана' : 'выбрать'}</span>` : ''}
+          ${isUnlocked ? `<span class="tag ${isSelected ? 'you' : 'admin'}">${isSelected ? 'РІС‹Р±СЂР°РЅР°' : 'РІС‹Р±СЂР°С‚СЊ'}</span>` : ''}
         </div>`;
       }).join('')}
     </div>`;
 
   body.querySelectorAll('.frame-item').forEach(item => item.addEventListener('click', () => {
     const f = item.dataset.f;
-    if (!unlocked[f]) return toast('Рамка закрыта', 'Выполните условие, чтобы открыть её');
+    if (!unlocked[f]) return toast('Р Р°РјРєР° Р·Р°РєСЂС‹С‚Р°', 'Р’С‹РїРѕР»РЅРёС‚Рµ СѓСЃР»РѕРІРёРµ, С‡С‚РѕР±С‹ РѕС‚РєСЂС‹С‚СЊ РµС‘');
     u.settings.frame = f;
     persistCurrentUser();
     renderSettings('frames');
     renderChatList();
     renderChat();
     updateProfileHeader();
-    toast('Рамка применена', FRAMES.find(x => x.id === f).name);
+    toast('Р Р°РјРєР° РїСЂРёРјРµРЅРµРЅР°', FRAMES.find(x => x.id === f).name);
   }));
 }
 function lockedHint(f, u) {
-  if (f.id === 'crown' || f.id === 'vip' || f.id === 'nebula') return `Нужно быть администратором мессенджера`;
-  if (f.id === 'admin') return `Нужно быть администратором мессенджера`;
-  if (f.id === 'old') return `Нужно быть среди первых 10 пользователей (сейчас ID ${u.id})`;
-  if (f.id === 'dolphin') return `Нужен дельфин 100+ уровня`;
-  if (f.id === 'tester') return `Нужно быть тестером или администратором`;
-  return `Нужно провести ${f.name} в мессенджере`;
+  if (f.id === 'crown' || f.id === 'vip' || f.id === 'nebula') return `РќСѓР¶РЅРѕ Р±С‹С‚СЊ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј РјРµСЃСЃРµРЅРґР¶РµСЂР°`;
+  if (f.id === 'admin') return `РќСѓР¶РЅРѕ Р±С‹С‚СЊ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј РјРµСЃСЃРµРЅРґР¶РµСЂР°`;
+  if (f.id === 'old') return `РќСѓР¶РЅРѕ Р±С‹С‚СЊ СЃСЂРµРґРё РїРµСЂРІС‹С… 10 РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№ (СЃРµР№С‡Р°СЃ ID ${u.id})`;
+  if (f.id === 'dolphin') return `РќСѓР¶РµРЅ РґРµР»СЊС„РёРЅ 100+ СѓСЂРѕРІРЅСЏ`;
+  if (f.id === 'tester') return `РќСѓР¶РЅРѕ Р±С‹С‚СЊ С‚РµСЃС‚РµСЂРѕРј РёР»Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј`;
+  return `РќСѓР¶РЅРѕ РїСЂРѕРІРµСЃС‚Рё ${f.name} РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ`;
 }
 
 function renderSettingsDolphins(body) {
   const chats = state.chats.slice().filter(c => c.type !== 'channel');
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Ваши дельфины 🐬</h4>
+      <h4>Р’Р°С€Рё РґРµР»СЊС„РёРЅС‹ рџђ¬</h4>
       <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px">
-        В каждом чате живёт свой дельфин. Заботьтесь о нём — кормите, играйте и гладьте. Максимум — 1000 уровень.
+        Р’ РєР°Р¶РґРѕРј С‡Р°С‚Рµ Р¶РёРІС‘С‚ СЃРІРѕР№ РґРµР»СЊС„РёРЅ. Р—Р°Р±РѕС‚СЊС‚РµСЃСЊ Рѕ РЅС‘Рј вЂ” РєРѕСЂРјРёС‚Рµ, РёРіСЂР°Р№С‚Рµ Рё РіР»Р°РґСЊС‚Рµ. РњР°РєСЃРёРјСѓРј вЂ” 1000 СѓСЂРѕРІРµРЅСЊ.
       </div>
       ${chats.length ? chats.map(c => {
         const d = dolphinFor(dolphinKeyFor(c), c);
         const lvl = dolphinLevel(d);
         const pct = (d.xp || 0) % XP_PER_LEVEL;
         return `<div class="member-chip">
-          <span style="font-size:26px">🐬</span>
+          <span style="font-size:26px">рџђ¬</span>
           <div class="mc-name">${escapeHtml(chatTitle(c))}</div>
           <div style="flex:1;min-width:80px;max-width:160px"><div class="xp-bar" style="margin:0"><div class="xp-fill" style="width:${pct}%"></div></div></div>
-          <div style="font-weight:700;color:#00CEC9;font-size:13px">ур. ${lvl} · ${dolphinStage(lvl)}</div>
+          <div style="font-weight:700;color:#00CEC9;font-size:13px">СѓСЂ. ${lvl} В· ${dolphinStage(lvl)}</div>
         </div>`;
-      }).join('') : '<div class="empty-list">Создайте чат, чтобы завести дельфина</div>'}
+      }).join('') : '<div class="empty-list">РЎРѕР·РґР°Р№С‚Рµ С‡Р°С‚, С‡С‚РѕР±С‹ Р·Р°РІРµСЃС‚Рё РґРµР»СЊС„РёРЅР°</div>'}
     </div>`;
 }
 
@@ -9244,18 +9252,18 @@ function renderSettingsStats(body) {
   const dolphinMax = Math.max(0, ...state.chats.map(c => dolphinLevel(dolphinFor(dolphinKeyFor(c), c))));
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Статистика</h4>
+      <h4>РЎС‚Р°С‚РёСЃС‚РёРєР°</h4>
       <div class="stat-grid">
         <div class="stat-card wide">
           <div class="sc-num" id="statTime">${fmtDuration(u.stats.seconds)}</div>
-          <div class="sc-label">Время в мессенджере</div>
+          <div class="sc-label">Р’СЂРµРјСЏ РІ РјРµСЃСЃРµРЅРґР¶РµСЂРµ</div>
         </div>
-        <div class="stat-card"><div class="sc-num">${u.stats.seconds}</div><div class="sc-label">секунд</div></div>
-        <div class="stat-card"><div class="sc-num">${hoursInApp(u)}</div><div class="sc-label">часов</div></div>
-        <div class="stat-card"><div class="sc-num">${myMsgs}</div><div class="sc-label">сообщений отправлено</div></div>
-        <div class="stat-card"><div class="sc-num">${state.chats.length}</div><div class="sc-label">чатов</div></div>
-        <div class="stat-card"><div class="sc-num">${dolphinMax}</div><div class="sc-label">макс. уровень дельфина</div></div>
-        <div class="stat-card"><div class="sc-num">${new Date(u.created).toLocaleDateString('ru-RU')}</div><div class="sc-label">аккаунт создан</div></div>
+        <div class="stat-card"><div class="sc-num">${u.stats.seconds}</div><div class="sc-label">СЃРµРєСѓРЅРґ</div></div>
+        <div class="stat-card"><div class="sc-num">${hoursInApp(u)}</div><div class="sc-label">С‡Р°СЃРѕРІ</div></div>
+        <div class="stat-card"><div class="sc-num">${myMsgs}</div><div class="sc-label">СЃРѕРѕР±С‰РµРЅРёР№ РѕС‚РїСЂР°РІР»РµРЅРѕ</div></div>
+        <div class="stat-card"><div class="sc-num">${state.chats.length}</div><div class="sc-label">С‡Р°С‚РѕРІ</div></div>
+        <div class="stat-card"><div class="sc-num">${dolphinMax}</div><div class="sc-label">РјР°РєСЃ. СѓСЂРѕРІРµРЅСЊ РґРµР»СЊС„РёРЅР°</div></div>
+        <div class="stat-card"><div class="sc-num">${new Date(u.created).toLocaleDateString('ru-RU')}</div><div class="sc-label">Р°РєРєР°СѓРЅС‚ СЃРѕР·РґР°РЅ</div></div>
       </div>
     </div>`;
 }
@@ -9286,13 +9294,13 @@ function openSwitchMenu() {
           <span class="avatar ${selectedFrameClass(a) ? 'framed frame-' + selectedFrameClass(a) : ''}" style="${avatarStyle(a)}">${avatarInnerHtml(a)}</span>
           <span class="switch-info">
             <span class="switch-name">${displayName(a)} <span class="switch-tag">ID ${a.id}</span></span>
-            <span class="switch-sub">@${escapeHtml(a.username)}${a.username === currentUser.username ? ' · сейчас' : ''}</span>
+            <span class="switch-sub">@${escapeHtml(a.username)}${a.username === currentUser.username ? ' В· СЃРµР№С‡Р°СЃ' : ''}</span>
           </span>
         </button>`).join('')}
     </div>
     <button type="button" class="switch-add" id="switchAdd">
       <span class="switch-add-icon">+</span>
-      <span>Добавить аккаунт</span>
+      <span>Р”РѕР±Р°РІРёС‚СЊ Р°РєРєР°СѓРЅС‚</span>
     </button>`;
   body.querySelectorAll('.switch-item').forEach(it => it.addEventListener('click', () => {
     const acc = accountByUsername(it.dataset.u);
@@ -9320,7 +9328,7 @@ function openSwitchMenu() {
 function closeSwitchMenu() { $('#switchModal').classList.remove('open'); }
 
 /* ============================================================
-   VERIFY MODAL (переиспользуемый)
+   VERIFY MODAL (РїРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРјС‹Р№)
    ============================================================ */
 let modalVerify = null; // { code, sentAt, email, onSuccess }
 let modalTimerInt = null;
@@ -9347,7 +9355,7 @@ function sendModalCode() {
   const box = $('#verifyDemoCode');
   box.classList.add('hidden');
   if (demoMode) {
-    box.innerHTML = demoCodeHtml(modalVerify.code, 'Демо-режим: ваш код подтверждения:');
+    box.innerHTML = demoCodeHtml(modalVerify.code, 'Р”РµРјРѕ-СЂРµР¶РёРј: РІР°С€ РєРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ:');
     box.classList.remove('hidden');
     bindDemoCopy(box);
   }
@@ -9355,28 +9363,28 @@ function sendModalCode() {
   clearCode($('#verifyCodeInputs'));
   startCodeTimer($('#verifyTimer'), modalVerify.sentAt, () => {
     modalVerify.code = null;
-    showAuthError($('#verifyError'), 'Код истёк. Запросите код повторно.');
+    showAuthError($('#verifyError'), 'РљРѕРґ РёСЃС‚С‘Рє. Р—Р°РїСЂРѕСЃРёС‚Рµ РєРѕРґ РїРѕРІС‚РѕСЂРЅРѕ.');
     $('#verifySubmit').disabled = true;
   });
   const btn = $('#verifySubmit');
   const resend = $('#verifyResend');
   const prevText = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Отправка...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'РћС‚РїСЂР°РІРєР°...'; }
   if (resend) resend.disabled = true;
-  sendCodeToEmail(modalVerify.email, modalVerify.code, 'Код подтверждения Nebula Messenger').then((r) => {
+  sendCodeToEmail(modalVerify.email, modalVerify.code, 'РљРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ Nebula Messenger').then((r) => {
     if (btn) { btn.disabled = false; btn.textContent = prevText; }
     if (resend) resend.disabled = false;
     if (r.demo) {
-      box.innerHTML = demoCodeHtml(modalVerify.code, 'Демо-режим: ваш код подтверждения:');
+      box.innerHTML = demoCodeHtml(modalVerify.code, 'Р”РµРјРѕ-СЂРµР¶РёРј: РІР°С€ РєРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ:');
       box.classList.remove('hidden');
       bindDemoCopy(box);
     } else if (r.ok) {
-      showAuthError($('#verifyError'), 'Код отправлен на ' + modalVerify.email);
+      showAuthError($('#verifyError'), 'РљРѕРґ РѕС‚РїСЂР°РІР»РµРЅ РЅР° ' + modalVerify.email);
     } else {
-      box.innerHTML = demoCodeHtml(modalVerify.code, 'Письмо не доставлено (' + (r.err || 'ошибка') + ') — вот ваш код:');
+      box.innerHTML = demoCodeHtml(modalVerify.code, 'РџРёСЃСЊРјРѕ РЅРµ РґРѕСЃС‚Р°РІР»РµРЅРѕ (' + (r.err || 'РѕС€РёР±РєР°') + ') вЂ” РІРѕС‚ РІР°С€ РєРѕРґ:');
       box.classList.remove('hidden');
       bindDemoCopy(box);
-      showAuthError($('#verifyError'), 'Код не дошёл до почты, но показан на экране');
+      showAuthError($('#verifyError'), 'РљРѕРґ РЅРµ РґРѕС€С‘Р» РґРѕ РїРѕС‡С‚С‹, РЅРѕ РїРѕРєР°Р·Р°РЅ РЅР° СЌРєСЂР°РЅРµ');
     }
   });
 }
@@ -9391,7 +9399,7 @@ function bindVerifyModal() {
       const box = $('#verifyDemoCode');
       if (!box) return;
       if (demoToggle.checked && modalVerify && modalVerify.code) {
-        box.innerHTML = demoCodeHtml(modalVerify.code, 'Демо-режим: ваш код подтверждения:');
+        box.innerHTML = demoCodeHtml(modalVerify.code, 'Р”РµРјРѕ-СЂРµР¶РёРј: РІР°С€ РєРѕРґ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ:');
         box.classList.remove('hidden');
         bindDemoCopy(box);
       } else if (!demoToggle.checked) {
@@ -9403,15 +9411,15 @@ function bindVerifyModal() {
     if (!modalVerify) return;
     $('#verifySubmit').disabled = false;
     sendModalCode();
-    toast('Код отправлен повторно', modalVerify.email, 2000);
+    toast('РљРѕРґ РѕС‚РїСЂР°РІР»РµРЅ РїРѕРІС‚РѕСЂРЅРѕ', modalVerify.email, 2000);
   });
   $('#verifySubmit').addEventListener('click', () => {
     const code = codeValue($('#verifyCodeInputs'));
     if (!modalVerify) return;
-    if (!modalVerify.code) return showAuthError($('#verifyError'), 'Код истёк. Запросите код повторно.');
-    if (code.length !== 6) return showAuthError($('#verifyError'), 'Введите 6-значный код');
+    if (!modalVerify.code) return showAuthError($('#verifyError'), 'РљРѕРґ РёСЃС‚С‘Рє. Р—Р°РїСЂРѕСЃРёС‚Рµ РєРѕРґ РїРѕРІС‚РѕСЂРЅРѕ.');
+    if (code.length !== 6) return showAuthError($('#verifyError'), 'Р’РІРµРґРёС‚Рµ 6-Р·РЅР°С‡РЅС‹Р№ РєРѕРґ');
     if (code !== modalVerify.code) {
-      showAuthError($('#verifyError'), 'Неверный код');
+      showAuthError($('#verifyError'), 'РќРµРІРµСЂРЅС‹Р№ РєРѕРґ');
       clearCode($('#verifyCodeInputs'));
       return;
     }
@@ -9422,7 +9430,7 @@ function bindVerifyModal() {
 }
 
 /* ============================================================
-   АВАТАР
+   РђР’РђРўРђР 
    ============================================================ */
 let avatarSel = 0;
 let avatarUpload = null;
@@ -9451,7 +9459,7 @@ function renderAvatarModal() {
   file.onchange = () => {
     const f = file.files[0];
     if (!f) return;
-    if (!f.type.startsWith('image/')) return toast('Ошибка', 'Можно загрузить только изображение');
+    if (!f.type.startsWith('image/')) return toast('РћС€РёР±РєР°', 'РњРѕР¶РЅРѕ Р·Р°РіСЂСѓР·РёС‚СЊ С‚РѕР»СЊРєРѕ РёР·РѕР±СЂР°Р¶РµРЅРёРµ');
     const reader = new FileReader();
     reader.onload = (e) => {
       avatarUpload = e.target.result;
@@ -9472,7 +9480,7 @@ function updateAvatarPreview() {
     p.innerHTML = pr.g;
     p.style.background = `linear-gradient(135deg,${pr.c1},${pr.c2})`;
   } else {
-    p.innerHTML = '❔';
+    p.innerHTML = 'вќ”';
     p.style.background = 'rgba(255,255,255,.08)';
   }
 }
@@ -9493,11 +9501,11 @@ function closeAvatarModal() {
   renderChatList();
   renderChat();
   renderSettings('profile');
-  toast('Аватар обновлён');
+  toast('РђРІР°С‚Р°СЂ РѕР±РЅРѕРІР»С‘РЅ');
 }
 
 /* ============================================================
-   КОНТЕКСТНОЕ МЕНЮ (пин / скрыть / папки)
+   РљРћРќРўР•РљРЎРўРќРћР• РњР•РќР® (РїРёРЅ / СЃРєСЂС‹С‚СЊ / РїР°РїРєРё)
    ============================================================ */
 let ctxChatId = null;
 let ctxPos = { x: 0, y: 0 };
@@ -9517,12 +9525,12 @@ function openCtxMenu(x, y, chat) {
   const canHide = (chat.type === 'group' || chat.type === 'channel') && !news;
   const m = $('#ctxMenu');
   m.innerHTML = `
-    <div class="ctx-item${news ? ' disabled' : ''}" data-ctx="pin">${pinned ? '🔓 Открепить' : (news ? '🔒 Закреплено' : '📌 Закрепить')}</div>
-    ${canHide ? `<div class="ctx-item" data-ctx="hide">${hidden ? '👁 Показать' : '🙈 Скрыть ' + (chat.type === 'group' ? 'группу' : 'канал')}</div>` : (news ? '<div class="ctx-item disabled">🙈 Нельзя скрыть</div>' : '')}
+    <div class="ctx-item${news ? ' disabled' : ''}" data-ctx="pin">${pinned ? 'рџ”“ РћС‚РєСЂРµРїРёС‚СЊ' : (news ? 'рџ”’ Р—Р°РєСЂРµРїР»РµРЅРѕ' : 'рџ“Њ Р—Р°РєСЂРµРїРёС‚СЊ')}</div>
+    ${canHide ? `<div class="ctx-item" data-ctx="hide">${hidden ? 'рџ‘Ѓ РџРѕРєР°Р·Р°С‚СЊ' : 'рџ™€ РЎРєСЂС‹С‚СЊ ' + (chat.type === 'group' ? 'РіСЂСѓРїРїСѓ' : 'РєР°РЅР°Р»')}</div>` : (news ? '<div class="ctx-item disabled">рџ™€ РќРµР»СЊР·СЏ СЃРєСЂС‹С‚СЊ</div>' : '')}
     <div class="ctx-sep"></div>
-    <div class="ctx-item" data-ctx="foldermgr">🗂 Папки</div>
+    <div class="ctx-item" data-ctx="foldermgr">рџ—‚ РџР°РїРєРё</div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item danger" data-ctx="close">Закрыть</div>`;
+    <div class="ctx-item danger" data-ctx="close">Р—Р°РєСЂС‹С‚СЊ</div>`;
   m.classList.remove('hidden');
   const r = m.getBoundingClientRect();
   m.style.left = Math.max(6, Math.min(x, window.innerWidth - r.width - 8)) + 'px';
@@ -9539,16 +9547,16 @@ function initCtxMenuActions() {
     if (!chat) return;
     if (act === 'close') { closeCtxMenu(); return; }
     if (act === 'pin') {
-      if (isNewsChat(chat)) { toast('Нельзя', 'Nebula News всегда закреплён'); return; }
+      if (isNewsChat(chat)) { toast('РќРµР»СЊР·СЏ', 'Nebula News РІСЃРµРіРґР° Р·Р°РєСЂРµРїР»С‘РЅ'); return; }
       const i = state.pinned.indexOf(chat.id);
       if (i >= 0) state.pinned.splice(i, 1); else state.pinned.push(chat.id);
       saveState(); renderChatList();
-      toast(i >= 0 ? 'Чат откреплён' : 'Чат закреплён', chatTitle(chat));
+      toast(i >= 0 ? 'Р§Р°С‚ РѕС‚РєСЂРµРїР»С‘РЅ' : 'Р§Р°С‚ Р·Р°РєСЂРµРїР»С‘РЅ', chatTitle(chat));
     } else if (act === 'hide') {
       const i = state.hidden.indexOf(chat.id);
       if (i >= 0) state.hidden.splice(i, 1); else state.hidden.push(chat.id);
       saveState(); renderChatList();
-      toast(i >= 0 ? 'Чат снова виден' : 'Чат скрыт', chatTitle(chat));
+      toast(i >= 0 ? 'Р§Р°С‚ СЃРЅРѕРІР° РІРёРґРµРЅ' : 'Р§Р°С‚ СЃРєСЂС‹С‚', chatTitle(chat));
     } else if (act === 'foldermgr') {
       closeCtxMenu();
       openFoldersModal();
@@ -9575,7 +9583,7 @@ function initContextMenu() {
 }
 
 /* ============================================================
-   ПАПКИ
+   РџРђРџРљР
    ============================================================ */
 function renderFolderRail() {
   const rail = $('#folderRail');
@@ -9585,14 +9593,14 @@ function renderFolderRail() {
   const hidden = state.hidden || [];
   const cnt = (fid) => state.chats.filter(c => c.folder === fid && !hidden.includes(c.id)).length;
   rail.innerHTML = `
-    <button class="rail-btn ${!active ? 'active' : ''}" data-f="" title="Все чаты">
+    <button class="rail-btn ${!active ? 'active' : ''}" data-f="" title="Р’СЃРµ С‡Р°С‚С‹">
       <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12zM8 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1c-1.66 0-5 .83-5 2.5V14h10v-1.5C13 10.83 9.66 10 8 10zm8-1h4v2h-4V9zm0 3h4v2h-4v-2z"/></svg>
     </button>
     ${folders.length ? '<div class="rail-sep"></div>' + folders.map(f => `
       <button class="rail-btn ${active === f.id ? 'active' : ''}" data-f="${f.id}" title="${escapeHtml(f.name)}">
-        📁${cnt(f.id) ? `<span class="rail-count">${cnt(f.id)}</span>` : ''}
+        рџ“Ѓ${cnt(f.id) ? `<span class="rail-count">${cnt(f.id)}</span>` : ''}
       </button>`).join('') : ''}
-    <button class="rail-btn rail-create" id="railCreate" title="Управление папками">＋</button>`;
+    <button class="rail-btn rail-create" id="railCreate" title="РЈРїСЂР°РІР»РµРЅРёРµ РїР°РїРєР°РјРё">пј‹</button>`;
   rail.querySelectorAll('.rail-btn[data-f]').forEach(b => b.addEventListener('click', () => {
     const fid = b.dataset.f || null;
     state.activeFolder = fid === state.activeFolder ? null : fid;
@@ -9615,31 +9623,31 @@ function renderFoldersBody() {
   const chatIn = (fid) => state.chats.filter(c => (c.type === 'group' || c.type === 'channel') && c.folder === fid);
   body.innerHTML = `
     <div class="manage-section">
-      <h4>Создать папку</h4>
+      <h4>РЎРѕР·РґР°С‚СЊ РїР°РїРєСѓ</h4>
       <div class="folder-create">
-        <input type="text" id="fNewName" placeholder="Название папки…" maxlength="20" autocomplete="off">
-        <button type="button" class="btn btn-primary" id="fCreate">Создать</button>
+        <input type="text" id="fNewName" placeholder="РќР°Р·РІР°РЅРёРµ РїР°РїРєРёвЂ¦" maxlength="20" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="fCreate">РЎРѕР·РґР°С‚СЊ</button>
       </div>
     </div>
     ${folders.length ? folders.map((f, i) => `
       <div class="manage-section folder-block">
         <div class="folder-head">
-          <span class="fh-name" id="fhName${i}">📁 ${escapeHtml(f.name)}</span>
+          <span class="fh-name" id="fhName${i}">рџ“Ѓ ${escapeHtml(f.name)}</span>
           <input type="text" id="fRename${i}" class="f-rename-input hidden" value="${escapeHtml(f.name)}" maxlength="20" autocomplete="off">
-          <span class="fh-count">${chatIn(f.id).length} чат(ов)</span>
-          <button type="button" class="mini-btn mini-info" data-folder-rename="${i}">✎</button>
-          <button type="button" class="mini-btn danger-mini" data-folder-del="${f.id}">🗑</button>
+          <span class="fh-count">${chatIn(f.id).length} С‡Р°С‚(РѕРІ)</span>
+          <button type="button" class="mini-btn mini-info" data-folder-rename="${i}">вњЋ</button>
+          <button type="button" class="mini-btn danger-mini" data-folder-del="${f.id}">рџ—‘</button>
         </div>
         <div class="folder-chats">
           ${chatIn(f.id).length ? chatIn(f.id).map(c => `
             <div class="folder-chip">
-              <span>${c.type === 'group' ? '👥' : '📢'} ${escapeHtml(c.name)}</span>
-              <button type="button" class="mini-btn" data-folder-remove="${f.id}" data-chat="${c.id}">✕</button>
-            </div>`).join('') : '<div class="empty-list" style="padding:8px">Пока пусто</div>'}
-          <button type="button" class="folder-add-btn" data-folder-add="${f.id}">＋ Добавить чат</button>
+              <span>${c.type === 'group' ? 'рџ‘Ґ' : 'рџ“ў'} ${escapeHtml(c.name)}</span>
+              <button type="button" class="mini-btn" data-folder-remove="${f.id}" data-chat="${c.id}">вњ•</button>
+            </div>`).join('') : '<div class="empty-list" style="padding:8px">РџРѕРєР° РїСѓСЃС‚Рѕ</div>'}
+          <button type="button" class="folder-add-btn" data-folder-add="${f.id}">пј‹ Р”РѕР±Р°РІРёС‚СЊ С‡Р°С‚</button>
           <div class="folder-add-pick hidden" id="fPick${i}"></div>
         </div>
-      </div>`).join('') : '<div class="empty-list">Папок пока нет. Создайте первую</div>'}`;
+      </div>`).join('') : '<div class="empty-list">РџР°РїРѕРє РїРѕРєР° РЅРµС‚. РЎРѕР·РґР°Р№С‚Рµ РїРµСЂРІСѓСЋ</div>'}`;
 
   const createBtn = body.querySelector('#fCreate');
   const nameInp = body.querySelector('#fNewName');
@@ -9650,7 +9658,7 @@ function renderFoldersBody() {
     saveState();
     renderFoldersBody();
     renderFolderRail();
-    toast('Папка создана', v);
+    toast('РџР°РїРєР° СЃРѕР·РґР°РЅР°', v);
   };
   createBtn.addEventListener('click', doCreate);
   nameInp.addEventListener('keydown', (e) => { if (e.key === 'Enter') doCreate(); });
@@ -9676,14 +9684,14 @@ function renderFoldersBody() {
     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); });
     const delBtn = body.querySelector('[data-folder-del="' + f.id + '"]');
     delBtn.addEventListener('click', () => {
-      if (!confirm(`Удалить папку «${f.name}»? Чаты не удаляются.`)) return;
+      if (!confirm(`РЈРґР°Р»РёС‚СЊ РїР°РїРєСѓ В«${f.name}В»? Р§Р°С‚С‹ РЅРµ СѓРґР°Р»СЏСЋС‚СЃСЏ.`)) return;
       state.folders = state.folders.filter(x => x.id !== f.id);
       state.chats.forEach(c => { if (c.folder === f.id) delete c.folder; });
       if (state.activeFolder === f.id) state.activeFolder = null;
       saveState();
       renderFoldersBody();
       renderChatList();
-      toast('Папка удалена', f.name);
+      toast('РџР°РїРєР° СѓРґР°Р»РµРЅР°', f.name);
     });
     const addBtn = body.querySelector('[data-folder-add="' + f.id + '"]');
     addBtn.addEventListener('click', () => {
@@ -9692,14 +9700,14 @@ function renderFoldersBody() {
       pick.classList.toggle('hidden');
       if (pick.classList.contains('hidden')) return;
       pick.innerHTML = pickable.length ? pickable.map(c => `
-        <div class="folder-pick-item" data-chat="${c.id}">${c.type === 'group' ? '👥' : '📢'} ${escapeHtml(c.name)}</div>`).join('') : '<div class="empty-list" style="padding:6px">Нет чатов для добавления</div>';
+        <div class="folder-pick-item" data-chat="${c.id}">${c.type === 'group' ? 'рџ‘Ґ' : 'рџ“ў'} ${escapeHtml(c.name)}</div>`).join('') : '<div class="empty-list" style="padding:6px">РќРµС‚ С‡Р°С‚РѕРІ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ</div>';
       pick.querySelectorAll('.folder-pick-item').forEach(it => it.addEventListener('click', () => {
         const ch = state.chats.find(c => c.id === it.dataset.chat);
         if (ch) ch.folder = f.id;
         saveState();
         renderFoldersBody();
         renderChatList();
-        toast('Добавлено в папку', f.name);
+        toast('Р”РѕР±Р°РІР»РµРЅРѕ РІ РїР°РїРєСѓ', f.name);
       }));
     });
     body.querySelectorAll('[data-folder-remove="' + f.id + '"]').forEach(btn => btn.addEventListener('click', () => {
@@ -9708,7 +9716,7 @@ function renderFoldersBody() {
       saveState();
       renderFoldersBody();
       renderChatList();
-      toast('Убрано из папки');
+      toast('РЈР±СЂР°РЅРѕ РёР· РїР°РїРєРё');
     }));
   });
 }
@@ -9718,7 +9726,7 @@ function bindFoldersModal() {
 }
 
 /* ============================================================
-   ИНИЦИАЛИЗАЦИЯ
+   РРќРР¦РРђР›РР—РђР¦РРЇ
    ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   initCursor();
@@ -9764,7 +9772,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const supBtn = $('#supportBtn');
   if (supBtn) supBtn.addEventListener('click', openSupportModal);
   $('#logoutBtn').addEventListener('click', () => {
-    if (confirm('Выйти из аккаунта?')) logout();
+    if (confirm('Р’С‹Р№С‚Рё РёР· Р°РєРєР°СѓРЅС‚Р°?')) logout();
   });
 
   ensureGlobalChats();
@@ -9774,8 +9782,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ============================================================
-   ЗАЩИТА ОТ КОПИРОВАНИЯ
-   (админам и владельцу разрешён только F12 — консоль)
+   Р—РђР©РРўРђ РћРў РљРћРџРР РћР’РђРќРРЇ
+   (Р°РґРјРёРЅР°Рј Рё РІР»Р°РґРµР»СЊС†Сѓ СЂР°Р·СЂРµС€С‘РЅ С‚РѕР»СЊРєРѕ F12 вЂ” РєРѕРЅСЃРѕР»СЊ)
    ============================================================ */
 function devAllowed() { return !!(currentUser && (isAdmin(currentUser) || isOwnerAcc(currentUser))); }
 document.addEventListener('contextmenu', (e) => { e.preventDefault(); });
