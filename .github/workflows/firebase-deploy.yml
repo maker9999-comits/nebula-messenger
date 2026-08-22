@@ -1,0 +1,21 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseToken: ${{ secrets.FIREBASE_TOKEN }}
+          channelId: live
+          projectId: nebula-1337
