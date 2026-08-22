@@ -174,9 +174,9 @@ function stickerMediaHtml(st, cls, attrs) {
   const a = attrs || '';
   if (!url) return '';
   if (type.indexOf('video/') === 0) {
-    return `<video class="${cls}" src="${url}" autoplay loop muted playsinline ${a}></video>`;
+    return `<video class="${cls} loading" onloadeddata="this.classList.remove('loading')" src="${url}" autoplay loop muted playsinline ${a}></video>`;
   }
-  return `<img class="${cls}" loading="lazy" src="${url}" alt="Стикер" ${a}>`;
+  return `<img class="${cls} loading" loading="lazy" onload="this.classList.remove('loading')" src="${url}" alt="Стикер" ${a}>`;
 }
 function stickBadgeHtml(st) {
   const t = stickerTypeOf(st);
@@ -3817,6 +3817,63 @@ function chatRenderSig(chat) {
   return (chat.id || '') + '|' + ms.length + '|' + (last ? last.id + '|' + last.time + '|' + (last.read ? 1 : 0) : '') + '|' + (chat.unread || 0) + '|' + (chat.title || '') + '|' + (chat.muted ? 1 : 0) + '|' + (chat.members ? chat.members.length : 0) + '|' + (chat.type === 'private' ? statusOf(acc).cls + '|' + statusOf(acc).label : '') + '|' + (state.pinned.includes(chat.id) ? 1 : 0);
 }
 let lastChatSig = null;
+const WALL_PRESETS = ['#0e1116', '#16233f', '#3a1b4a', '#163a2e', '#4a1b28', '#2a2616'];
+function applyChatWall(chat) {
+  const wrap = $('#messagesWrap');
+  if (!wrap) return;
+  const wall = chat && chat.wall;
+  if (!wall || !wall.value) {
+    wrap.style.backgroundImage = '';
+    wrap.style.backgroundColor = '';
+    wrap.classList.remove('has-wall');
+    return;
+  }
+  wrap.classList.add('has-wall');
+  if (wall.type === 'color') {
+    wrap.style.backgroundImage = 'none';
+    wrap.style.backgroundColor = wall.value;
+  } else {
+    wrap.style.backgroundColor = '';
+    wrap.style.backgroundImage = `url("${wall.value}")`;
+  }
+  wrap.style.backgroundSize = 'cover';
+  wrap.style.backgroundPosition = 'center';
+  wrap.style.backgroundRepeat = 'no-repeat';
+}
+function resizeWallImage(file, cb) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const maxSide = 1000;
+      let { width, height } = img;
+      const scale = Math.min(1, maxSide / Math.max(width, height));
+      width = Math.round(width * scale); height = Math.round(height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      cb(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => cb(reader.result);
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function sendBgMessage(chat, wall) {
+  const msg = { id: 'm' + Date.now(), from: 'me', text: '', time: new Date().toISOString(), read: false, sent: true, bg: { type: wall.type, dataUrl: wall.value } };
+  chat.messages.push(msg);
+  pushMsgToCloud(chat, msg);
+  if (chat.type === 'group' || chat.type === 'channel') {
+    if (chat.id === NEWS_CHAT_ID) syncNewsMessageEverywhere(msg);
+    else syncGroupMessageEverywhere(chat, msg, currentUser.username);
+  }
+  addLog(currentUser.username, `Поделился фоном в «${chatTitle(chat)}»`);
+  saveState();
+  renderMessages(chat);
+  if (isChatNearBottom()) scrollChatToBottom();
+  renderChatList();
+  bindChatEvents(chat);
+}
 function renderChat() {
   if (!state) return;
   const chat = currentChat();
@@ -3926,7 +3983,7 @@ function renderChat() {
         ${headPost && statusOf(acc).online ? `<button type="button" class="head-status-btn" data-post="${escapeHtml(acc.username)}">👁 Посмотреть статус</button>` : ''}
       </div>
       ${headerExtras}
-      ${chat.type !== 'saved' ? `<button class="icon-btn" id="manageBtn" title="Настройки чата">
+      ${chat.type !== 'saved' ? `<button class="icon-btn spin" id="manageBtn" title="Настройки чата">
         <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
       </button>` : ''}
     </header>
@@ -3949,6 +4006,7 @@ function renderChat() {
   `;
 
   renderMessages(chat);
+  applyChatWall(chat);
   const ni = $('#msgText');
   if (savedVal !== null && ni) { ni.value = savedVal; ni.selectionStart = ni.selectionEnd = savedSel; }
   requestAnimationFrame(() => {
@@ -4306,7 +4364,7 @@ function renderMessages(chat) {
     }).join('') : '';
     const mediaHtml = msg.media && msg.media.length ? msg.media.map((md, mi) => {
       if (md.type && md.type.startsWith('image/')) {
-        if (md.dataUrl) return `<img class="msg-photo" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
+        if (md.dataUrl) return `<img class="msg-photo loading" loading="lazy" onload="this.classList.remove('loading')" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
         return `<div class="msg-photo-off" data-mid="${msg.id}" data-mi="${mi}" title="${escapeHtml(md.name)}">🖼 <span>${escapeHtml(md.name)}</span></div>`;
       }
       return `
@@ -4331,6 +4389,17 @@ function renderMessages(chat) {
       <div class="msg-kruzhok-off" data-mid="${msg.id}" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"><span>🎬</span><span class="kk-dur">${fmtRecDur(msg.video.dur || 0)}</span><span class="kk-note">не загружен</span></div>`) : '';
     const pollHtml = msg.poll ? renderPollHtml(msg) : '';
     const contactHtml = msg.contact ? renderContactHtml(msg.contact) : '';
+    const bgHtml = msg.bg && msg.bg.dataUrl ? `
+      <div class="msg-bg-card" data-mid="${msg.id}">
+        <div class="msg-bg-thumb"><img src="${msg.bg.dataUrl}" alt=""></div>
+        <div class="msg-bg-info">
+          <div class="msg-bg-title">${mine ? 'Вы' : escapeHtml((senderAcc && displayName(senderAcc)) || 'Пользователь')} предложил(а) фон чата</div>
+          <div class="msg-bg-actions">
+            <button class="btn btn-primary btn-sm" data-bg-apply="${msg.id}">Применить</button>
+            <button class="btn btn-sm" data-bg-dismiss="${msg.id}">Не сейчас</button>
+          </div>
+        </div>
+      </div>` : '';
     html += `
       <div class="msg-row ${mine ? 'out' : 'in'}">
         <div class="msg ${mine ? 'out' : 'in'}" data-mid="${msg.id}">
@@ -4339,6 +4408,7 @@ function renderMessages(chat) {
           ${rt}
           ${pollHtml}
           ${contactHtml}
+          ${bgHtml}
           ${stickerHtml}
           ${voiceHtml}
           ${videoHtml}
@@ -5639,6 +5709,24 @@ function bindMsgDelegation() {
       } else kruzhok.pause();
       return;
     }
+    const bgApply = e.target.closest('[data-bg-apply]');
+    if (bgApply) {
+      const m = chat.messages.find(x => x.id === bgApply.dataset.bgApply);
+      if (m && m.bg && m.bg.dataUrl) {
+        chat.wall = { type: m.bg.type, value: m.bg.dataUrl };
+        persistCurrentUser();
+        applyChatWall(chat);
+        renderChatList();
+        toast('Фон применён');
+      }
+      return;
+    }
+    const bgDismiss = e.target.closest('[data-bg-dismiss]');
+    if (bgDismiss) {
+      const card = bgDismiss.closest('.msg-bg-card');
+      if (card) card.style.display = 'none';
+      return;
+    }
     const msgEl = e.target.closest('.msg');
     if (!msgEl) { $$('.msg .react-picker.open').forEach(p => p.classList.remove('open')); return; }
     const msg = chat.messages.find(m => m.id === msgEl.dataset.mid);
@@ -6448,10 +6536,12 @@ function openStickersManager() {
       <div class="sm-list">
          ${packs.length ? packs.map(p => `
           <div class="sm-pack">
-            ${stickerMediaHtml(p.stickers[0], 'sm-prev', '')}
+            <div class="sm-thumbs">${p.stickers.slice(0, 4).map(s => `<div class="sm-thumb">${stickerMediaHtml(s, 'sm-thumb-img', '')}</div>`).join('')}</div>
             <div class="sm-info"><b>${escapeHtml(p.name)}</b><span>${p.stickers.length} стикеров</span></div>
-            <button class="btn sm-add-sticker" data-smpack="${escapeHtml(p.id)}">＋ Стикер</button>
-            <button class="btn btn-danger sm-del" data-smpack="${escapeHtml(p.id)}">Удалить</button>
+            <div class="sm-actions">
+              <button class="btn sm-add-sticker" data-smpack="${escapeHtml(p.id)}">＋ Стикер</button>
+              <button class="btn btn-danger sm-del" data-smpack="${escapeHtml(p.id)}">Удалить</button>
+            </div>
           </div>`).join('') : '<div class="empty-list">Пока нет паков</div>'}
       </div>
       <button class="btn btn-primary" id="smCreate">＋ Создать пак из фото</button>
@@ -7229,6 +7319,23 @@ function renderManageBody(chat) {
     }
   }
 
+  if (chat.type === 'private' || chat.type === 'group') {
+    const wall = chat.wall;
+    html += `<div class="manage-section wall-section">
+      <h4>Фон чата</h4>
+      <div class="wall-preview ${wall && wall.value ? 'has' : ''}" id="wallPreview" style="${wall && wall.value ? (wall.type === 'color' ? 'background:' + wall.value : 'background-image:url(\"' + wall.value + '\")') : ''}"></div>
+      <div class="admin-hint">Цвета-пресеты (нажмите, чтобы применить):</div>
+      <div class="wall-presets">${WALL_PRESETS.map(c => `<button class="wall-swatch" data-wallcolor="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div>
+      <div class="wall-actions">
+        <button class="btn btn-sm" id="wallPickImg">🖼 Выбрать картинку</button>
+        <button class="btn btn-primary btn-sm" id="wallShare">Поделиться фоном</button>
+        <button class="btn btn-sm" id="wallReset">Сбросить</button>
+      </div>
+      <input type="file" id="wallFile" accept="image/*" hidden>
+      <div class="wall-note">Фон виден только вам. «Поделиться фоном» отправит его в чат — собеседник сможет применить к себе.</div>
+    </div>`;
+  }
+
   body.innerHTML = html;
   bindManageEvents(chat);
 }
@@ -7418,6 +7525,53 @@ function bindManageEvents(chat) {
     closeManageModal();
     renderChatList();
     renderChat();
+  });
+
+  const wallPreview = body.querySelector('#wallPreview');
+  const setWallPreview = (w) => {
+    if (!wallPreview) return;
+    if (!w || !w.value) { wallPreview.style.backgroundImage = ''; wallPreview.style.backgroundColor = ''; wallPreview.classList.remove('has'); }
+    else if (w.type === 'color') { wallPreview.style.backgroundImage = ''; wallPreview.style.backgroundColor = w.value; wallPreview.classList.add('has'); }
+    else { wallPreview.style.backgroundColor = ''; wallPreview.style.backgroundImage = 'url("' + w.value + '")'; wallPreview.classList.add('has'); }
+  };
+  body.querySelectorAll('.wall-swatch').forEach(b => b.addEventListener('click', () => {
+    chat.wall = { type: 'color', value: b.dataset.wallcolor };
+    persistCurrentUser();
+    applyChatWall(chat);
+    setWallPreview(chat.wall);
+    renderChatList();
+    toast('Фон применён');
+  }));
+  const wallFile = body.querySelector('#wallFile');
+  const wallPickImg = body.querySelector('#wallPickImg');
+  if (wallPickImg) wallPickImg.addEventListener('click', () => wallFile && wallFile.click());
+  if (wallFile) wallFile.addEventListener('change', () => {
+    const f = wallFile.files && wallFile.files[0]; wallFile.value = '';
+    if (!f) return;
+    resizeWallImage(f, dataUrl => {
+      chat.wall = { type: 'image', value: dataUrl };
+      persistCurrentUser();
+      applyChatWall(chat);
+      setWallPreview(chat.wall);
+      renderChatList();
+      toast('Фон применён');
+    });
+  });
+  const wallShare = body.querySelector('#wallShare');
+  if (wallShare) wallShare.addEventListener('click', () => {
+    if (!chat.wall || !chat.wall.value) { toast('Сначала выберите фон'); return; }
+    sendBgMessage(chat, chat.wall);
+    closeManageModal();
+    toast('Фон отправлен в чат');
+  });
+  const wallReset = body.querySelector('#wallReset');
+  if (wallReset) wallReset.addEventListener('click', () => {
+    delete chat.wall;
+    persistCurrentUser();
+    applyChatWall(chat);
+    setWallPreview(null);
+    renderChatList();
+    toast('Фон сброшен');
   });
 }
 
