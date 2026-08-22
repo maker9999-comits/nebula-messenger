@@ -1594,7 +1594,18 @@ function scheduleTicketsPush() {
 }
 function pushTicketsToCloud() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve(false);
-  return cloudSave(TICKETS_CLOUD_KEY, JSON.stringify({ rev: Date.now(), tickets: loadTickets() }));
+  const local = loadTickets();
+  return cloudLoad(TICKETS_CLOUD_KEY).then(r => {
+    let cloudT = {};
+    if (r) { try { const c = JSON.parse(r.d); cloudT = (c && c.tickets) || {}; } catch (e) {} }
+    const merged = Object.assign({}, cloudT);
+    Object.keys(local).forEach(id => {
+      const l = local[id];
+      if (!l || !l.id) return;
+      if (!merged[id] || (l.updatedAt || 0) >= (merged[id].updatedAt || 0)) merged[id] = l;
+    });
+    return cloudSave(TICKETS_CLOUD_KEY, JSON.stringify({ rev: Date.now(), tickets: merged }));
+  }).catch(() => cloudSave(TICKETS_CLOUD_KEY, JSON.stringify({ rev: Date.now(), tickets: local })));
 }
 function syncCloudTickets() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve();
