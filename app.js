@@ -1595,32 +1595,28 @@ function scheduleTicketsPush() {
 function pushTicketsToCloud() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve(false);
   const local = loadTickets();
-  return cloudLoad(TICKETS_CLOUD_KEY).then(r => {
-    let cloudT = {};
-    if (r) { try { const c = JSON.parse(r.d); cloudT = (c && c.tickets) || {}; } catch (e) {} }
-    const merged = Object.assign({}, cloudT);
-    Object.keys(local).forEach(id => {
-      const l = local[id];
-      if (!l || !l.id) return;
-      if (!merged[id] || (l.updatedAt || 0) >= (merged[id].updatedAt || 0)) merged[id] = l;
-    });
-    return cloudSave(TICKETS_CLOUD_KEY, JSON.stringify({ rev: Date.now(), tickets: merged }));
-  }).catch(() => cloudSave(TICKETS_CLOUD_KEY, JSON.stringify({ rev: Date.now(), tickets: local })));
+  const jobs = Object.keys(local).map(id => {
+    const t = local[id];
+    if (!t || !t.id) return Promise.resolve(false);
+    return cloudSave('ticket:' + id, JSON.stringify(t));
+  });
+  return Promise.all(jobs).then(() => true).catch(() => false);
 }
 function syncCloudTickets() {
   if (!currentUser || !MAIL_RELAY_URL) return Promise.resolve();
-  return cloudLoad(TICKETS_CLOUD_KEY).then(r => {
-    if (!r) return;
-    let cloud;
-    try { cloud = JSON.parse(r.d); } catch (e) { return; }
-    const cloudT = (cloud && cloud.tickets) || {};
+  return cloudListKeys('ticket:').then(keys => {
+    if (!keys || !keys.length) return;
+    return Promise.all(keys.map(k => cloudLoad(k)));
+  }).then(raws => {
+    if (!raws) return;
     const local = loadTickets();
-    const merged = { ...local };
+    const merged = Object.assign({}, local);
     let changed = false;
-    Object.keys(cloudT).forEach(id => {
-      const c = cloudT[id];
-      if (!c || !c.id) return;
-      if (!merged[id] || (c.updatedAt || 0) > (merged[id].updatedAt || 0)) { merged[id] = c; changed = true; }
+    raws.forEach(r => {
+      if (!r) return;
+      let t; try { t = JSON.parse(r.d); } catch (e) { return; }
+      if (!t || !t.id) return;
+      if (!merged[t.id] || (t.updatedAt || 0) > (merged[t.id].updatedAt || 0)) { merged[t.id] = t; changed = true; }
     });
     if (changed) saveTickets(merged);
   }).catch(() => {});
