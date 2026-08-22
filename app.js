@@ -584,7 +584,16 @@ function tryRestoreFromCloud() {
             if (changed) nextRaw = JSON.stringify(lc);
           } catch (e) {}
         } else {
-          nextRaw = accountsRaw.d;
+          try {
+            const lc = localRaw ? JSON.parse(localRaw) : { users: {} };
+            const cc = JSON.parse(accountsRaw.d);
+            let changed = false;
+            Object.keys(cc.users || {}).forEach(u => {
+              if (cloudMergeUserOk(lc, cc.users[u], u)) { lc.users[u] = cc.users[u]; changed = true; }
+            });
+            if (currentUser && currentUser.username && !lc.users[currentUser.username]) { lc.users[currentUser.username] = currentUser; changed = true; }
+            if (changed) nextRaw = JSON.stringify(lc);
+          } catch (e) {}
           meta.seenAccounts = accountsRaw.v;
           saveCloudMeta(meta);
         }
@@ -5674,7 +5683,7 @@ function renderUserCard(acc) {
   const hasPost = acc.statusPost && (Date.now() - acc.statusPost.time) < 86400000;
   $('#userCardBody').innerHTML = `
     <div class="ucard">
-      <div class="ucard-banner" style="background:linear-gradient(135deg, ${acc.color[0]}, ${acc.color[1]})"></div>
+      <div class="ucard-banner" style="background:linear-gradient(135deg, ${(acc.color||['#6C5CE7','#8E7BFF'])[0]}, ${(acc.color||['#6C5CE7','#8E7BFF'])[1]})"></div>
       <div class="ucard-avatar-wrap">
         ${hasPost ? `<span class="st-ring" data-post="${escapeHtml(acc.username)}" title="РЎС‚Р°С‚СѓСЃ">` : ''}${avatarHtml(acc, 'xl', frame)}${hasPost ? '</span>' : ''}
         ${online ? '<span class="uc-online"></span>' : ''}
@@ -9306,7 +9315,8 @@ function bindSettings() {
    ============================================================ */
 function openSwitchMenu() {
   const body = $('#switchBody');
-  const accs = accountsList().filter(a => !a.isBot).sort((a, b) => (a.username || '').localeCompare(b.username || ''));
+  const meU = currentUser ? currentUser.username : null;
+  const accs = accountsList().filter(a => !a.isBot && (a.username === meU || getStateFor(a.username))).sort((a, b) => (a.username || '').localeCompare(b.username || ''));
   body.innerHTML = `
     <div class="switch-list">
       ${accs.map(a => `
