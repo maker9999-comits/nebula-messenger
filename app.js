@@ -1060,6 +1060,23 @@ function getStateFor(u) {
     return raw ? JSON.parse(raw) : null;
   } catch (e) { return null; }
 }
+function ownedAccounts() {
+  const k = 'nebula_owned_accounts';
+  try {
+    const ex = localStorage.getItem(k);
+    if (ex) return JSON.parse(ex);
+  } catch (e) {}
+  const seed = accountsList().filter(a => a.password && !a.isBot).map(a => a.username);
+  if (seed.length) { try { localStorage.setItem(k, JSON.stringify(seed)); } catch (e) {} }
+  return seed;
+}
+function addOwnedAccount(u) {
+  if (!u) return;
+  const k = 'nebula_owned_accounts';
+  const s = new Set(ownedAccounts());
+  s.add(u);
+  try { localStorage.setItem(k, JSON.stringify([...s])); } catch (e) {}
+}
 function persistCurrentUser() {
   const d = loadAccounts();
   if (currentUser && d.users[currentUser.username]) {
@@ -3484,6 +3501,7 @@ function startApp(user) {
     }
   }
   currentUser = user;
+  addOwnedAccount(user.username);
   currentUser.lastSeen = Date.now();
   if (user.status && user.status.auto) {
     user.status = {};
@@ -4716,7 +4734,8 @@ function updateCallStageUI() {
   const sv = $('#shareVideo'), cv = $('#camVideo'), r = $('#callRemote'), sb = $('#shareBadge');
   if (sv) sv.classList.toggle('on', !!callState.shareStream);
   if (cv) cv.classList.toggle('on', !!callState.camStream);
-  if (r) r.classList.toggle('demo', !callState.shareStream && !callState.camStream);
+  const connectedVideo = rtcConnected && (callState.video || callState.shareStream || callState.camStream);
+  if (r) r.classList.toggle('demo', !connectedVideo);
   if (sb) sb.classList.toggle('on', !!callState.shareStream);
 }
 function startCall(chatId, video = false, noEvents = false) {
@@ -4762,6 +4781,7 @@ function startCall(chatId, video = false, noEvents = false) {
     rtcRole = noEvents ? 'callee' : 'caller';
     rtcConnected = false;
     rtcSetupAt = Date.now();
+    rtcIceRestarted = false;
     rtcAddedCand = { a: 0, b: 0 };
     try { rtcPeer = new RTCPeerConnection(RTC_STUN); } catch (e) { rtcPeer = null; }
     if (rtcPeer) {
@@ -4769,17 +4789,26 @@ function startCall(chatId, video = false, noEvents = false) {
       rtcPeer.ontrack = e => { rtcRemoteStream = e.streams[0] || null; rtcAttachRemote(); };
       rtcPeer.onconnectionstatechange = () => {
         if (!rtcPeer) return;
-        if (rtcPeer.connectionState === 'connected' || rtcPeer.connectionState === 'completed') {
+        const st = rtcPeer.connectionState;
+        if (st === 'connected' || st === 'completed') {
           rtcConnected = true;
           stopRing();
           updateCallStatus();
-        } else if (rtcPeer.connectionState === 'failed' && !rtcConnected && Date.now() - rtcSetupAt > 8000) {
-          rtcFallbackSim(chat.id);
+        } else if (!rtcConnected && (st === 'failed' || st === 'disconnected')) {
+          if (!rtcIceRestarted && rtcRole === 'caller' && Date.now() - rtcSetupAt > 8000) {
+            rtcIceRestarted = true;
+            if (rtcPeer.restartIce) rtcPeer.restartIce().catch(() => {});
+            else rtcFallbackSim(chat.id);
+          } else if (Date.now() - rtcSetupAt > 15000) {
+            rtcFallbackSim(chat.id);
+          }
         }
       };
       const micP = enableMic();
       const camP = video ? enableCamera() : Promise.resolve(true);
       Promise.all([micP, camP]).then(() => rtcSetupLocal(chat)).catch(() => rtcSetupLocal(chat));
+      if (rtcFallbackTimer) clearTimeout(rtcFallbackTimer);
+      rtcFallbackTimer = setTimeout(() => { if (!rtcConnected && rtcMode === 'rtc') rtcFallbackSim(chat.id); }, 16000);
     } else {
       rtcMode = 'sim';
       enableMic();
@@ -4884,9 +4913,17 @@ function endCall() {
    РЎРёРіРЅР°Р»РёР·Р°С†РёСЏ: offer/answer/ICE РєР°РЅРґРёРґР°С‚С‹ РѕР±РјРµРЅРёРІР°СЋС‚СЃСЏ С‡РµСЂРµР· РѕР±Р»Р°С‡РЅС‹Рµ РєР»СЋС‡Рё
    call_sig_<chatId>_a (Р·РІРѕРЅСЏС‰РёР№) Рё call_sig_<chatId>_b (РѕС‚РІРµС‡Р°СЋС‰РёР№).
    Р•СЃР»Рё РїСЂСЏРјРѕРµ СЃРѕРµРґРёРЅРµРЅРёРµ РЅРµ СѓСЃС‚Р°РЅРѕРІРёР»РѕСЃСЊ (СЃР»РѕР¶РЅС‹Р№ NAT) вЂ” РѕСЃС‚Р°С‘С‚СЃСЏ РґРµРјРѕ-СЂРµР¶РёРј. */
-const RTC_STUN = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
-let rtcPeer = null, rtcRemoteStream = null, rtcSigTimer = null;
-let rtcMode = 'sim', rtcRole = 'caller', rtcConnected = false, rtcSetupAt = 0;
+const RTC_TURN = [];
+const RTC_CONFIG = {
+  iceServers: [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302', 'stun:stun.relay.metered.ca:80'] },
+    ...RTC_TURN,
+  ],
+  iceCandidatePoolSize: 4,
+};
+const RTC_STUN = RTC_CONFIG;
+let rtcPeer = null, rtcRemoteStream = null, rtcSigTimer = null, rtcFallbackTimer = null;
+let rtcMode = 'sim', rtcRole = 'caller', rtcConnected = false, rtcSetupAt = 0, rtcIceRestarted = false;
 let rtcAddedCand = { a: 0, b: 0 };
 function rtcSupports() {
   return typeof RTCPeerConnection !== 'undefined' && !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
@@ -4987,6 +5024,7 @@ function rtcAddCandidates(cands) {
 }
 function rtcTeardown(keepStreams) {
   if (rtcSigTimer) { clearInterval(rtcSigTimer); rtcSigTimer = null; }
+  if (rtcFallbackTimer) { clearTimeout(rtcFallbackTimer); rtcFallbackTimer = null; }
   if (rtcPeer) { try { rtcPeer.close(); } catch (e) {} rtcPeer = null; }
   rtcRemoteStream = null;
   rtcConnected = false;
@@ -9316,7 +9354,8 @@ function bindSettings() {
 function openSwitchMenu() {
   const body = $('#switchBody');
   const meU = currentUser ? currentUser.username : null;
-  const accs = accountsList().filter(a => !a.isBot && (a.username === meU || getStateFor(a.username))).sort((a, b) => (a.username || '').localeCompare(b.username || ''));
+  const owned = ownedAccounts();
+  const accs = accountsList().filter(a => !a.isBot && (owned.includes(a.username) || a.username === meU)).sort((a, b) => (a.username || '').localeCompare(b.username || ''));
   body.innerHTML = `
     <div class="switch-list">
       ${accs.map(a => `
