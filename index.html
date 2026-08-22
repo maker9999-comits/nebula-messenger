@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Nebula вЂ” Messenger</title>
+<title>Nebula — Messenger</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,42 +20,42 @@
       <span class="logo-mark"><svg viewBox="0 0 24 24"><g class="lg-ring-still"><ellipse cx="12" cy="12" rx="8.2" ry="2.6" fill="none" stroke="#fff" stroke-width="1.5" transform="rotate(-20 12 12)"/></g><circle cx="12" cy="12" r="4.4" fill="#fff"/><path class="lg-star" d="M18.4 2.9l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z" fill="#fff"/><g class="lg-orbit"><circle cx="20.2" cy="12" r="1.5" fill="#fff"/></g></svg></span>
       <h1>Nebula</h1>
     </div>
-    <p class="auth-tagline">РњРµСЃСЃРµРЅРґР¶РµСЂ РґР»СЏ С‚РµС…, РєС‚Рѕ С†РµРЅРёС‚ СЃС‚РёР»СЊ</p>
+    <p class="auth-tagline">Мессенджер для тех, кто ценит стиль</p>
 
     <div class="auth-tabs">
       <div class="auth-tab-indicator" id="authTabIndicator"></div>
-      <button class="auth-tab active" data-mode="login">Р’С…РѕРґ</button>
-      <button class="auth-tab" data-mode="register">Р РµРіРёСЃС‚СЂР°С†РёСЏ</button>
+      <button class="auth-tab active" data-mode="login">Вход</button>
+      <button class="auth-tab" data-mode="register">Регистрация</button>
     </div>
 
     <form id="authForm" data-mode="login" novalidate>
-      <!-- STEP 1: РґР°РЅРЅС‹Рµ -->
+      <!-- STEP 1: данные -->
       <div class="auth-step" id="authStepCreds">
         <div class="auth-field hidden" id="authNameField">
           <div class="f-row">
             <svg class="f-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            <input type="text" id="authName" placeholder="РќРёРєРЅРµР№Рј (4-16 СЃРёРјРІРѕР»РѕРІ)" autocomplete="off" maxlength="16">
+            <input type="text" id="authName" placeholder="Никнейм (4-16 символов)" autocomplete="off" maxlength="16">
           </div>
           <div class="auth-wave" data-for="authName"><svg viewBox="0 0 100 8" preserveAspectRatio="none"><path class="w-base" d="M0 4 Q 12.5 0 25 4 T 50 4 T 75 4 T 100 4"/><path class="w-progress" d="M0 4 Q 12.5 0 25 4 T 50 4 T 75 4 T 100 4"/></svg><span class="w-count">0/16</span></div>
         </div>
         <div class="auth-field">
           <div class="f-row">
             <svg class="f-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-2.05 7.12-2.05 7.12l-2.13-4.69-4.7-2.13s-1.7-.69.15-.88c0 0 7.6-2.93 8.18-3.15.58-.22.9.13.9.13s.2.51-.35.6z"/></svg>
-            <input type="text" id="authUsername" placeholder="Р®Р·РµСЂРЅРµР№Рј (4-14 СЃРёРјРІРѕР»РѕРІ)" autocomplete="off" maxlength="14">
+            <input type="text" id="authUsername" placeholder="Юзернейм (4-14 символов)" autocomplete="off" maxlength="14">
           </div>
           <div class="auth-wave" data-for="authUsername"><svg viewBox="0 0 100 8" preserveAspectRatio="none"><path class="w-base" d="M0 4 Q 12.5 0 25 4 T 50 4 T 75 4 T 100 4"/><path class="w-progress" d="M0 4 Q 12.5 0 25 4 T 50 4 T 75 4 T 100 4"/></svg><span class="w-count">0/14</span></div>
         </div>
         <div class="auth-field hidden" id="authEmailField">
           <div class="f-row">
             <svg class="f-icon" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            <input type="email" id="authEmail" placeholder="РџРѕС‡С‚Р°" autocomplete="off" maxlength="40">
+            <input type="email" id="authEmail" placeholder="Почта" autocomplete="off" maxlength="40">
           </div>
           <div class="auth-wave" data-for="authEmail"><svg viewBox="0 0 100 8" preserveAspectRatio="none"><path class="w-base" d="M0 4 Q 12.5 0 25 4 T 50 4 T 75 4 T 100 4"/><path class="w-progress" d="M0 4 Q 12.5 0 25 4 T 50 4 T 75 4 T 100 4"/></svg><span class="w-count">0/40</span></div>
         </div>
         <div class="auth-field">
           <div class="f-row">
             <svg class="f-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-            <input type="password" id="authPassword" placeholder="РџР°СЂРѕР»СЊ (РґРѕ 24 СЃРёРјРІРѕР»РѕРІ)" maxlength="24">
+            <input type="password" id="authPassword" placeholder="Пароль (до 24 символов)" maxlength="24">
             <button type="button" class="eye-btn" id="eyeBtn">
               <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             </button>
@@ -70,18 +70,18 @@
         <div class="auth-captcha hidden" id="authCaptcha">
           <div class="captcha-row">
             <canvas id="authCaptchaCanvas" width="112" height="40"></canvas>
-            <button type="button" class="captcha-refresh" id="authCaptchaRefresh" title="РќРѕРІР°СЏ РєР°СЂС‚РёРЅРєР°">вџі</button>
-            <input type="text" id="authCaptchaInput" maxlength="4" placeholder="РљРѕРґ СЃ РєР°СЂС‚РёРЅРєРё" autocomplete="off">
+            <button type="button" class="captcha-refresh" id="authCaptchaRefresh" title="Новая картинка">⟳</button>
+            <input type="text" id="authCaptchaInput" maxlength="4" placeholder="Код с картинки" autocomplete="off">
           </div>
           <div class="auth-error" id="authCaptchaError"></div>
         </div>
         <div class="auth-error" id="authError"></div>
-        <button type="submit" class="btn auth-submit" id="authSubmit">Р’РѕР№С‚Рё</button>
+        <button type="submit" class="btn auth-submit" id="authSubmit">Войти</button>
       </div>
 
-      <!-- STEP 2: РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїРѕС‡С‚С‹ -->
+      <!-- STEP 2: подтверждение почты -->
       <div class="auth-step hidden" id="authStepVerify">
-        <p class="verify-desc">РњС‹ РѕС‚РїСЂР°РІРёР»Рё 6-Р·РЅР°С‡РЅС‹Р№ РєРѕРґ РЅР°<br><b id="authVerifyEmail"></b></p>
+        <p class="verify-desc">Мы отправили 6-значный код на<br><b id="authVerifyEmail"></b></p>
         <div class="code-inputs" id="authCodeInputs">
           <input class="code-input" maxlength="1" inputmode="numeric">
           <input class="code-input" maxlength="1" inputmode="numeric">
@@ -90,19 +90,19 @@
           <input class="code-input" maxlength="1" inputmode="numeric">
           <input class="code-input" maxlength="1" inputmode="numeric">
         </div>
-        <div class="code-timer">РљРѕРґ РґРµР№СЃС‚РІРёС‚РµР»РµРЅ: <span id="authCodeTimer" class="timer-num">15:00</span></div>
-        <label class="demo-toggle"><input type="checkbox" id="authDemoToggle"> <span>Р”РµРјРѕ-СЂРµР¶РёРј: РїРѕРєР°Р·С‹РІР°С‚СЊ РєРѕРґ РЅР° СЌРєСЂР°РЅРµ</span></label>
+        <div class="code-timer">Код действителен: <span id="authCodeTimer" class="timer-num">15:00</span></div>
+        <label class="demo-toggle"><input type="checkbox" id="authDemoToggle"> <span>Демо-режим: показывать код на экране</span></label>
         <div class="demo-code hidden" id="authDemoCode"></div>
         <div class="auth-error" id="authCodeError"></div>
         <div class="btn-row">
-          <button type="button" class="btn btn-ghost" id="authBackToCreds">РќР°Р·Р°Рґ</button>
-          <button type="button" class="btn btn-primary" id="authResend">Р—Р°РїСЂРѕСЃРёС‚СЊ РєРѕРґ РїРѕРІС‚РѕСЂРЅРѕ</button>
-          <button type="submit" class="btn btn-primary" id="authVerifyBtn">РџРѕРґС‚РІРµСЂРґРёС‚СЊ</button>
+          <button type="button" class="btn btn-ghost" id="authBackToCreds">Назад</button>
+          <button type="button" class="btn btn-primary" id="authResend">Запросить код повторно</button>
+          <button type="submit" class="btn btn-primary" id="authVerifyBtn">Подтвердить</button>
         </div>
       </div>
     </form>
 
-    <p class="auth-hint" id="authHint">РќРµС‚ Р°РєРєР°СѓРЅС‚Р°? <a href="#" id="authSwitch">РЎРѕР·РґР°С‚СЊ</a></p>
+    <p class="auth-hint" id="authHint">Нет аккаунта? <a href="#" id="authSwitch">Создать</a></p>
   </div>
 </div>
 
@@ -114,39 +114,39 @@
   <aside id="sidebar">
     <header class="sidebar-header">
       <div class="profile" id="profileBtn">
-        <span class="avatar" id="profileAvatar" style="--c1:#6C5CE7;--c2:#8E7BFF">Р“</span>
+        <span class="avatar" id="profileAvatar" style="--c1:#6C5CE7;--c2:#8E7BFF">Г</span>
         <div class="profile-info">
-          <span class="profile-name" id="profileName">Р“РѕСЃС‚СЊ</span>
+          <span class="profile-name" id="profileName">Гость</span>
           <span class="profile-status">online</span>
         </div>
       </div>
-      <button class="icon-btn" id="logoutBtn" title="Р’С‹Р№С‚Рё" aria-label="Р’С‹Р№С‚Рё">
+      <button class="icon-btn" id="logoutBtn" title="Выйти" aria-label="Выйти">
         <svg viewBox="0 0 24 24"><path d="M10.09 15.59 11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
       </button>
       <button class="icon-btn" id="aiChatBtn" title="Nebula AI" aria-label="Nebula AI">
         <svg viewBox="0 0 24 24"><path d="M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zM7.5 11.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S8.33 13 7.5 13s-1.5-.67-1.5-1.5zM16 17H8v-2h8v2zm-1-4c-.83 0-1.5-.67-1.5-1.5S14.17 10 15 10s1.5.67 1.5 1.5S15.83 13 15 13z"/></svg>
       </button>
-      <button class="icon-btn" id="supportBtn" title="РўРµС… РїРѕРґРґРµСЂР¶РєР°" aria-label="РўРµС… РїРѕРґРґРµСЂР¶РєР°">
+      <button class="icon-btn" id="supportBtn" title="Тех поддержка" aria-label="Тех поддержка">
         <svg viewBox="0 0 24 24"><path d="M12 1a9 9 0 0 0-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7a9 9 0 0 0-9-9z"/></svg>
       </button>
-      <button class="icon-btn hidden" id="adminBtn" title="РђРґРјРёРЅ-РїР°РЅРµР»СЊ" aria-label="РђРґРјРёРЅ-РїР°РЅРµР»СЊ">
+      <button class="icon-btn hidden" id="adminBtn" title="Админ-панель" aria-label="Админ-панель">
         <svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
       </button>
-      <button class="icon-btn" id="newChatBtn" title="РЎРѕР·РґР°С‚СЊ С‡Р°С‚" aria-label="РЎРѕР·РґР°С‚СЊ С‡Р°С‚">
+      <button class="icon-btn" id="newChatBtn" title="Создать чат" aria-label="Создать чат">
         <svg viewBox="0 0 24 24"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>
       </button>
     </header>
 
     <div class="search-wrap">
       <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      <input type="text" id="searchInput" placeholder="РџРѕРёСЃРє РёР»Рё @РєР°РЅР°Р»" autocomplete="off">
+      <input type="text" id="searchInput" placeholder="Поиск или @канал" autocomplete="off">
     </div>
 
     <nav class="filter-tabs">
-      <button class="filter-tab active" data-filter="all">Р’СЃРµ</button>
-      <button class="filter-tab" data-filter="private">Р›РёС‡РЅС‹Рµ</button>
-      <button class="filter-tab" data-filter="group">Р“СЂСѓРїРїС‹</button>
-      <button class="filter-tab" data-filter="channel">РљР°РЅР°Р»С‹</button>
+      <button class="filter-tab active" data-filter="all">Все</button>
+      <button class="filter-tab" data-filter="private">Личные</button>
+      <button class="filter-tab" data-filter="group">Группы</button>
+      <button class="filter-tab" data-filter="channel">Каналы</button>
     </nav>
 
     <div class="chat-list" id="chatList"></div>
@@ -159,7 +159,7 @@
         <svg viewBox="0 0 24 24"><g class="lg-ring-still"><ellipse cx="12" cy="12" rx="8.2" ry="2.6" fill="none" stroke="#fff" stroke-width="1.5" transform="rotate(-20 12 12)"/></g><circle cx="12" cy="12" r="4.4" fill="#fff"/><path class="lg-star" d="M18.4 2.9l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z" fill="#fff"/><g class="lg-orbit"><circle cx="20.2" cy="12" r="1.5" fill="#fff"/></g></svg>
       </div>
       <h2>Nebula Messenger</h2>
-      <p>Р’С‹Р±РµСЂРёС‚Рµ С‡Р°С‚ РёР»Рё СЃРѕР·РґР°Р№С‚Рµ РЅРѕРІС‹Р№</p>
+      <p>Выберите чат или создайте новый</p>
     </div>
   </main>
 </div>
@@ -168,7 +168,7 @@
 <div class="modal-overlay" id="createModal">
   <div class="modal">
     <div class="modal-header">
-      <h3 id="modalTitle">РќРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ</h3>
+      <h3 id="modalTitle">Новое сообщение</h3>
       <button class="icon-btn modal-close" id="modalClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -179,56 +179,56 @@
           <span class="co-icon" style="background:#3B82F6">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           </span>
-          <div><strong>Р›РёС‡РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ</strong><small>Р Р°Р·РіРѕРІРѕСЂ СЃ РєРѕРЅС‚Р°РєС‚РѕРј</small></div>
+          <div><strong>Личное сообщение</strong><small>Разговор с контактом</small></div>
         </button>
         <button class="create-option" data-type="group">
           <span class="co-icon" style="background:#10B981">
             <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
           </span>
-          <div><strong>РќРѕРІР°СЏ РіСЂСѓРїРїР°</strong><small>РћР±С‰Р°Р№С‚РµСЃСЊ РІРјРµСЃС‚Рµ</small></div>
+          <div><strong>Новая группа</strong><small>Общайтесь вместе</small></div>
         </button>
         <button class="create-option" data-type="channel">
           <span class="co-icon" style="background:#F59E0B">
             <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
           </span>
-          <div><strong>РќРѕРІС‹Р№ РєР°РЅР°Р»</strong><small>Р”Р»СЏ РїСѓР±Р»РёРєР°С†РёРё РєРѕРЅС‚РµРЅС‚Р°</small></div>
+          <div><strong>Новый канал</strong><small>Для публикации контента</small></div>
         </button>
         <button class="create-option" data-type="ai">
           <span class="co-icon" style="background:#6C5CE7">
             <svg viewBox="0 0 24 24"><path d="M20 9V7c0-1.1-.9-2-2-2h-3c0-1.66-1.34-3-3-3S9 3.34 9 5H6c-1.1 0-2 .9-2 2v2c-1.66 0-3 1.34-3 3s1.34 3 3 3v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c1.66 0 3-1.34 3-3s-1.34-3-3-3zM7.5 11.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S8.33 13 7.5 13s-1.5-.67-1.5-1.5zM16 17H8v-2h8v2zm-1-4c-.83 0-1.5-.67-1.5-1.5S14.17 10 15 10s1.5.67 1.5 1.5S15.83 13 15 13z"/></svg>
           </span>
-          <div><strong>Nebula AI</strong><small>Р§Р°С‚ СЃ РёСЃРєСѓСЃСЃС‚РІРµРЅРЅС‹Рј РёРЅС‚РµР»Р»РµРєС‚РѕРј</small></div>
+          <div><strong>Nebula AI</strong><small>Чат с искусственным интеллектом</small></div>
         </button>
       </div>
       <div class="step hidden" id="step-contact">
         <div class="member-picker" id="privatePicker"></div>
       </div>
       <div class="step hidden" id="step-create">
-        <div class="avatar-preview" id="createAvatarPreview">Р“</div>
+        <div class="avatar-preview" id="createAvatarPreview">Г</div>
         <label class="avatar-upload-btn" for="createAvatarFile">
           <svg viewBox="0 0 24 24"><path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM9 2 7.17 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.17L15 2H9zm3 15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg>
-          <span>РЎРІРѕС‘ С„РѕС‚Рѕ</span>
+          <span>Своё фото</span>
         </label>
         <input type="file" id="createAvatarFile" accept="image/*" hidden>
-        <input type="text" id="createName" placeholder="РќР°Р·РІР°РЅРёРµ" maxlength="18">
-        <input type="text" id="createHandle" class="hidden" placeholder="Р®Р·РµСЂРЅРµР№Рј РєР°РЅР°Р»Р° (РЅР°РїСЂРёРјРµСЂ: @technews)" maxlength="14" autocomplete="off">
-        <textarea id="createDesc" placeholder="РћРїРёСЃР°РЅРёРµ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)" rows="2" maxlength="48"></textarea>
+        <input type="text" id="createName" placeholder="Название" maxlength="18">
+        <input type="text" id="createHandle" class="hidden" placeholder="Юзернейм канала (например: @technews)" maxlength="14" autocomplete="off">
+        <textarea id="createDesc" placeholder="Описание (необязательно)" rows="2" maxlength="48"></textarea>
         <div class="access-toggle hidden" id="createAccessWrap">
-          <label class="field-label">РўРёРї РґРѕСЃС‚СѓРїР°</label>
+          <label class="field-label">Тип доступа</label>
           <div class="access-toggle-row" id="createAccess">
-            <button type="button" class="acc-btn sel" data-access="public">рџЊЌ РџСѓР±Р»РёС‡РЅР°СЏ<small>РњРѕР¶РЅРѕ РЅР°Р№С‚Рё Рё РІСЃС‚СѓРїРёС‚СЊ РїРѕ @СЋР·РµСЂРЅРµР№РјСѓ</small></button>
-            <button type="button" class="acc-btn" data-access="private">рџ”’ РџСЂРёРІР°С‚РЅР°СЏ<small>РўРѕР»СЊРєРѕ РїРѕ РїСЂРёРіР»Р°С€РµРЅРёСЋ</small></button>
+            <button type="button" class="acc-btn sel" data-access="public">🌍 Публичная<small>Можно найти и вступить по @юзернейму</small></button>
+            <button type="button" class="acc-btn" data-access="private">🔒 Приватная<small>Только по приглашению</small></button>
           </div>
         </div>
         <div class="color-palette" id="createColorPalette"></div>
-        <label class="field-label">Р”РѕР±Р°РІРёС‚СЊ СѓС‡Р°СЃС‚РЅРёРєРѕРІ</label>
+        <label class="field-label">Добавить участников</label>
         <div class="member-picker" id="memberPicker"></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost hidden" id="modalBack">РќР°Р·Р°Рґ</button>
-      <button class="btn btn-primary hidden" id="modalNext">Р”Р°Р»РµРµ</button>
-      <button class="btn btn-primary hidden" id="modalCreate">РЎРѕР·РґР°С‚СЊ</button>
+      <button class="btn btn-ghost hidden" id="modalBack">Назад</button>
+      <button class="btn btn-primary hidden" id="modalNext">Далее</button>
+      <button class="btn btn-primary hidden" id="modalCreate">Создать</button>
     </div>
   </div>
 </div>
@@ -237,7 +237,7 @@
 <div class="modal-overlay" id="manageModal">
   <div class="modal">
     <div class="modal-header">
-      <h3 id="manageTitle">РЈРїСЂР°РІР»РµРЅРёРµ</h3>
+      <h3 id="manageTitle">Управление</h3>
       <button class="icon-btn modal-close" id="manageClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -250,18 +250,18 @@
 <div class="modal-overlay" id="settingsModal">
   <div class="modal modal-wide">
     <div class="modal-header">
-      <h3>РќР°СЃС‚СЂРѕР№РєРё</h3>
+      <h3>Настройки</h3>
       <button class="icon-btn modal-close" id="settingsClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
     </div>
     <div class="settings-tabs" id="settingsTabs">
-      <button class="st active" data-tab="profile">РђРєРєР°СѓРЅС‚</button>
-      <button class="st" data-tab="privacy">РџСЂРёРІР°С‚РЅРѕСЃС‚СЊ</button>
-      <button class="st" data-tab="appearance">Р’РЅРµС€РЅРёР№ РІРёРґ</button>
-      <button class="st" data-tab="frames">Р Р°РјРєРё</button>
-      <button class="st" data-tab="dolphins">Р”РµР»СЊС„РёРЅС‹</button>
-      <button class="st" data-tab="stats">РЎС‚Р°С‚РёСЃС‚РёРєР°</button>
+      <button class="st active" data-tab="profile">Аккаунт</button>
+      <button class="st" data-tab="privacy">Приватность</button>
+      <button class="st" data-tab="appearance">Внешний вид</button>
+      <button class="st" data-tab="frames">Рамки</button>
+      <button class="st" data-tab="dolphins">Дельфины</button>
+      <button class="st" data-tab="stats">Статистика</button>
     </div>
     <div class="modal-body" id="settingsBody"></div>
   </div>
@@ -271,7 +271,7 @@
 <div class="modal-overlay" id="adminModal">
   <div class="modal modal-wide">
     <div class="modal-header">
-      <h3>рџ›Ў РђРґРјРёРЅ-РїР°РЅРµР»СЊ</h3>
+      <h3>🛡 Админ-панель</h3>
       <button class="icon-btn modal-close" id="adminClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -287,7 +287,7 @@
 <div class="modal-overlay" id="foldersModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>рџ—‚ РџР°РїРєРё</h3>
+      <h3>🗂 Папки</h3>
       <button class="icon-btn modal-close" id="foldersClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -300,7 +300,7 @@
 <div class="modal-overlay" id="forwardModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>РџРµСЂРµСЃР»Р°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ</h3>
+      <h3>Переслать сообщение</h3>
       <button class="icon-btn modal-close" id="forwardClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -313,7 +313,7 @@
 <div class="modal-overlay" id="userCardModal">
   <div class="modal user-card-modal">
     <div class="modal-header">
-      <h3>РљР°СЂС‚РѕС‡РєР°</h3>
+      <h3>Карточка</h3>
       <button class="icon-btn modal-close" id="userCardClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -326,7 +326,7 @@
 <div class="modal-overlay" id="switchModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>РЎРјРµРЅРёС‚СЊ Р°РєРєР°СѓРЅС‚</h3>
+      <h3>Сменить аккаунт</h3>
       <button class="icon-btn modal-close" id="switchClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -349,75 +349,75 @@
     <div class="call-timer" id="callTimer">00:00</div>
     <div class="call-participants" id="callParticipants"></div>
     <div class="call-actions">
-      <button class="call-bt big" id="callMuteBtn" title="РњРёРєСЂРѕС„РѕРЅ">
+      <button class="call-bt big" id="callMuteBtn" title="Микрофон">
         <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5.27-3a5.28 5.28 0 0 1-10.54 0H4.4a7.61 7.61 0 0 0 6.6 7.42V20h2v-1.58a7.61 7.61 0 0 0 6.6-7.42h-2.33z"/></svg>
       </button>
-      <button class="call-bt big muted" id="callCamBtn" title="РљР°РјРµСЂР°">
+      <button class="call-bt big muted" id="callCamBtn" title="Камера">
         <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
       </button>
-      <button class="call-bt big" id="callShareBtn" title="Р”РµРјРѕРЅСЃС‚СЂР°С†РёСЏ СЌРєСЂР°РЅР°">
+      <button class="call-bt big" id="callShareBtn" title="Демонстрация экрана">
         <svg viewBox="0 0 24 24"><path d="M21 2H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7v2H8v2h8v-2h-2v-2h7a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 14H3V4h18v12z"/></svg>
       </button>
-      <button class="call-bt big" id="callGameBtn" title="РРіСЂР° РІ Р·РІРѕРЅРєРµ">
+      <button class="call-bt big" id="callGameBtn" title="Игра в звонке">
         <svg viewBox="0 0 24 24"><path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/></svg>
       </button>
-      <button class="call-bt big" id="callSettingsBtn" title="РќР°СЃС‚СЂРѕР№РєРё СѓСЃС‚СЂРѕР№СЃС‚РІ">
+      <button class="call-bt big" id="callSettingsBtn" title="Настройки устройств">
         <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.61 3.61 0 0 1 8.4 12c0-1.98 1.62-3.6 3.6-3.6s3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
       </button>
-      <button class="call-bt big" id="callMinBtn" title="РЎРІРµСЂРЅСѓС‚СЊ">
+      <button class="call-bt big" id="callMinBtn" title="Свернуть">
         <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
       </button>
-      <button class="call-bt big danger" id="callEndBtn" title="Р—Р°РІРµСЂС€РёС‚СЊ">
+      <button class="call-bt big danger" id="callEndBtn" title="Завершить">
         <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
       </button>
     </div>
     <div class="call-menu hidden" id="callMenu">
-      <div class="cm-head">РЈСЃС‚СЂРѕР№СЃС‚РІР°</div>
-      <label class="cm-row">РљР°РјРµСЂР°
+      <div class="cm-head">Устройства</div>
+      <label class="cm-row">Камера
         <select id="cmCam"></select>
       </label>
-      <label class="cm-row">РњРёРєСЂРѕС„РѕРЅ
+      <label class="cm-row">Микрофон
         <select id="cmMic"></select>
       </label>
-      <label class="cm-row">Р”РёРЅР°РјРёРє
+      <label class="cm-row">Динамик
         <select id="cmOut"></select>
       </label>
-      <div class="cm-row cm-share-row">Р”РµРјРѕРЅСЃС‚СЂР°С†РёСЏ СЌРєСЂР°РЅР°
-        <button class="cm-share-btn" id="cmShareBtn">рџ–Ґ Р’РєР»СЋС‡РёС‚СЊ</button>
-        <span class="cm-share-state" id="cmShareState">РІС‹РєР»СЋС‡РµРЅР°</span>
+      <div class="cm-row cm-share-row">Демонстрация экрана
+        <button class="cm-share-btn" id="cmShareBtn">🖥 Включить</button>
+        <span class="cm-share-state" id="cmShareState">выключена</span>
       </div>
     </div>
     <div class="game-panel hidden" id="gamePanel">
       <div class="gp-tabs">
-        <button type="button" class="gp-tab sel" data-g="xo">вќЊв­• РљСЂРµСЃС‚РёРєРё-РЅРѕР»РёРєРё</button>
-        <button type="button" class="gp-tab" data-g="rps">вњЉвњ‹вњЊпёЏ РљРќР‘</button>
+        <button type="button" class="gp-tab sel" data-g="xo">❌⭕ Крестики-нолики</button>
+        <button type="button" class="gp-tab" data-g="rps">✊✋✌️ КНБ</button>
       </div>
       <div class="gp-game" id="gpXo">
-        <div class="gp-head">рџЋ® РљСЂРµСЃС‚РёРєРё-РЅРѕР»РёРєРё</div>
+        <div class="gp-head">🎮 Крестики-нолики</div>
         <div class="gp-mode">
-          <button type="button" class="gp-mode-btn sel" data-g="xo" data-mode="bot">рџ¤– РЎ РР-Р±РѕС‚РѕРј</button>
-          <button type="button" class="gp-mode-btn" data-g="xo" data-mode="pvp">рџ‘Ґ РЎ СЃРѕР±РµСЃРµРґРЅРёРєРѕРј</button>
+          <button type="button" class="gp-mode-btn sel" data-g="xo" data-mode="bot">🤖 С ИИ-ботом</button>
+          <button type="button" class="gp-mode-btn" data-g="xo" data-mode="pvp">👥 С собеседником</button>
         </div>
-        <div class="gp-msg" id="gpMsg">Р’Р°С€ С…РѕРґ</div>
+        <div class="gp-msg" id="gpMsg">Ваш ход</div>
         <div class="gp-board" id="gpBoard"></div>
-        <div class="gp-score"><span>Р’С‹: <b id="gpScoreU">0</b></span><span>Р‘РѕС‚: <b id="gpScoreB">0</b></span></div>
-        <button class="gp-reset" id="gpReset">Р—Р°РЅРѕРІРѕ</button>
+        <div class="gp-score"><span>Вы: <b id="gpScoreU">0</b></span><span>Бот: <b id="gpScoreB">0</b></span></div>
+        <button class="gp-reset" id="gpReset">Заново</button>
       </div>
       <div class="gp-game hidden" id="gpRps">
-        <div class="gp-head">вњЉвњ‹вњЊпёЏ РљР°РјРµРЅСЊ-РЅРѕР¶РЅРёС†С‹-Р±СѓРјР°РіР°</div>
+        <div class="gp-head">✊✋✌️ Камень-ножницы-бумага</div>
         <div class="gp-mode">
-          <button type="button" class="gp-mode-btn sel" data-g="rps" data-mode="bot">рџ¤– РЎ РР-Р±РѕС‚РѕРј</button>
-          <button type="button" class="gp-mode-btn" data-g="rps" data-mode="pvp">рџ‘Ґ РЎ СЃРѕР±РµСЃРµРґРЅРёРєРѕРј</button>
+          <button type="button" class="gp-mode-btn sel" data-g="rps" data-mode="bot">🤖 С ИИ-ботом</button>
+          <button type="button" class="gp-mode-btn" data-g="rps" data-mode="pvp">👥 С собеседником</button>
         </div>
-        <div class="gp-msg" id="rpsMsg">Р’С‹Р±РµСЂРёС‚Рµ Р¶РµСЃС‚ вЂ” РґРѕ 3 РїРѕР±РµРґ</div>
+        <div class="gp-msg" id="rpsMsg">Выберите жест — до 3 побед</div>
         <div class="rps-pick">
-          <button type="button" class="rps-btn" data-p="0">вњЉ</button>
-          <button type="button" class="rps-btn" data-p="1">вњ‹</button>
-          <button type="button" class="rps-btn" data-p="2">вњЊпёЏ</button>
+          <button type="button" class="rps-btn" data-p="0">✊</button>
+          <button type="button" class="rps-btn" data-p="1">✋</button>
+          <button type="button" class="rps-btn" data-p="2">✌️</button>
         </div>
-        <div class="rps-show"><span id="rpsU">вќ”</span><b>VS</b><span id="rpsB">вќ”</span></div>
-        <div class="gp-score"><span>Р’С‹: <b id="rpsScoreU">0</b></span><span>Р‘РѕС‚: <b id="rpsScoreB">0</b></span></div>
-        <button class="gp-reset" id="rpsReset">Р—Р°РЅРѕРІРѕ</button>
+        <div class="rps-show"><span id="rpsU">❔</span><b>VS</b><span id="rpsB">❔</span></div>
+        <div class="gp-score"><span>Вы: <b id="rpsScoreU">0</b></span><span>Бот: <b id="rpsScoreB">0</b></span></div>
+        <button class="gp-reset" id="rpsReset">Заново</button>
       </div>
     </div>
   </div>
@@ -428,23 +428,23 @@
   <div class="incoming-box">
     <div class="incoming-avatar" id="incomingAvatar"></div>
     <div class="incoming-name" id="incomingName"></div>
-    <div class="incoming-sub">Р’С…РѕРґСЏС‰РёР№ Р·РІРѕРЅРѕРєвЂ¦</div>
+    <div class="incoming-sub">Входящий звонок…</div>
     <div class="incoming-btns">
-      <button class="call-bt big danger" id="incomingDecline" title="РћС‚РєР»РѕРЅРёС‚СЊ">
+      <button class="call-bt big danger" id="incomingDecline" title="Отклонить">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
-      <button class="call-bt big ok" id="incomingAccept" title="РћС‚РІРµС‚РёС‚СЊ">
+      <button class="call-bt big ok" id="incomingAccept" title="Ответить">
         <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ===== VERIFY MODAL (РґР»СЏ РґРµР№СЃС‚РІРёР№ РІ РЅР°СЃС‚СЂРѕР№РєР°С…) ===== -->
+<!-- ===== VERIFY MODAL (для действий в настройках) ===== -->
 <div class="modal-overlay" id="verifyModal">
   <div class="modal">
     <div class="modal-header">
-      <h3 id="verifyTitle">РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ</h3>
+      <h3 id="verifyTitle">Подтверждение</h3>
       <button class="icon-btn modal-close" id="verifyClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -459,13 +459,13 @@
         <input class="code-input" maxlength="1" inputmode="numeric">
         <input class="code-input" maxlength="1" inputmode="numeric">
       </div>
-      <div class="code-timer">РљРѕРґ РґРµР№СЃС‚РІРёС‚РµР»РµРЅ: <span id="verifyTimer" class="timer-num">15:00</span></div>
-      <label class="demo-toggle"><input type="checkbox" id="verifyDemoToggle"> <span>Р”РµРјРѕ-СЂРµР¶РёРј: РїРѕРєР°Р·С‹РІР°С‚СЊ РєРѕРґ РЅР° СЌРєСЂР°РЅРµ</span></label>
+      <div class="code-timer">Код действителен: <span id="verifyTimer" class="timer-num">15:00</span></div>
+      <label class="demo-toggle"><input type="checkbox" id="verifyDemoToggle"> <span>Демо-режим: показывать код на экране</span></label>
       <div class="demo-code hidden" id="verifyDemoCode"></div>
       <div class="auth-error" id="verifyError"></div>
       <div class="btn-row">
-        <button class="btn btn-ghost" id="verifyResend">Р—Р°РїСЂРѕСЃРёС‚СЊ РєРѕРґ РїРѕРІС‚РѕСЂРЅРѕ</button>
-        <button class="btn btn-primary" id="verifySubmit">РџРѕРґС‚РІРµСЂРґРёС‚СЊ</button>
+        <button class="btn btn-ghost" id="verifyResend">Запросить код повторно</button>
+        <button class="btn btn-primary" id="verifySubmit">Подтвердить</button>
       </div>
     </div>
   </div>
@@ -475,7 +475,7 @@
 <div class="modal-overlay" id="dolphinModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>рџђ¬ Р”РµР»СЊС„РёРЅ</h3>
+      <h3>🐬 Дельфин</h3>
       <button class="icon-btn modal-close" id="dolphinClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
@@ -488,19 +488,19 @@
 <div class="modal-overlay" id="avatarModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>РЎРјРµРЅРёС‚СЊ Р°РІР°С‚Р°СЂ</h3>
+      <h3>Сменить аватар</h3>
       <button class="icon-btn modal-close" id="avatarClose">
         <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <div class="avatar-preview" id="avatarPreview" style="--c1:#6C5CE7;--c2:#8E7BFF">Р“</div>
-      <label class="field-label">Р’С‹Р±РµСЂРёС‚Рµ С„РѕС‚Рѕ</label>
+      <div class="avatar-preview" id="avatarPreview" style="--c1:#6C5CE7;--c2:#8E7BFF">Г</div>
+      <label class="field-label">Выберите фото</label>
       <div class="avatar-grid" id="avatarGrid"></div>
-      <label class="field-label">РР»Рё Р·Р°РіСЂСѓР·РёС‚Рµ СЃРІРѕСЋ С„РѕС‚РєСѓ</label>
+      <label class="field-label">Или загрузите свою фотку</label>
       <label class="upload-btn">
         <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
-        Р—Р°РіСЂСѓР·РёС‚СЊ С„РѕС‚Рѕ
+        Загрузить фото
         <input type="file" id="avatarFile" accept="image/*" hidden>
       </label>
     </div>
@@ -515,10 +515,10 @@
 <!-- ===== STICKER PANEL ===== -->
 <div class="stick-panel hidden" id="stickPanel">
   <div class="stick-tabs">
-    <button class="stick-tab sel" data-stab="fav">в­ђ РР·Р±СЂР°РЅРЅРѕРµ</button>
-    <button class="stick-tab" data-stab="mine">рџ“Ѓ РњРѕРё РїР°РєРё</button>
-    <button class="stick-tab" data-stab="friends">рџ‘Ґ РџР°РєРё РґСЂСѓР·РµР№</button>
-    <button class="stick-tab" data-stab="mgr" title="РЈРїСЂР°РІР»РµРЅРёРµ РїР°РєР°РјРё">вљ™пёЏ</button>
+    <button class="stick-tab sel" data-stab="fav">⭐ Избранное</button>
+    <button class="stick-tab" data-stab="mine">📁 Мои паки</button>
+    <button class="stick-tab" data-stab="friends">👥 Паки друзей</button>
+    <button class="stick-tab" data-stab="mgr" title="Управление паками">⚙️</button>
   </div>
   <div class="stick-body" id="stickBody"></div>
 </div>
