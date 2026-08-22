@@ -162,6 +162,36 @@ function escapeHtml(s) {
 
 const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>';
 
+const STICK_CAP = 24;
+function stickerTypeOf(st) { return (st && st.type) || 'image/png'; }
+function isAnimatedSticker(st) {
+  const t = stickerTypeOf(st);
+  return t.indexOf('video/') === 0 || t === 'image/gif' || t === 'image/webp';
+}
+function stickerMediaHtml(st, cls, attrs) {
+  const url = st && (st.dataUrl || st.url);
+  const type = stickerTypeOf(st);
+  const a = attrs || '';
+  if (!url) return '';
+  if (type.indexOf('video/') === 0) {
+    return `<video class="${cls}" src="${url}" autoplay loop muted playsinline ${a}></video>`;
+  }
+  return `<img class="${cls}" loading="lazy" src="${url}" alt="Стикер" ${a}>`;
+}
+function stickBadgeHtml(st) {
+  const t = stickerTypeOf(st);
+  if (t.indexOf('video/') === 0) return '<span class="stick-anim-badge">▶</span>';
+  if (t === 'image/gif' || t === 'image/webp') return '<span class="stick-anim-badge">GIF</span>';
+  return '';
+}
+function stickCellHtml(st, opts) {
+  opts = opts || {};
+  const send = escapeHtml(st.dataUrl);
+  const media = stickerMediaHtml(st, 'stick-img', `title="Отправить" data-send="${send}" data-type="${escapeHtml(stickerTypeOf(st))}"`);
+  const favBtn = opts.fav ? `<button class="stick-fav" data-sf="${send}" data-type="${escapeHtml(stickerTypeOf(st))}" title="В избранное">★</button>` : '';
+  return `<div class="sticker-cell">${media}${stickBadgeHtml(st)}${favBtn}</div>`;
+}
+
 /* ---------- ХРАНИЛИЩЕ ---------- */
 let storageWarnedAt = 0;
 function safeSet(key, val) {
@@ -4287,7 +4317,7 @@ function renderMessages(chat) {
           ${md.dataUrl ? `<a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="Скачать">⬇</a>` : '<span class="file-dl-off" title="Файл не загружен на это устройство">—</span>'}
         </div>`;
     }).join('') : '';
-    const stickerHtml = msg.sticker && msg.sticker.dataUrl ? `<img class="msg-sticker" src="${msg.sticker.dataUrl}" alt="Стикер">` : '';
+    const stickerHtml = msg.sticker && msg.sticker.dataUrl ? stickerMediaHtml(msg.sticker, 'msg-sticker', '') : '';
     const voiceHtml = msg.voice ? (msg.voice.dataUrl ? `
       <div class="msg-voice" data-mid="${msg.id}">
         <button class="voice-play" data-vplay="${msg.id}" title="Играть">▶</button>
@@ -6011,7 +6041,7 @@ function stickerPackPrompt(owner, pack) {
   ov.innerHTML = `
     <div class="modal-box stickers-modal">
       <h3>${subd ? 'Этот пак уже в избранном' : 'Добавить пак в избранное?'}</h3>
-      <div class="spp-grid">${pack.stickers.slice(0, 8).map(s => `<img src="${s.dataUrl}" alt="">`).join('')}</div>
+       <div class="spp-grid">${pack.stickers.slice(0, 8).map(s => stickerMediaHtml(s, 'spp-img', '')).join('')}</div>
       <div class="spp-name">${escapeHtml(pack.name)}</div>
       <div class="spp-sub">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</div>
       <div class="btn-row">
@@ -6047,7 +6077,10 @@ function toggleStickPanel(btn) {
   sp.style.right = (innerWidth - r.right) + 'px';
   if (!sp.dataset.bound) {
     sp.dataset.bound = '1';
+    bindStickPanelDelegation(sp);
     sp.querySelectorAll('.stick-tab').forEach(t => t.addEventListener('click', () => {
+      stickExpandedPacks = {};
+      stickFavExpanded = false;
       const tab = t.dataset.stab;
       const b = $('#stickBody');
       if (b) b.innerHTML = '<div class="empty-list">Загрузка…</div>';
@@ -6063,12 +6096,100 @@ function toggleStickPanel(btn) {
   const run = () => { try { renderStickPanel(tab); } catch (e) { console.error(e); } };
   if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run); else setTimeout(run, 0);
 }
+let stickExpandedPacks = {};
+let stickFavExpanded = false;
+let stickFlushTimer = null;
+function flushStickPieces(body, pieces) {
+  if (stickFlushTimer) { clearTimeout(stickFlushTimer); stickFlushTimer = null; }
+  body.innerHTML = '';
+  let i = 0;
+  const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const step = () => {
+    const t0 = now();
+    while (i < pieces.length && now() - t0 < 6) {
+      body.insertAdjacentHTML('beforeend', pieces[i++]);
+    }
+    if (i < pieces.length) stickFlushTimer = setTimeout(step, 0);
+  };
+  step();
+}
+function addFavSticker(url, type) {
+  currentUser.favStickers = currentUser.favStickers || [];
+  if (!currentUser.favStickers.some(s => s.dataUrl === url)) {
+    currentUser.favStickers.push(type ? { dataUrl: url, type } : { dataUrl: url });
+    persistCurrentUser();
+    toast('Добавлено в избранное ⭐');
+  } else toast('Уже в избранном');
+}
+function toggleSubscribe(id) {
+  const sp = $('#stickPanel');
+  currentUser.subscribedPacks = currentUser.subscribedPacks || [];
+  if (currentUser.subscribedPacks.includes(id)) {
+    currentUser.subscribedPacks = currentUser.subscribedPacks.filter(x => x !== id);
+    toast('Пак убран');
+  } else {
+    currentUser.subscribedPacks.push(id);
+    toast('Пак добавлен ✓');
+  }
+  persistCurrentUser();
+  renderStickPanel(sp && sp.dataset.lastTab ? sp.dataset.lastTab : 'fav');
+}
+function expandStickPack(id) { stickExpandedPacks[id] = true; const sp = $('#stickPanel'); renderStickPanel(sp && sp.dataset.lastTab ? sp.dataset.lastTab : 'fav'); }
+function expandFavStickers() { stickFavExpanded = true; renderStickPanel('fav'); }
+function bindStickPanelDelegation(sp) {
+  sp.addEventListener('click', (e) => {
+    const t = e.target;
+    const sendEl = t.closest('[data-send]');
+    if (sendEl) {
+      const chat = currentChat();
+      if (!chat) return;
+      $('#stickPanel').classList.add('hidden');
+      sendSticker(chat, { dataUrl: sendEl.dataset.send, type: sendEl.dataset.type });
+      return;
+    }
+    const favEl = t.closest('[data-sf]');
+    if (favEl) { e.stopPropagation(); addFavSticker(favEl.dataset.sf, favEl.dataset.type); return; }
+    const fdEl = t.closest('[data-favdel]');
+    if (fdEl) {
+      e.stopPropagation();
+      const url = fdEl.dataset.favdel;
+      currentUser.favStickers = (currentUser.favStickers || []).filter(s => s.dataUrl !== url);
+      persistCurrentUser();
+      renderStickPanel('fav');
+      return;
+    }
+    const subEl = t.closest('[data-sub]');
+    if (subEl) { e.stopPropagation(); toggleSubscribe(subEl.dataset.sub); return; }
+    const delEl = t.closest('[data-pack]');
+    if (delEl && t.classList.contains('stick-pack-del')) {
+      currentUser.stickerPacks = (currentUser.stickerPacks || []).filter(p => p.id !== delEl.dataset.pack);
+      persistCurrentUser();
+      renderStickPanel('mine');
+      toast('Пак удалён');
+      return;
+    }
+    const moreEl = t.closest('.stick-more');
+    if (moreEl) { expandStickPack(moreEl.dataset.pack); return; }
+    const moreFav = t.closest('.stick-more-fav');
+    if (moreFav) { expandFavStickers(); return; }
+    const subrow = t.closest('[data-subrow]');
+    if (subrow) {
+      if (t.closest('.stick-sub') || t.closest('.stick-fav') || t.closest('[data-send]')) return;
+      const packs = friendStickerPacks();
+      const found = packs.find(x => x.pack.id === subrow.dataset.subrow);
+      if (found) stickerPackPrompt(found.owner, found.pack);
+      return;
+    }
+    if (t.closest('.stick-create')) { openStickersManager(); return; }
+  });
+}
 function renderStickPanel(tab) {
   const sp = $('#stickPanel');
   sp.dataset.lastTab = tab;
   const body = $('#stickBody');
   if (!body) return;
   sp.querySelectorAll('.stick-tab').forEach(t => t.classList.toggle('sel', t.dataset.stab === tab));
+  const pieces = [];
   if (tab === 'fav') {
     const fav = myFavStickers();
     const friends = friendStickerPacks();
@@ -6080,128 +6201,66 @@ function renderStickPanel(tab) {
       persistCurrentUser();
     }
     const subs = friends.filter(({ pack }) => alive.has(pack.id) && (currentUser.subscribedPacks || []).includes(pack.id));
-    let h = '';
-    if (subs.length) h += subs.map(({ pack, owner }) => `
-      <div class="stick-pack-row">
-        <b>${escapeHtml(pack.name)}</b>
-        <span class="stick-pack-count">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</span>
-        <button class="stick-sub" data-sub="${escapeHtml(pack.id)}">Отписаться</button>
-      </div>
-      <div class="stick-grid">${pack.stickers.map(s => `
-        <div class="sticker-cell">
-          <img class="stick-img" loading="lazy" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-        </div>`).join('')}</div>`).join('');
+    subs.forEach(({ pack, owner }) => {
+      pieces.push(`<div class="stick-pack-row"><b>${escapeHtml(pack.name)}</b><span class="stick-pack-count">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</span><button class="stick-sub" data-sub="${escapeHtml(pack.id)}">Отписаться</button></div>`);
+      const cap = stickExpandedPacks[pack.id] ? pack.stickers.length : STICK_CAP;
+      const shown = pack.stickers.slice(0, cap);
+      let g = `<div class="stick-grid">` + shown.map(s => stickCellHtml(s, { fav: true })).join('');
+      if (pack.stickers.length > cap) g += `<button class="stick-more" data-pack="${escapeHtml(pack.id)}">Ещё ${pack.stickers.length - cap}…</button>`;
+      g += `</div>`;
+      pieces.push(g);
+    });
     if (fav.length) {
-      h += '<div class="stick-sep">⭐ Избранные стикеры</div><div class="stick-grid">' + fav.map((s, i) => `
-        <div class="sticker-cell">
-          <img class="stick-img" loading="lazy" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-          <button class="stick-fav-del" data-fav="${i}" title="Убрать из избранного">✕</button>
-        </div>`).join('') + '</div>';
+      pieces.push('<div class="stick-sep">⭐ Избранные стикеры</div>');
+      const fcap = stickFavExpanded ? fav.length : STICK_CAP * 2;
+      const shown = fav.slice(0, fcap);
+      let g = '<div class="stick-grid">' + shown.map(s => stickCellHtml(s, { del: true })).join('');
+      if (fav.length > fcap) g += `<button class="stick-more-fav">Ещё ${fav.length - fcap}…</button>`;
+      g += '</div>';
+      pieces.push(g);
     }
-    if (!subs.length && !fav.length) h = '<div class="empty-list">Избранного пока нет.<br>Откройте «Паки друзей» и добавьте пак — стикеры появятся здесь.</div>';
-    body.innerHTML = h;
-    body.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => {
-      currentUser.favStickers.splice(Number(b.dataset.fav), 1);
-      persistCurrentUser();
-      renderStickPanel('fav');
-    }));
-    body.querySelectorAll('[data-sub]').forEach(b => b.addEventListener('click', () => {
-      const id = b.dataset.sub;
-      currentUser.subscribedPacks = (currentUser.subscribedPacks || []).filter(x => x !== id);
-      persistCurrentUser();
-      renderStickPanel('fav');
-      toast('Пак убран из избранного');
-    }));
+    if (!subs.length && !fav.length) pieces.push('<div class="empty-list">Избранного пока нет.<br>Откройте «Паки друзей» и добавьте пак — стикеры появятся здесь.</div>');
   } else if (tab === 'mine') {
     const packs = myStickerPacks();
-    body.innerHTML = (packs.length ? packs.map(p => `
-      <div class="stick-pack-row">
-        <b>${escapeHtml(p.name)}</b>
-        <span class="stick-pack-count">${p.stickers.length} стик.</span>
-        <button class="stick-pack-del" data-pack="${escapeHtml(p.id)}" title="Удалить пак">🗑</button>
-      </div>
-      <div class="stick-grid">${p.stickers.map(s => `
-        <div class="sticker-cell">
-          <img class="stick-img" loading="lazy" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-          <button class="stick-fav" data-sf="${escapeHtml(s.dataUrl)}" title="В избранное">★</button>
-        </div>`).join('')}</div>`).join('')
-      : '<div class="empty-list">У вас пока нет стикер-паков.</div>') + '<button type="button" class="btn btn-primary stick-create">＋ Создать пак из фото</button>';
-    body.querySelectorAll('[data-pack]').forEach(b => b.addEventListener('click', () => {
-      currentUser.stickerPacks = currentUser.stickerPacks.filter(p => p.id !== b.dataset.pack);
-      persistCurrentUser();
-      renderStickPanel('mine');
-      toast('Пак удалён');
-    }));
-    body.querySelectorAll('[data-sf]').forEach(b => b.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const url = b.dataset.sf;
-      currentUser.favStickers = currentUser.favStickers || [];
-      if (!currentUser.favStickers.some(s => s.dataUrl === url)) {
-        currentUser.favStickers.push({ dataUrl: url });
-        persistCurrentUser();
-        toast('Добавлено в избранное ⭐');
-      } else toast('Уже в избранном');
-    }));
-    const sc = body.querySelector('.stick-create');
-    if (sc) sc.addEventListener('click', openStickersManager);
+    if (packs.length) {
+      packs.forEach(p => {
+        pieces.push(`<div class="stick-pack-row"><b>${escapeHtml(p.name)}</b><span class="stick-pack-count">${p.stickers.length} стик.</span><button class="stick-pack-del" data-pack="${escapeHtml(p.id)}" title="Удалить пак">🗑</button></div>`);
+        const cap = stickExpandedPacks[p.id] ? p.stickers.length : STICK_CAP;
+        const shown = p.stickers.slice(0, cap);
+        let g = `<div class="stick-grid">` + shown.map(s => stickCellHtml(s, { fav: true })).join('');
+        if (p.stickers.length > cap) g += `<button class="stick-more" data-pack="${escapeHtml(p.id)}">Ещё ${p.stickers.length - cap}…</button>`;
+        g += `</div>`;
+        pieces.push(g);
+      });
+      pieces.push('<button type="button" class="btn btn-primary stick-create">＋ Создать пак из фото</button>');
+    } else {
+      pieces.push('<div class="empty-list">У вас пока нет стикер-паков.</div><button type="button" class="btn btn-primary stick-create">＋ Создать пак из фото</button>');
+    }
   } else if (tab === 'friends') {
     const packs = friendStickerPacks();
-    body.innerHTML = packs.length ? packs.map(({ pack, owner }) => {
-      const subd = (currentUser.subscribedPacks || []).includes(pack.id);
-      return `
-      <div class="stick-pack-row clickable" data-subrow="${escapeHtml(pack.id)}" title="Добавить пак в избранное">
-        <b>${escapeHtml(pack.name)}</b>
-        <span class="stick-pack-count">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</span>
-        <button class="stick-sub" data-sub="${escapeHtml(pack.id)}">${subd ? '✓ Подписан' : '+ Добавить пак'}</button>
-      </div>
-      <div class="stick-grid">${pack.stickers.slice(0, 4).map(s => `
-        <div class="sticker-cell">
-          <img class="stick-img" loading="lazy" src="${s.dataUrl}" alt="" title="Отправить" data-send="${escapeHtml(s.dataUrl)}">
-          <button class="stick-fav" data-sf="${escapeHtml(s.dataUrl)}" title="В избранное">★</button>
-        </div>`).join('')}</div>`;
-    }).join('') : '<div class="empty-list">У друзей пока нет паков.<br>Создайте свой пак — он появится у них здесь.</div>';
-    body.querySelectorAll('[data-subrow]').forEach(b => b.addEventListener('click', (e) => {
-      if (e.target.closest('.stick-sub') || e.target.closest('.stick-fav') || e.target.closest('.stick-img')) return;
-      const found = packs.find(x => x.pack.id === b.dataset.subrow);
-      if (found) stickerPackPrompt(found.owner, found.pack);
-    }));
-    body.querySelectorAll('[data-sub]').forEach(b => b.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = b.dataset.sub;
-      currentUser.subscribedPacks = currentUser.subscribedPacks || [];
-      if (currentUser.subscribedPacks.includes(id)) {
-        currentUser.subscribedPacks = currentUser.subscribedPacks.filter(x => x !== id);
-        toast('Пак убран');
-      } else {
-        currentUser.subscribedPacks.push(id);
-        toast('Пак добавлен ✓');
-      }
-      persistCurrentUser();
-      renderStickPanel('friends');
-    }));
-    body.querySelectorAll('[data-sf]').forEach(b => b.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const url = b.dataset.sf;
-      currentUser.favStickers = currentUser.favStickers || [];
-      if (!currentUser.favStickers.some(s => s.dataUrl === url)) {
-        currentUser.favStickers.push({ dataUrl: url });
-        persistCurrentUser();
-        toast('Добавлено в избранное ⭐');
-      } else toast('Уже в избранном');
-    }));
+    if (packs.length) {
+      packs.forEach(({ pack, owner }) => {
+        const subd = (currentUser.subscribedPacks || []).includes(pack.id);
+        pieces.push(`<div class="stick-pack-row clickable" data-subrow="${escapeHtml(pack.id)}" title="Добавить пак в избранное"><b>${escapeHtml(pack.name)}</b><span class="stick-pack-count">от @${escapeHtml(owner.username)} · ${pack.stickers.length} стик.</span><button class="stick-sub" data-sub="${escapeHtml(pack.id)}">${subd ? '✓ Подписан' : '+ Добавить пак'}</button></div>`);
+        const cap = stickExpandedPacks[pack.id] ? pack.stickers.length : 4;
+        const shown = pack.stickers.slice(0, cap);
+        let g = `<div class="stick-grid">` + shown.map(s => stickCellHtml(s, { fav: true })).join('');
+        if (pack.stickers.length > cap) g += `<button class="stick-more" data-pack="${escapeHtml(pack.id)}">Ещё ${pack.stickers.length - cap}…</button>`;
+        g += `</div>`;
+        pieces.push(g);
+      });
+    } else {
+      pieces.push('<div class="empty-list">У друзей пока нет паков.<br>Создайте свой пак — он появится у них здесь.</div>');
+    }
   } else if (tab === 'mgr') {
     openStickersManager();
     return;
   }
-  body.querySelectorAll('[data-send]').forEach(img => img.addEventListener('click', () => {
-    const chat = currentChat();
-    if (!chat) return;
-    $('#stickPanel').classList.add('hidden');
-    sendSticker(chat, img.dataset.send);
-  }));
+  if (!pieces.length) pieces.push('<div class="empty-list">Пусто</div>');
+  flushStickPieces(body, pieces);
 }
-function sendSticker(chat, dataUrl) {
-  const msg = { id: 'm' + Date.now(), from: chat.id === NEWS_CHAT_ID ? 'news' : 'me', text: '', time: new Date().toISOString(), read: false, sent: true, sticker: { dataUrl } };
+function sendSticker(chat, sticker) {
+  const msg = { id: 'm' + Date.now(), from: chat.id === NEWS_CHAT_ID ? 'news' : 'me', text: '', time: new Date().toISOString(), read: false, sent: true, sticker: { dataUrl: sticker.dataUrl, type: sticker.type } };
   chat.messages.push(msg);
   pushMsgToCloud(chat, msg);
   if (chat.type === 'group' || chat.type === 'channel') {
@@ -6345,12 +6404,18 @@ function fmtRecDur(sec) {
   return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
 }
 function compressStickerFile(f, cb) {
-  const animated = f.type === 'image/gif' || f.type === 'image/webp';
+  const isVideo = f.type && f.type.indexOf('video/') === 0;
+  const isAnimated = f.type === 'image/gif' || f.type === 'image/webp';
   const reader = new FileReader();
   reader.onload = () => {
-    if (animated) {
-      if (f.size > 3 * 1024 * 1024) toast('Стикер больше 3 МБ — может грузиться долго');
-      cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), dataUrl: reader.result });
+    if (isVideo) {
+      if (f.size > 8 * 1024 * 1024) toast('Видео-стикер больше 8 МБ — может грузиться долго');
+      cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), type: f.type || 'video/mp4', dataUrl: reader.result, name: f.name });
+      return;
+    }
+    if (isAnimated) {
+      if (f.size > 4 * 1024 * 1024) toast('Анимированный стикер больше 4 МБ — может грузиться долго');
+      cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), type: f.type, dataUrl: reader.result });
       return;
     }
     const img = new Image();
@@ -6364,9 +6429,11 @@ function compressStickerFile(f, cb) {
       canvas.width = width;
       canvas.height = height;
       canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), dataUrl: canvas.toDataURL('image/jpeg', 0.85) });
+      const outType = (f.type === 'image/png') ? 'image/png' : 'image/jpeg';
+      const q = outType === 'image/png' ? undefined : 0.85;
+      cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), type: outType, dataUrl: canvas.toDataURL(outType, q) });
     };
-    img.onerror = () => cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), dataUrl: reader.result });
+    img.onerror = () => cb({ id: 's' + Date.now() + Math.random().toString(36).slice(2, 6), type: f.type || 'image/png', dataUrl: reader.result });
     img.src = reader.result;
   };
   reader.readAsDataURL(f);
@@ -6379,9 +6446,9 @@ function openStickersManager() {
     <div class="modal-box stickers-modal">
       <h3>🎨 Мои стикер-паки</h3>
       <div class="sm-list">
-        ${packs.length ? packs.map(p => `
+         ${packs.length ? packs.map(p => `
           <div class="sm-pack">
-            <img class="sm-prev" src="${p.stickers[0].dataUrl}" alt="">
+            ${stickerMediaHtml(p.stickers[0], 'sm-prev', '')}
             <div class="sm-info"><b>${escapeHtml(p.name)}</b><span>${p.stickers.length} стикеров</span></div>
             <button class="btn sm-add-sticker" data-smpack="${escapeHtml(p.id)}">＋ Стикер</button>
             <button class="btn btn-danger sm-del" data-smpack="${escapeHtml(p.id)}">Удалить</button>
@@ -6404,7 +6471,7 @@ function openStickersManager() {
   const create = modal.querySelector('#smCreate');
   const createInput = document.createElement('input');
   createInput.type = 'file';
-  createInput.accept = 'image/*';
+  createInput.accept = 'image/gif,image/webp,image/png,image/jpeg,video/webm,video/mp4';
   createInput.multiple = true;
   createInput.hidden = true;
   modal.appendChild(createInput);
@@ -6431,7 +6498,7 @@ function openStickersManager() {
   });
   const addInput = document.createElement('input');
   addInput.type = 'file';
-  addInput.accept = 'image/*';
+  addInput.accept = 'image/gif,image/webp,image/png,image/jpeg,video/webm,video/mp4';
   addInput.multiple = true;
   addInput.hidden = true;
   modal.appendChild(addInput);
