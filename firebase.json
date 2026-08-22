@@ -1,0 +1,40 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "site": "nebula-1337",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firebase-debug.log",
+      ".firebaserc",
+      ".git",
+      "node_modules",
+      "mail-relay",
+      "cloud-data.json",
+      "server.js",
+      "scalpel",
+      "zphone",
+      "*.md",
+      "cs2-profile/**",
+      "NebulaVisuals/**",
+      "deploy-worker.ps1",
+      "**/*.ps1",
+      "**/*.bat",
+      "**/*.cmd",
+      "**/*.exe",
+      "**/*.dll",
+      "**/*.msi",
+      "**/*.com",
+      "**/*.scr",
+      "desktop/**"
+     ],
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      { "source": "**", "headers": [ { "key": "Cache-Control", "value": "no-cache" } ] }
+    ]
+  }
+}
