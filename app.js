@@ -1077,13 +1077,24 @@ function loadState() {
     return s;
   } catch (e) { return null; }
 }
-function saveState() {
-  if (!currentUser) return;
+let _saveStateTimer = null;
+function flushSaveState() {
+  if (_saveStateTimer) { clearTimeout(_saveStateTimer); _saveStateTimer = null; }
+  if (!currentUser || !state) return;
   if (safeSet(stateKey(currentUser.username), JSON.stringify(state))) {
     scheduleCloudBackup();
     scheduleChatMetaPush();
   }
 }
+function saveState() {
+  if (!currentUser) return;
+  if (_saveStateTimer) return;
+  _saveStateTimer = setTimeout(flushSaveState, 250);
+}
+try {
+  window.addEventListener('beforeunload', flushSaveState);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSaveState(); });
+} catch (e) {}
 function getStateFor(u) {
   try {
     const raw = localStorage.getItem(stateKey(u));
@@ -3869,10 +3880,9 @@ function sendBgMessage(chat, wall) {
   }
   addLog(currentUser.username, `Поделился фоном в «${chatTitle(chat)}»`);
   saveState();
-  renderMessages(chat);
+  appendMessage(chat, msg);
   if (isChatNearBottom()) scrollChatToBottom();
   renderChatList();
-  bindChatEvents(chat);
 }
 function renderChat() {
   if (!state) return;
@@ -4186,10 +4196,9 @@ function sendPollMessage(chat, question, options, opts) {
   }
   addLog(currentUser.username, `Создал ${opts.quiz ? 'викторину' : 'опрос'} «${shortText(question, 30)}» в «${chatTitle(chat)}»`);
   saveState();
-  renderMessages(chat);
+  appendMessage(chat, msg);
   if (isChatNearBottom()) scrollChatToBottom();
   renderChatList();
-  bindChatEvents(chat);
 }
 function sendContactMessage(chat, u) {
   const msg = { id: 'm' + Date.now(), from: chat.id === NEWS_CHAT_ID ? 'news' : 'me', text: '', time: new Date().toISOString(), read: false, sent: true, contact: { username: u.username, name: u.name, id: u.id, color: u.color, avatar: u.avatar || null } };
@@ -4201,10 +4210,9 @@ function sendContactMessage(chat, u) {
   }
   addLog(currentUser.username, `Поделился контактом @${u.username} в «${chatTitle(chat)}»`);
   saveState();
-  renderMessages(chat);
+  appendMessage(chat, msg);
   if (isChatNearBottom()) scrollChatToBottom();
   renderChatList();
-  bindChatEvents(chat);
 }
 function openPollModal(chat) {
   const modal = document.createElement('div');
@@ -4340,6 +4348,88 @@ function openContactPicker(chat) {
   });
 }
 
+function buildOneMsg(chat, msg) {
+  const mine = msg.from === 'me';
+  const isNewsMsg = chat.id === NEWS_CHAT_ID;
+  const senderAcc = isNewsMsg ? NEWS_ACC : (chat.type === 'ai' && !mine ? NEBULA_ACC : (chat.type !== 'private' && !mine ? userById(msg.from) : null));
+  const fwdName = msg.forwarded ? escapeHtml(msg.forwardedFrom || 'пользователя') : '';
+  const rt = msg.replyTo ? `
+    <div class="reply-block">
+      <span>${escapeHtml(msg.replyTo.name)}</span>
+      <div>${escapeHtml(shortText(msg.replyTo.text, 60))}</div>
+    </div>` : '';
+  const reactChips = msg.reactions && Object.keys(msg.reactions).length ? Object.entries(msg.reactions).map(([em, arr]) => {
+    const active = arr.includes('me');
+    return `<button class="react-chip ${active ? 'on' : ''}" data-mid="${msg.id}" data-react="${em}">${em} ${arr.length}</button>`;
+  }).join('') : '';
+  const mediaHtml = msg.media && msg.media.length ? msg.media.map((md, mi) => {
+    if (md.type && md.type.startsWith('image/')) {
+      if (md.dataUrl) return `<img class="msg-photo loading" loading="lazy" onload="this.classList.remove('loading')" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
+      return `<div class="msg-photo-off" data-mid="${msg.id}" data-mi="${mi}" title="${escapeHtml(md.name)}">🖼 <span>${escapeHtml(md.name)}</span></div>`;
+    }
+    return `
+      <div class="msg-file">
+        <span class="file-ic">📄</span>
+        <span class="file-name">${escapeHtml(md.name)}</span>
+        <span class="file-size">${fmtBytes(md.size)}</span>
+        ${md.dataUrl ? `<a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="Скачать">⬇</a>` : '<span class="file-dl-off" title="Файл не загружен на это устройство">—</span>'}
+      </div>`;
+  }).join('') : '';
+  const stickerHtml = msg.sticker && msg.sticker.dataUrl ? stickerMediaHtml(msg.sticker, 'msg-sticker', '') : '';
+  const voiceHtml = msg.voice ? (msg.voice.dataUrl ? `
+    <div class="msg-voice" data-mid="${msg.id}">
+      <button class="voice-play" data-vplay="${msg.id}" title="Играть">▶</button>
+      <div class="voice-bar"><i></i></div>
+      <span class="voice-dur">${fmtRecDur(msg.voice.dur || 0)}</span>
+      <audio src="${msg.voice.dataUrl}" preload="none"></audio>
+    </div>` : `
+    <div class="msg-voice-off" data-mid="${msg.id}">🎤 <span>Голосовое · ${fmtRecDur(msg.voice.dur || 0)}</span><span class="vo-note">не загружено</span></div>`) : '';
+  const videoHtml = msg.video ? (msg.video.dataUrl ? `
+    <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" autoplay loop playsinline muted preload="metadata" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"></video>` : `
+    <div class="msg-kruzhok-off" data-mid="${msg.id}" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"><span>🎬</span><span class="kk-dur">${fmtRecDur(msg.video.dur || 0)}</span><span class="kk-note">не загружен</span></div>`) : '';
+  const pollHtml = msg.poll ? renderPollHtml(msg) : '';
+  const contactHtml = msg.contact ? renderContactHtml(msg.contact) : '';
+  const bgHtml = msg.bg && msg.bg.dataUrl ? `
+    <div class="msg-bg-card" data-mid="${msg.id}">
+      <div class="msg-bg-thumb"><img src="${msg.bg.dataUrl}" alt=""></div>
+      <div class="msg-bg-info">
+        <div class="msg-bg-title">${mine ? 'Вы' : escapeHtml((senderAcc && displayName(senderAcc)) || 'Пользователь')} предложил(а) фон чата</div>
+        <div class="msg-bg-actions">
+          <button class="btn btn-primary btn-sm" data-bg-apply="${msg.id}">Применить</button>
+          <button class="btn btn-sm" data-bg-dismiss="${msg.id}">Не сейчас</button>
+        </div>
+      </div>
+    </div>` : '';
+  return `
+    <div class="msg-row ${mine ? 'out' : 'in'}">
+      <div class="msg ${mine ? 'out' : 'in'}" data-mid="${msg.id}">
+        ${senderAcc ? `<span class="sender">${displayName(senderAcc)}</span>` : ''}
+        ${fwdName ? `<div class="fwd-badge">➡ Переслано от ${fwdName}</div>` : ''}
+        ${rt}
+        ${pollHtml}
+        ${contactHtml}
+        ${bgHtml}
+        ${stickerHtml}
+        ${voiceHtml}
+        ${videoHtml}
+        ${mediaHtml}
+        ${msg.text ? `<div class="msg-text">${linkifyChannels(escapeHtml(msg.text))}</div>` : ''}
+        ${msgMetaIcons(chat, msg)}
+        ${reactChips ? `<div class="react-row">${reactChips}</div>` : ''}
+        <div class="msg-actions">
+          <button data-act="react" title="Реакция"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button>
+          <button data-act="reply" title="Ответить"><svg viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5.4-5.5-9.4-11-10z"/></svg></button>
+          <button data-act="forward" title="Переслать"><svg viewBox="0 0 24 24"><path d="M5 4h14v3H5V4zm0 5h14v3H5V9zm0 5h14v3H5v-3zm0 5h14v3H5v-3z"/></svg></button>
+          <button data-act="copy" title="Копировать"><svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg></button>
+          ${mine ? `<button data-act="edit" title="Изменить">✎</button>` : ''}
+          ${(mine && chat.id !== NEWS_CHAT_ID) || (chat.id === NEWS_CHAT_ID && newsFullAccess(currentUser)) ? `<button data-act="del" title="Удалить"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
+        </div>
+        <div class="react-picker">
+          ${REACT_EMOJIS.map(e => `<button data-mid="${msg.id}" data-emoji="${e}">${e}</button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
 function renderMessages(chat) {
   const wrap = $('#messagesWrap');
   const prevScroll = wrap ? wrap.scrollTop : 0;
@@ -4349,86 +4439,7 @@ function renderMessages(chat) {
     const dg = fmtDateGroup(msg.time);
     if (dg !== lastDate) { html += `<div class="date-divider">${dg}</div>`; lastDate = dg; }
     if (msg.from === 'system') { html += sysCallHtml(msg, chat); return; }
-    const mine = msg.from === 'me';
-    const isNewsMsg = chat.id === NEWS_CHAT_ID;
-    const senderAcc = isNewsMsg ? NEWS_ACC : (chat.type === 'ai' && !mine ? NEBULA_ACC : (chat.type !== 'private' && !mine ? userById(msg.from) : null));
-    const fwdName = msg.forwarded ? escapeHtml(msg.forwardedFrom || 'пользователя') : '';
-    const rt = msg.replyTo ? `
-      <div class="reply-block">
-        <span>${escapeHtml(msg.replyTo.name)}</span>
-        <div>${escapeHtml(shortText(msg.replyTo.text, 60))}</div>
-      </div>` : '';
-    const reactChips = msg.reactions && Object.keys(msg.reactions).length ? Object.entries(msg.reactions).map(([em, arr]) => {
-      const active = arr.includes('me');
-      return `<button class="react-chip ${active ? 'on' : ''}" data-mid="${msg.id}" data-react="${em}">${em} ${arr.length}</button>`;
-    }).join('') : '';
-    const mediaHtml = msg.media && msg.media.length ? msg.media.map((md, mi) => {
-      if (md.type && md.type.startsWith('image/')) {
-        if (md.dataUrl) return `<img class="msg-photo loading" loading="lazy" onload="this.classList.remove('loading')" src="${md.dataUrl}" alt="${escapeHtml(md.name)}" title="${escapeHtml(md.name)}" data-mid="${msg.id}" data-mi="${mi}">`;
-        return `<div class="msg-photo-off" data-mid="${msg.id}" data-mi="${mi}" title="${escapeHtml(md.name)}">🖼 <span>${escapeHtml(md.name)}</span></div>`;
-      }
-      return `
-        <div class="msg-file">
-          <span class="file-ic">📄</span>
-          <span class="file-name">${escapeHtml(md.name)}</span>
-          <span class="file-size">${fmtBytes(md.size)}</span>
-          ${md.dataUrl ? `<a class="file-dl" download="${escapeHtml(md.name)}" href="${md.dataUrl}" title="Скачать">⬇</a>` : '<span class="file-dl-off" title="Файл не загружен на это устройство">—</span>'}
-        </div>`;
-    }).join('') : '';
-    const stickerHtml = msg.sticker && msg.sticker.dataUrl ? stickerMediaHtml(msg.sticker, 'msg-sticker', '') : '';
-    const voiceHtml = msg.voice ? (msg.voice.dataUrl ? `
-      <div class="msg-voice" data-mid="${msg.id}">
-        <button class="voice-play" data-vplay="${msg.id}" title="Играть">▶</button>
-        <div class="voice-bar"><i></i></div>
-        <span class="voice-dur">${fmtRecDur(msg.voice.dur || 0)}</span>
-        <audio src="${msg.voice.dataUrl}" preload="none"></audio>
-      </div>` : `
-      <div class="msg-voice-off" data-mid="${msg.id}">🎤 <span>Голосовое · ${fmtRecDur(msg.voice.dur || 0)}</span><span class="vo-note">не загружено</span></div>`) : '';
-    const videoHtml = msg.video ? (msg.video.dataUrl ? `
-      <video class="msg-kruzhok" data-mid="${msg.id}" src="${msg.video.dataUrl}" loop playsinline muted preload="metadata" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"></video>` : `
-      <div class="msg-kruzhok-off" data-mid="${msg.id}" title="Кружок · ${fmtRecDur(msg.video.dur || 0)}"><span>🎬</span><span class="kk-dur">${fmtRecDur(msg.video.dur || 0)}</span><span class="kk-note">не загружен</span></div>`) : '';
-    const pollHtml = msg.poll ? renderPollHtml(msg) : '';
-    const contactHtml = msg.contact ? renderContactHtml(msg.contact) : '';
-    const bgHtml = msg.bg && msg.bg.dataUrl ? `
-      <div class="msg-bg-card" data-mid="${msg.id}">
-        <div class="msg-bg-thumb"><img src="${msg.bg.dataUrl}" alt=""></div>
-        <div class="msg-bg-info">
-          <div class="msg-bg-title">${mine ? 'Вы' : escapeHtml((senderAcc && displayName(senderAcc)) || 'Пользователь')} предложил(а) фон чата</div>
-          <div class="msg-bg-actions">
-            <button class="btn btn-primary btn-sm" data-bg-apply="${msg.id}">Применить</button>
-            <button class="btn btn-sm" data-bg-dismiss="${msg.id}">Не сейчас</button>
-          </div>
-        </div>
-      </div>` : '';
-    html += `
-      <div class="msg-row ${mine ? 'out' : 'in'}">
-        <div class="msg ${mine ? 'out' : 'in'}" data-mid="${msg.id}">
-          ${senderAcc ? `<span class="sender">${displayName(senderAcc)}</span>` : ''}
-          ${fwdName ? `<div class="fwd-badge">➡ Переслано от ${fwdName}</div>` : ''}
-          ${rt}
-          ${pollHtml}
-          ${contactHtml}
-          ${bgHtml}
-          ${stickerHtml}
-          ${voiceHtml}
-          ${videoHtml}
-          ${mediaHtml}
-          ${msg.text ? `<div class="msg-text">${linkifyChannels(escapeHtml(msg.text))}</div>` : ''}
-          ${msgMetaIcons(chat, msg)}
-          ${reactChips ? `<div class="react-row">${reactChips}</div>` : ''}
-          <div class="msg-actions">
-            <button data-act="react" title="Реакция"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button>
-            <button data-act="reply" title="Ответить"><svg viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5.4-5.5-9.4-11-10z"/></svg></button>
-            <button data-act="forward" title="Переслать"><svg viewBox="0 0 24 24"><path d="M5 4h14v3H5V4zm0 5h14v3H5V9zm0 5h14v3H5v-3zm0 5h14v3H5v-3z"/></svg></button>
-            <button data-act="copy" title="Копировать"><svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg></button>
-            ${mine ? `<button data-act="edit" title="Изменить">✎</button>` : ''}
-            ${(mine && chat.id !== NEWS_CHAT_ID) || (chat.id === NEWS_CHAT_ID && newsFullAccess(currentUser)) ? `<button data-act="del" title="Удалить"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
-          </div>
-          <div class="react-picker">
-            ${REACT_EMOJIS.map(e => `<button data-mid="${msg.id}" data-emoji="${e}">${e}</button>`).join('')}
-          </div>
-        </div>
-      </div>`;
+    html += buildOneMsg(chat, msg);
   });
   wrap.innerHTML = html;
   if (!wasNearBottom && prevScroll > 0) wrap.scrollTop = prevScroll;
@@ -4437,6 +4448,16 @@ function renderMessages(chat) {
     const ev = cur && [...(cur.messages || [])].reverse().find(m => m.id === incomingCall.msgId);
     if (!ev || ev.dismissed) closeIncoming();
   }
+}
+function appendMessage(chat, msg) {
+  const wrap = $('#messagesWrap');
+  if (!wrap) { renderMessages(chat); return; }
+  const prev = chat.messages[chat.messages.length - 2];
+  const needDiv = !prev || fmtDateGroup(prev.time) !== fmtDateGroup(msg.time);
+  let piece = '';
+  if (needDiv) piece += `<div class="date-divider">${fmtDateGroup(msg.time)}</div>`;
+  piece += msg.from === 'system' ? sysCallHtml(msg, chat) : buildOneMsg(chat, msg);
+  wrap.insertAdjacentHTML('beforeend', piece);
 }
 
 /* ---------- Отправка сообщений ---------- */
@@ -5576,10 +5597,10 @@ function sendMessage(chatId, text) {
     }
   }
   saveState();
-  renderMessages(chat);
+  if (typeof msg !== 'undefined') appendMessage(chat, msg);
+  else renderMessages(chat);
   if (isChatNearBottom()) scrollChatToBottom();
   renderChatList();
-  bindChatEvents(chat);
 }
 
 /* ---------- Действия над сообщениями ---------- */
@@ -6357,10 +6378,9 @@ function sendSticker(chat, sticker) {
   }
   addLog(currentUser.username, `Отправил стикер в «${chatTitle(chat)}»`);
   saveState();
-  renderMessages(chat);
+  appendMessage(chat, msg);
   if (isChatNearBottom()) scrollChatToBottom();
   renderChatList();
-  bindChatEvents(chat);
 }
 
 /* ============================================================
@@ -6483,10 +6503,9 @@ function sendMediaMessage(chat, media) {
   }
   addLog(currentUser.username, `Отправил ${media.voice ? 'голосовое' : 'видеосообщение'} в «${chatTitle(chat)}»`);
   saveState();
-  renderMessages(chat);
+  appendMessage(chat, msg);
   if (isChatNearBottom()) scrollChatToBottom();
   renderChatList();
-  bindChatEvents(chat);
 }
 function fmtRecDur(sec) {
   return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
@@ -10033,7 +10052,32 @@ function bindFoldersModal() {
 /* ============================================================
    ИНИЦИАЛИЗАЦИЯ
    ============================================================ */
+function enableAppProtection() {
+  const isEditable = (t) => t && (t.isContentEditable || (t.tagName === 'INPUT' && /^(text|search|url|email|password|number|tel)$/i.test(t.type)) || t.tagName === 'TEXTAREA');
+  const blockKeys = (e) => {
+    if (e.key === 'F12') { e.preventDefault(); return; }
+    const k = (e.key || '').toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && k === 'u') { e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 'i' || k === 'j')) { e.preventDefault(); return; }
+    if ((e.ctrlKey || e.metaKey) && k === 's') { e.preventDefault(); return; }
+  };
+  window.addEventListener('keydown', blockKeys, true);
+  const blockCopy = (e) => { if (isEditable(e.target)) return; e.preventDefault(); };
+  document.addEventListener('copy', blockCopy, true);
+  document.addEventListener('cut', blockCopy, true);
+  document.addEventListener('contextmenu', (e) => { if (isEditable(e.target)) return; e.preventDefault(); });
+  document.addEventListener('dragstart', (e) => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); });
+  setInterval(() => {
+    if (window.outerWidth && window.innerWidth && window.outerHeight && window.innerHeight) {
+      const dw = window.outerWidth - window.innerWidth;
+      const dh = window.outerHeight - window.innerHeight;
+      if (dw > 200 || dh > 200) document.documentElement.classList.add('devtools-open');
+      else document.documentElement.classList.remove('devtools-open');
+    }
+  }, 800);
+}
 document.addEventListener('DOMContentLoaded', () => {
+  enableAppProtection();
   initCursor();
   initRipples();
   tryRestoreFromCloud();
