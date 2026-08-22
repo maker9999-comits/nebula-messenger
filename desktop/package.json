@@ -1,0 +1,46 @@
+{
+  "name": "nebula-desktop",
+  "version": "1.0.0",
+  "description": "Nebula Messenger - нативное приложение для Windows",
+  "main": "main.js",
+  "author": "Nebula",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.nebula.messenger",
+    "productName": "Nebula Messenger",
+    "copyright": "Copyright © Nebula",
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "NebulaMessenger-Portable.exe"
+    },
+    "nsis": {
+      "artifactName": "NebulaMessenger-Setup.exe",
+      "shortcutName": "Nebula Messenger"
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.7.13",
+    "tweetnacl": "^1.0.3"
+  }
+}
