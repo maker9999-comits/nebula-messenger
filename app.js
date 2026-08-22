@@ -4912,10 +4912,10 @@ function startCall(chatId, video = false, noEvents = false) {
     rtcConnected = false;
     rtcSetupAt = Date.now();
     rtcIceRestarted = false;
-    rtcAddedCand = { a: 0, b: 0 };
+    rtcAddedSet = new Set();
     try { rtcPeer = new RTCPeerConnection(RTC_STUN); } catch (e) { rtcPeer = null; }
     if (rtcPeer) {
-      rtcPeer.onicecandidate = e => { if (e.candidate) rtcSendCandidates(chat.id, [e.candidate]); };
+      rtcPeer.onicecandidate = e => { if (e.candidate) rtcSendCandidates(chat.id, [e.candidate.toJSON ? e.candidate.toJSON() : e.candidate]); };
       rtcPeer.ontrack = e => { rtcRemoteStream = e.streams[0] || null; rtcAttachRemote(); };
       rtcPeer.onconnectionstatechange = () => {
         if (!rtcPeer) return;
@@ -5054,7 +5054,7 @@ const RTC_CONFIG = {
 const RTC_STUN = RTC_CONFIG;
 let rtcPeer = null, rtcRemoteStream = null, rtcSigTimer = null, rtcFallbackTimer = null;
 let rtcMode = 'sim', rtcRole = 'caller', rtcConnected = false, rtcSetupAt = 0, rtcIceRestarted = false;
-let rtcAddedCand = { a: 0, b: 0 };
+let rtcAddedSet = new Set();
 function rtcSupports() {
   return typeof RTCPeerConnection !== 'undefined' && !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
 }
@@ -5135,9 +5135,9 @@ function rtcSendCandidates(chatId, cands) {
   rtcReadSide(chatId, rtcRole).then(mine => {
     if (!rtcPeer || rtcMode !== 'rtc') return;
     const doc = mine || {};
-    const cur = (doc.cand || []).filter(c => c && c.sdp);
-    const seen = new Set(cur.map(c => c.sdp));
-    const add = cands.filter(c => c && c.sdp && !seen.has(c.sdp));
+    const cur = (doc.cand || []).filter(c => c && c.candidate);
+    const seen = new Set(cur.map(c => c.candidate));
+    const add = cands.filter(c => c && c.candidate && !seen.has(c.candidate));
     if (!add.length) return;
     doc.cand = cur.concat(add);
     rtcSendMine(chatId, doc);
@@ -5145,11 +5145,11 @@ function rtcSendCandidates(chatId, cands) {
 }
 function rtcAddCandidates(cands) {
   if (!rtcPeer || !cands || !cands.length) return;
-  const side = rtcRole === 'caller' ? 'b' : 'a';
-  const start = rtcAddedCand[side] || 0;
-  cands.slice(start).forEach(c => {
-    rtcAddedCand[side]++;
-    rtcPeer.addIceCandidate(c).catch(() => {});
+  cands.forEach(c => {
+    const key = (c && (c.candidate || (c.toJSON && c.toJSON().candidate))) || JSON.stringify(c);
+    if (rtcAddedSet.has(key)) return;
+    rtcAddedSet.add(key);
+    rtcPeer.addIceCandidate(c).catch(() => { rtcAddedSet.delete(key); });
   });
 }
 function rtcTeardown(keepStreams) {
@@ -5159,7 +5159,7 @@ function rtcTeardown(keepStreams) {
   rtcRemoteStream = null;
   rtcConnected = false;
   rtcMode = 'sim';
-  rtcAddedCand = { a: 0, b: 0 };
+  rtcAddedSet = new Set();
   if (!keepStreams) stopStreams();
 }
 function rtcFallbackSim(chatId) {
