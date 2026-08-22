@@ -1061,18 +1061,20 @@ function getStateFor(u) {
   } catch (e) { return null; }
 }
 function ownedAccounts() {
-  const k = 'nebula_owned_accounts';
+  const k = 'nebula_owned_accounts_v2';
   try {
     const ex = localStorage.getItem(k);
-    if (ex) return JSON.parse(ex);
-  } catch (e) {}
-  const seed = accountsList().filter(a => a.password && !a.isBot).map(a => a.username);
-  if (seed.length) { try { localStorage.setItem(k, JSON.stringify(seed)); } catch (e) {} }
-  return seed;
+    if (ex === null) {
+      const seed = currentUser ? [currentUser.username] : [];
+      try { localStorage.setItem(k, JSON.stringify(seed)); } catch (e) {}
+      return seed;
+    }
+    return JSON.parse(ex);
+  } catch (e) { return currentUser ? [currentUser.username] : []; }
 }
 function addOwnedAccount(u) {
   if (!u) return;
-  const k = 'nebula_owned_accounts';
+  const k = 'nebula_owned_accounts_v2';
   const s = new Set(ownedAccounts());
   s.add(u);
   try { localStorage.setItem(k, JSON.stringify([...s])); } catch (e) {}
