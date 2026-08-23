@@ -2284,8 +2284,8 @@ function badgeHtml(acc) {
   const b = acc.badges || {};
   let s = '';
   if (b.scam) s += '<span class="badge badge-scam">SCAM</span>';
-  if (b.admin) s += '<span class="badge badge-admin">АДМИН</span>';
   if (b.owner) s += '<span class="badge badge-owner" title="Владелец мессенджера">ВЛАДЕЛЕЦ</span>';
+  if (b.admin) s += '<span class="badge badge-admin">АДМИН</span>';
   if (b.tester) s += '<span class="badge badge-tester">ТЕСТЕР</span>';
   if (b.blue) s += `<span class="badge badge-verify" title="Аккаунт верифицирован">${CHECK_ICON}</span>`;
   if (b.gray) s += '<span class="badge badge-verify-gray" title="Аккаунт верифицирован">' + CHECK_ICON + '</span>';
