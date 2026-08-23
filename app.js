@@ -1870,8 +1870,11 @@ function supportChatHtml(ticket) {
   const msgs = (ticket.messages || []).map(m => {
     if (m.from === 'system') return `<div class="support-sys">${escapeHtml(m.text)}</div>`;
     const isAuthor = m.from === ticket.author;
+    const senderAcc = accountByUsername(m.from);
+    const senderName = isAuthor ? (author ? author.name : ticket.author) : (senderAcc ? senderAcc.name : m.from);
+    const handle = isAuthor ? '' : ` <span class="sm-handle">@${escapeHtml(m.from)}</span>`;
     return `<div class="support-msg ${isAuthor ? 'auth' : 'sup'}">
-      <span class="sm-name">${isAuthor ? escapeHtml(author ? author.name : ticket.author) : 'Тех поддержка'}</span>
+      <span class="sm-name">${escapeHtml(senderName)}${handle}</span>
       <div class="sm-text">${linkifyChannels(escapeHtml(m.text))}</div>
       <span class="sm-time">${fmtTime(m.time)}</span>
     </div>`;
