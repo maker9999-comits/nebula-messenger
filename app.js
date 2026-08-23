@@ -426,12 +426,17 @@ function mergeAccountsWithCloud(raw) {
 function reconcileAccountsNow() {
   if (!MAIL_RELAY_URL) return Promise.resolve();
   return cloudLoad(ACCOUNTS_KEY).then(r => {
-    let cloudN = 0;
-    try { cloudN = r && r.d ? Object.keys(JSON.parse(r.d).users || {}).length : 0; } catch (e) {}
-    const localN = Object.keys(loadAccounts().users || {}).length;
-    if (cloudN < localN) return forceCloudBackup();
-    if (cloudN > localN) return refreshAccountsFromCloud().then(() => {
+    let cloudUsers = {};
+    try { cloudUsers = (r && r.d) ? (JSON.parse(r.d).users || {}) : {}; } catch (e) {}
+    const local = loadAccounts();
+    const localUsers = local.users || {};
+    const del = deletedUsers();
+    const hasMissing = Object.keys(cloudUsers).some(u => !localUsers[u] && !del.includes(u) && cloudMergeUserOk(local, cloudUsers[u], u));
+    const localExtra = Object.keys(localUsers).some(u => !cloudUsers[u]);
+    if (!hasMissing && localExtra) return forceCloudBackup();
+    if (hasMissing) return refreshAccountsFromCloud().then(() => {
       if (currentUser) { renderChatList(); renderChat(); }
+      refreshAdminIfOpen();
     });
     return null;
   }).catch(() => null);
@@ -7868,6 +7873,10 @@ function openAdminPanel() {
   $('#adminModal').classList.add('open');
 }
 function closeAdminPanel() { $('#adminModal').classList.remove('open'); }
+function refreshAdminIfOpen() {
+  const m = $('#adminModal');
+  if (m && m.classList.contains('open')) { try { renderSettingsAdmin($('#adminBody')); } catch (e) {} }
+}
 function bindAdminPanel() {
   $('#adminClose').addEventListener('click', closeAdminPanel);
   $('#adminModal').addEventListener('click', (e) => { if (e.target === $('#adminModal')) closeAdminPanel(); });
@@ -10168,6 +10177,10 @@ document.addEventListener('DOMContentLoaded', () => {
   reconcileAccountsNow();
   pruneObsoleteAccounts();
   initAuth();
+  /* Периодическая синхронизация каталога пользователей: новые аккаунты,
+     зарегистрированные на других устройствах после запуска приложения,
+     подтягиваются без перезагрузки страницы */
+  setInterval(() => { reconcileAccountsNow(); }, 20000);
   bindFilters();
   bindCreateModal();
   bindManageModal();
