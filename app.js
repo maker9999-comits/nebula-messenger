@@ -2892,7 +2892,7 @@ const ALL_THEMES = [
   { v: 'brown', t: 'Коричневая', d: 'Тёплый шоколадный оттенок' },
   { v: 'blue', t: 'Синяя', d: 'Насыщенный синий' },
 ];
-const BASE_THEME_COUNT = 3;
+const BASE_THEME_COUNT = ALL_THEMES.length;
 function themeClass(t) { return t && t !== 'default' ? 'theme-' + t : ''; }
 function applyTheme(t) {
   THEME_CLASSES.forEach(c => document.body.classList.remove(c));
@@ -9446,7 +9446,7 @@ function renderSettingsAppearance(body) {
   body.innerHTML = `
     <div class="manage-section">
       <h4>Тема оформления</h4>
-      ${canSpecial ? '<div class="admin-hint" style="margin-bottom:10px">⭐ Вам доступны специальные темы тестеров и администраторов</div>' : '<div class="admin-hint" style="margin-bottom:10px">Специальные темы открываются тестерам и администраторам</div>'}
+      <div class="admin-hint" style="margin-bottom:10px">Все темы оформления доступны каждому пользователю</div>
       <div class="radio-group" id="themeGroup">
         ${themes.map(t => `<div class="radio-item ${cur === t.v ? 'selected' : ''}" data-v="${t.v}">
           <span class="radio-circle" style="${t.v !== 'default' && t.v !== 'black' && t.v !== 'light' ? 'background:linear-gradient(135deg,' + themePreview(t.v) + ');box-shadow:0 0 10px rgba(255,255,255,.25);' : ''}"></span>
