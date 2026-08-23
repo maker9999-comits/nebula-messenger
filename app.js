@@ -375,17 +375,20 @@ function withTimeout(p, ms) {
 }
 function cloudLoad(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(null);
-  /* Читаем сначала с релея (Cloudflare — быстро и доступно в РФ), при
-     неудаче/таймауте падаем на Firestore. Ограничиваем Firestore таймаутом,
-     чтобы синхронизация не висла при его блокировке/тормозах в РФ. */
+  /* Читаем и с релея (Cloudflare — быстро и доступно в РФ), и из Firestore
+     параллельно, с таймаутом 6с на каждый. Побеждает свежайшая версия (v).
+     Это и устраняет зависания синхронизации при тормозах/блокировке Firestore
+     в РФ, и не отдаёт устаревшие данные релея (пока его KV на лимите). */
   const relayGet = () => fetch(cloudUrl(key), { method: 'GET' })
     .then(r => r.json().catch(() => ({ ok: false })))
     .then(d => (d && d.ok && d.value) ? cloudUnwrap(d.value) : null)
     .catch(() => null);
-  return withTimeout(relayGet(), 6000).then(k => {
-    if (k) return k;
-    if (!fsEnabled()) return null;
-    return withTimeout(fsRead(key).then(r => r ? cloudUnwrap(r) : null).catch(() => null), 6000);
+  const fsGet = () => fsEnabled()
+    ? fsRead(key).then(r => r ? cloudUnwrap(r) : null).catch(() => null)
+    : Promise.resolve(null);
+  return Promise.all([withTimeout(relayGet(), 6000), withTimeout(fsGet(), 6000)]).then(([k, f]) => {
+    if (k && f) return k.v > f.v ? k : f;
+    return k || f;
   });
 }
 function cloudDelete(key) {
