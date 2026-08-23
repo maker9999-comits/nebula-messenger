@@ -503,6 +503,17 @@
         Загрузить фото
         <input type="file" id="avatarFile" accept="image/*" hidden>
       </label>
+      <div class="avatar-editor" id="avatarEditor" style="display:none">
+        <div class="field-label">Настройка фотки</div>
+        <div class="avatar-hint">Перетащите фото в кружке, чтобы выровнять</div>
+        <label class="range-label">Масштаб
+          <input type="range" id="avatarZoom" min="1" max="3" step="0.01" value="1">
+        </label>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:4px">
+          <button class="btn btn-ghost" id="avatarRotate" type="button">Повернуть ↻</button>
+          <button class="btn btn-ghost" id="avatarReset" type="button">Сбросить фото</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
