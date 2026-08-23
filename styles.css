@@ -2150,16 +2150,6 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   font-weight: 600;
 }
 
-.avatar-editor { margin-top: 6px; }
-.range-label {
-  display: block;
-  font-size: 13px;
-  color: var(--text-muted);
-  margin: 10px 0 6px;
-  font-weight: 600;
-}
-.range-label input[type=range] { width: 100%; accent-color: var(--accent, #6C5CE7); margin-top: 6px; }
-
 .avatar-preview {
   width: 84px; height: 84px;
   margin: 0 auto 14px;
@@ -2175,9 +2165,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   box-shadow: 0 6px 24px var(--accent-glow);
   animation: pop .4s cubic-bezier(.34,1.56,.64,1);
 }
-.avatar-preview img { position: absolute; left: 50%; top: 50%; object-fit: cover; transform-origin: center; will-change: transform; cursor: grab; touch-action: none; }
-.avatar-preview.dragging img { cursor: grabbing; }
-.avatar-hint { font-size: 11.5px; color: var(--text-muted); opacity: .85; margin: 2px 0 8px; }
+.avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 .avatar-upload-btn {
   display: flex;
   align-items: center;
