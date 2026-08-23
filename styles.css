@@ -1293,6 +1293,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .support-msg.auth { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 3px; }
 .support-msg.sup { align-self: flex-start; background: var(--bg-card, #1e2229); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
 .sm-name { display: block; font-size: 10.5px; font-weight: 700; opacity: .75; margin-bottom: 2px; }
+.sm-handle { font-weight: 600; opacity: .65; font-size: 10px; }
 .sm-time { display: block; font-size: 10px; opacity: .6; margin-top: 3px; text-align: right; }
 .support-chat-input { display: flex; gap: 8px; }
 .support-input {
