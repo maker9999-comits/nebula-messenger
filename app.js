@@ -65,7 +65,7 @@ const CODE_TTL = 15 * 60; // 15 минут
 /* ---------- Отправка кодов на почту через сервер-реле (Яндекс SMTP) ----------
    Сервер: mail-relay/server.js, развёрнут на бесплатном хостинге Render.
    Ниже укажите его URL (без слеша в конце). Если URL пуст — включается демо-режим. */
-const MAIL_RELAY_HOST = 'https://nebula-mail-relay.nebula-mail.workers.dev';
+const MAIL_RELAY_HOST = 'https://nebula-relay.onrender.com';
 const LOCAL_RELAY_HOST = 'http://127.0.0.1:8000';
 const IS_LOCAL = typeof location !== 'undefined' && location
   && (location.protocol === 'file:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost');
@@ -78,7 +78,7 @@ function sendCodeToEmail(email, code, label) {
       resolve({ ok: false, demo: true });
       return;
     }
-    fetch(MAIL_RELAY_URL + '/mail', {
+    withTimeout(fetch(MAIL_RELAY_URL + '/mail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ to: email, code: code, label: label || 'Код подтверждения Nebula Messenger', secret: MAIL_RELAY_SECRET }),
@@ -91,7 +91,7 @@ function sendCodeToEmail(email, code, label) {
       .catch((err) => {
         console.error('Mail relay error:', err);
         resolve({ ok: false, err: 'Не удалось отправить письмо' });
-      });
+      }), 28000);
   });
 }
 
@@ -258,7 +258,7 @@ try {
   const cfg = JSON.parse(localStorage.getItem('nebula_firebase_cfg') || 'null');
   if (cfg && cfg.apiKey && cfg.projectId) NEBULA_FIREBASE = cfg;
 } catch (e) {}
-function fsEnabled() { return !!(NEBULA_FIREBASE.apiKey && NEBULA_FIREBASE.projectId); }
+function fsEnabled() { return false; }
 function fsDocId(key) {
   try { return btoa(unescape(encodeURIComponent(key))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''); }
   catch (e) { return 'k' + key.length; }
@@ -314,34 +314,22 @@ function fsDelete(key) {
 }
 
 function kvWriteBudgetOk() {
-  const m = loadCloudMeta();
-  const day = new Date().toISOString().slice(0, 10);
-  if (m.kvDay !== day) { m.kvDay = day; m.kvWrites = 0; saveCloudMeta(m); }
-  return (m.kvWrites || 0) < 700;
+  return true;
 }
 function cloudSave(key, value) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
-  if (shouldIndex(key)) kvIndexQueue('add', key);
   const meta = loadCloudMeta();
   meta[key] = Date.now();
   saveCloudMeta(meta);
-  const kv = kvWriteBudgetOk()
-    ? withTimeout(fetch(MAIL_RELAY_URL + '/store', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
-        keepalive: true,
-      }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
-        if (d.ok) { const m2 = loadCloudMeta(); m2.kvWrites = (m2.kvWrites || 0) + 1; saveCloudMeta(m2); }
-        return !!d.ok;
-      }).catch(() => false), 8000)
-    : Promise.resolve(false);
-  const fsp = fsEnabled() ? fsWrite(key, value) : Promise.resolve(false);
-  return Promise.all([kv, fsp]).then(([a, b]) => {
-    const ok = !!(a || b);
-    if (!ok) { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); }
-    return ok;
-  });
+  return withTimeout(fetch(MAIL_RELAY_URL + '/store', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
+    keepalive: true,
+  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
+    if (!d.ok) { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); }
+    return !!d.ok;
+  }).catch(() => { const m = loadCloudMeta(); m.failAt = Date.now(); saveCloudMeta(m); return false; }), 28000);
 }
 function cloudFailedRecently(ms) {
   const m = loadCloudMeta();
@@ -375,38 +363,19 @@ function withTimeout(p, ms) {
 }
 function cloudLoad(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(null);
-  /* Читаем и с релея (Cloudflare — быстро и доступно в РФ), и из Firestore
-     параллельно, с таймаутом 6с на каждый. Побеждает свежайшая версия (v).
-     Это и устраняет зависания синхронизации при тормозах/блокировке Firestore
-     в РФ, и не отдаёт устаревшие данные релея (пока его KV на лимите). */
-  const relayGet = () => fetch(cloudUrl(key), { method: 'GET' })
+  return withTimeout(fetch(cloudUrl(key), { method: 'GET' })
     .then(r => r.json().catch(() => ({ ok: false })))
     .then(d => (d && d.ok && d.value) ? cloudUnwrap(d.value) : null)
-    .catch(() => null);
-  const fsGet = () => fsEnabled()
-    ? fsRead(key).then(r => r ? cloudUnwrap(r) : null).catch(() => null)
-    : Promise.resolve(null);
-  return Promise.all([withTimeout(relayGet(), 6000), withTimeout(fsGet(), 6000)]).then(([k, f]) => {
-    if (k && f) return k.v > f.v ? k : f;
-    return k || f;
-  });
+    .catch(() => null), 28000).then(v => v);
 }
 function cloudDelete(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
-  if (shouldIndex(key)) kvIndexQueue('remove', key);
-  const kv = kvWriteBudgetOk()
-    ? withTimeout(fetch(MAIL_RELAY_URL + '/store', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, secret: MAIL_RELAY_SECRET }),
-        keepalive: true,
-      }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
-        if (d.ok) { const m2 = loadCloudMeta(); m2.kvWrites = (m2.kvWrites || 0) + 1; saveCloudMeta(m2); }
-        return !!d.ok;
-      }).catch(() => false), 8000)
-    : Promise.resolve(false);
-  const fsp = fsEnabled() ? fsDelete(key) : Promise.resolve(false);
-  return Promise.all([kv, fsp]).then(([a, b]) => !!(a || b));
+  return withTimeout(fetch(MAIL_RELAY_URL + '/store', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, secret: MAIL_RELAY_SECRET }),
+    keepalive: true,
+  }).then(r => r.json().catch(() => ({ ok: false }))).then(d => !!d.ok).catch(() => false), 28000);
 }
 function scheduleCloudBackup() {
   if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
@@ -719,13 +688,7 @@ const KV_INDEX_KEY = '__nebula_idx__';
 function shouldIndex(k) { return KV_INDEX_PREFIXES.some(p => k.indexOf(p) === 0); }
 let kvIndexBatch = null;
 let kvIndexTimer = null;
-function kvIndexQueue(op, key) {
-  if (!shouldIndex(key)) return;
-  if (!kvIndexBatch) kv_batch_init();
-  if (op === 'add') { kvIndexBatch.add.add(key); kvIndexBatch.remove.delete(key); }
-  else { kvIndexBatch.remove.add(key); kvIndexBatch.add.delete(key); }
-  if (!kvIndexTimer) kvIndexTimer = setTimeout(kvIndexFlush, 1200);
-}
+function kvIndexQueue(op, key) { /* no-op: индекс больше не нужен — листинг по префиксу в БД релея */ }
 function kv_batch_init() { kvIndexBatch = { add: new Set(), remove: new Set() }; }
 function kvIndexFlush() {
   kvIndexTimer = null;
@@ -771,18 +734,10 @@ function kvIndexReadCached() {
 }
 function cloudListKeys(prefix) {
   if (!MAIL_RELAY_URL) return Promise.resolve([]);
-  const fsp = fsEnabled()
-    ? Promise.race([fsList(prefix), new Promise(res => setTimeout(() => res([]), 4000))])
-    : Promise.resolve([]);
-  const kp = kvIndexReadCached().then(idx => {
-    return Array.from(idx.set).filter(k => k && k.startsWith(prefix));
-  }).catch(() => []);
-  return Promise.all([fsp, kp]).then(([a, b]) => {
-    const set = new Set(a); b.forEach(k => set.add(k));
-    const idx = kvIndexCache;
-    a.forEach(k => { if (!idx || !idx.set.has(k)) kvIndexQueue('add', k); });
-    return Array.from(set);
-  });
+  return withTimeout(fetch(MAIL_RELAY_URL + '/store/keys?prefix=' + encodeURIComponent(prefix || ''), { method: 'GET' })
+    .then(r => r.json().catch(() => ({ ok: false })))
+    .then(d => (d && d.ok && Array.isArray(d.keys)) ? d.keys : [])
+    .catch(() => []), 28000).then(v => v || []);
 }
 function cloudChatKey(chatId) { return CLOUD_CHAT_PREFIX + chatId; }
 function cloudMsgKey(chatId, msgId) { return CLOUD_MSG_PREFIX + chatId + ':' + msgId; }
@@ -1092,11 +1047,11 @@ function syncCloudUsers() {
    пишутся только в Firestore, читаются раз в минуту для открытых чатов */
 const PRESENCE_KEY = 'presence:';
 function pushPresence() {
-  if (!currentUser || !fsEnabled()) return;
+  if (!currentUser || !MAIL_RELAY_URL) return;
   const u = currentUser.username;
   const st = currentUser.status || {};
   const t = (st.t === 'busy' || st.t === 'away' || st.t === 'offline' || st.t === 'invisible') ? st.t : 'on';
-  fsWrite(PRESENCE_KEY + u, JSON.stringify({ u, t, s: st.s || '', ts: Date.now() }));
+  cloudSave(PRESENCE_KEY + u, { u, t, s: st.s || '', ts: Date.now() });
 }
 function applyPresence(list) {
   if (!currentUser) return;
@@ -2639,22 +2594,17 @@ function urlBase64ToUint8Array(b64) {
 }
 function pushSubDocKey(u) { return 'pushsubs:' + u; }
 function readPushSubs(u) {
-  if (!fsEnabled()) return Promise.resolve([]);
-  return fsRead(pushSubDocKey(u)).then(raw => {
-    if (!raw) return [];
-    try { const l = JSON.parse(raw); return Array.isArray(l) ? l : []; } catch (e) { return []; }
-  }).catch(() => []);
+  return cloudLoad(pushSubDocKey(u)).then(arr => (Array.isArray(arr) ? arr : [])).catch(() => []);
 }
 function savePushSubs(u, list) {
-  const keep = list.filter(s => s && s.endpoint && s.keys && s.keys.p256dh && s.keys.auth).slice(-30);
-  if (!fsEnabled()) return;
-  fsWrite(pushSubDocKey(u), JSON.stringify(keep));
+  const keep = (list || []).filter(s => s && s.endpoint && s.keys && s.keys.p256dh && s.keys.auth).slice(-30);
+  return cloudSave(pushSubDocKey(u), keep);
 }
 function setupPush() {
   if (pushSetupPromise) return pushSetupPromise;
   pushSetupPromise = (async () => {
     try {
-      if (!currentUser || !fsEnabled() || !MAIL_RELAY_URL) return;
+      if (!currentUser || !MAIL_RELAY_URL) return;
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
       if (Notification.permission !== 'granted') return;
       const reg = await navigator.serviceWorker.register('sw.js');
@@ -2983,7 +2933,7 @@ function startOnlineTimer() {
   }, 10000);
 }
 let incomingGuardTimer = null;
-window.addEventListener('pagehide', () => { if (currentUser) { markOffline(currentUser.username); if (fsEnabled()) fsWrite(PRESENCE_KEY + currentUser.username, JSON.stringify({ u: currentUser.username, t: 'off', s: '', ts: Date.now() })); } });
+window.addEventListener('pagehide', () => { if (currentUser) { markOffline(currentUser.username); cloudSave(PRESENCE_KEY + currentUser.username, { u: currentUser.username, t: 'off', s: '', ts: Date.now() }); } });
 function isOnline(u) {
   const a = accountByUsername(u);
   if (!a || !a.lastSeen) return false;
