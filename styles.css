@@ -2149,6 +2149,16 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
   font-weight: 600;
 }
 
+.avatar-editor { margin-top: 6px; }
+.range-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 10px 0 6px;
+  font-weight: 600;
+}
+.range-label input[type=range] { width: 100%; accent-color: var(--accent, #6C5CE7); margin-top: 6px; }
+
 .avatar-preview {
   width: 84px; height: 84px;
   margin: 0 auto 14px;
