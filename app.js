@@ -10179,8 +10179,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initAuth();
   /* Периодическая синхронизация каталога пользователей: новые аккаунты,
      зарегистрированные на других устройствах после запуска приложения,
-     подтягиваются без перезагрузки страницы */
-  setInterval(() => { reconcileAccountsNow(); }, 20000);
+     подтягиваются почти мгновенно (опрос раз в 4 с) без перезагрузки */
+  setInterval(() => { reconcileAccountsNow(); }, 4000);
   bindFilters();
   bindCreateModal();
   bindManageModal();
