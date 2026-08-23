@@ -266,10 +266,10 @@ function fsDocId(key) {
 function fsBase() { return 'https://firestore.googleapis.com/v1/projects/' + NEBULA_FIREBASE.projectId + '/databases/(default)'; }
 function fsUrl(doc) { return fsBase() + '/documents/' + doc + '?key=' + NEBULA_FIREBASE.apiKey; }
 function fsRead(key) {
-  return fetch(fsUrl('kv/' + fsDocId(key)), { method: 'GET' })
+  return withTimeout(fetch(fsUrl('kv/' + fsDocId(key)), { method: 'GET' })
     .then(r => r.json().catch(() => ({ error: true })))
     .then(d => { if (d.error || !d.fields || !d.fields.value) return null; return d.fields.value.stringValue || null; })
-    .catch(() => null);
+    .catch(() => null), 6000);
 }
 function fsList(prefix) {
   return fetch(fsUrl('kv/idx'), { method: 'GET' })
@@ -305,7 +305,7 @@ function fsWrite(key, value) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields: { value: { stringValue: value } } }),
   }).then(r => r.json().catch(() => ({ error: true }))).then(d => !d.error).catch(() => false);
-  return Promise.all([put, fsIndexOp(key, 'add')]).then(([a, b]) => a && b);
+  return withTimeout(Promise.all([put, fsIndexOp(key, 'add')]).then(([a, b]) => a && b), 8000);
 }
 function fsDelete(key) {
   const del = fetch(fsUrl('kv/' + fsDocId(key)), { method: 'DELETE' })
@@ -326,7 +326,7 @@ function cloudSave(key, value) {
   meta[key] = Date.now();
   saveCloudMeta(meta);
   const kv = kvWriteBudgetOk()
-    ? fetch(MAIL_RELAY_URL + '/store', {
+    ? withTimeout(fetch(MAIL_RELAY_URL + '/store', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, value: cloudWrap(value), secret: MAIL_RELAY_SECRET }),
@@ -334,7 +334,7 @@ function cloudSave(key, value) {
       }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
         if (d.ok) { const m2 = loadCloudMeta(); m2.kvWrites = (m2.kvWrites || 0) + 1; saveCloudMeta(m2); }
         return !!d.ok;
-      }).catch(() => false)
+      }).catch(() => false), 8000)
     : Promise.resolve(false);
   const fsp = fsEnabled() ? fsWrite(key, value) : Promise.resolve(false);
   return Promise.all([kv, fsp]).then(([a, b]) => {
@@ -367,24 +367,32 @@ function cloudSaveIfChanged(key, value) {
     return ok;
   });
 }
+function withTimeout(p, ms) {
+  return new Promise((res) => {
+    const t = setTimeout(() => res(null), ms);
+    Promise.resolve(p).then(v => { clearTimeout(t); res(v); }, () => { clearTimeout(t); res(null); });
+  });
+}
 function cloudLoad(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(null);
-  const fsp = fsEnabled() ? fsRead(key).then(r => r ? cloudUnwrap(r) : null) : Promise.resolve(null);
-  const kp = fetch(cloudUrl(key), { method: 'GET' })
+  /* Читаем сначала с релея (Cloudflare — быстро и доступно в РФ), при
+     неудаче/таймауте падаем на Firestore. Ограничиваем Firestore таймаутом,
+     чтобы синхронизация не висла при его блокировке/тормозах в РФ. */
+  const relayGet = () => fetch(cloudUrl(key), { method: 'GET' })
     .then(r => r.json().catch(() => ({ ok: false })))
     .then(d => (d && d.ok && d.value) ? cloudUnwrap(d.value) : null)
     .catch(() => null);
-  return Promise.all([fsp, kp]).then(([f, k]) => {
-    if (!f) return k;
-    if (!k) return f;
-    return k.v > f.v ? k : f;
+  return withTimeout(relayGet(), 6000).then(k => {
+    if (k) return k;
+    if (!fsEnabled()) return null;
+    return withTimeout(fsRead(key).then(r => r ? cloudUnwrap(r) : null).catch(() => null), 6000);
   });
 }
 function cloudDelete(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
   if (shouldIndex(key)) kvIndexQueue('remove', key);
   const kv = kvWriteBudgetOk()
-    ? fetch(MAIL_RELAY_URL + '/store', {
+    ? withTimeout(fetch(MAIL_RELAY_URL + '/store', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, secret: MAIL_RELAY_SECRET }),
@@ -392,7 +400,7 @@ function cloudDelete(key) {
       }).then(r => r.json().catch(() => ({ ok: false }))).then(d => {
         if (d.ok) { const m2 = loadCloudMeta(); m2.kvWrites = (m2.kvWrites || 0) + 1; saveCloudMeta(m2); }
         return !!d.ok;
-      }).catch(() => false)
+      }).catch(() => false), 8000)
     : Promise.resolve(false);
   const fsp = fsEnabled() ? fsDelete(key) : Promise.resolve(false);
   return Promise.all([kv, fsp]).then(([a, b]) => !!(a || b));
@@ -738,13 +746,13 @@ function kvIndexFlush() {
 }
 function kvIndexRead() {
   if (!MAIL_RELAY_URL) return Promise.resolve([]);
-  return fetch(MAIL_RELAY_URL + '/store?key=' + encodeURIComponent(KV_INDEX_KEY), { method: 'GET' })
+  return withTimeout(fetch(MAIL_RELAY_URL + '/store?key=' + encodeURIComponent(KV_INDEX_KEY), { method: 'GET' })
     .then(r => r.json().catch(() => null))
     .then(d => {
       let arr = [];
       if (d && d.ok && d.value) { try { const u = cloudUnwrap(d.value); arr = JSON.parse(u.d || '[]'); } catch (e) {} }
       return Array.isArray(arr) ? arr : [];
-    }).catch(() => []);
+    }).catch(() => []), 6000);
 }
 /* Кэш чтения индекса (TTL 2с), чтобы не дёргать релей на каждый cloudListKeys
    внутри одного цикла синхронизации (иначе много лишних запросов). */
