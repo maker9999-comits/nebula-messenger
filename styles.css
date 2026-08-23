@@ -1119,7 +1119,7 @@ body.theme-light .messages-wrap { background-image: radial-gradient(rgba(0,0,0,.
 .manage-name .badge, .chat-header-title .badge, .chat-name .badge, .switch-name .badge { vertical-align: middle; }
 
 /* ===== ТЕХ ПОДДЕРЖКА ===== */
-.support-modal { width: 640px; max-width: 94vw; }
+.support-modal { width: 640px; max-width: 94vw; max-height: 88vh; overflow-y: auto; }
 .support-modal .manage-section { margin-bottom: 12px; }
 .support-hero {
   display: flex; align-items: center; gap: 12px;
