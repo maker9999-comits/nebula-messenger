@@ -321,6 +321,7 @@ function kvWriteBudgetOk() {
 }
 function cloudSave(key, value) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
+  if (shouldIndex(key)) kvIndexQueue('add', key);
   const meta = loadCloudMeta();
   meta[key] = Date.now();
   saveCloudMeta(meta);
@@ -381,6 +382,7 @@ function cloudLoad(key) {
 }
 function cloudDelete(key) {
   if (!MAIL_RELAY_URL) return Promise.resolve(false);
+  if (shouldIndex(key)) kvIndexQueue('remove', key);
   const kv = kvWriteBudgetOk()
     ? fetch(MAIL_RELAY_URL + '/store', {
         method: 'DELETE',
@@ -692,14 +694,79 @@ let cloudSyncTimer = null;
 let cloudChatMetaTimer = null;
 let cloudSyncingNow = false;
 
+/* Самоподдерживаемый индекс ключей в Cloudflare KV (доступен в РФ, в отличие
+   от Firestore/Google, который может быть заблокирован). Не зависит от сломанного
+   эндпоинта /store/keys на стороне релея. Индексируем только те префиксы, что
+   реально перечисляются через cloudListKeys. */
+const KV_INDEX_PREFIXES = ['chat:', 'msg:', 'mdel:', 'ticket:'];
+const KV_INDEX_KEY = '__nebula_idx__';
+function shouldIndex(k) { return KV_INDEX_PREFIXES.some(p => k.indexOf(p) === 0); }
+let kvIndexBatch = null;
+let kvIndexTimer = null;
+function kvIndexQueue(op, key) {
+  if (!shouldIndex(key)) return;
+  if (!kvIndexBatch) kv_batch_init();
+  if (op === 'add') { kvIndexBatch.add.add(key); kvIndexBatch.remove.delete(key); }
+  else { kvIndexBatch.remove.add(key); kvIndexBatch.add.delete(key); }
+  if (!kvIndexTimer) kvIndexTimer = setTimeout(kvIndexFlush, 1200);
+}
+function kv_batch_init() { kvIndexBatch = { add: new Set(), remove: new Set() }; }
+function kvIndexFlush() {
+  kvIndexTimer = null;
+  const batch = kvIndexBatch; kvIndexBatch = null;
+  if (!batch || (batch.add.size === 0 && batch.remove.size === 0) || !MAIL_RELAY_URL) return;
+  fetch(MAIL_RELAY_URL + '/store?key=' + encodeURIComponent(KV_INDEX_KEY), { method: 'GET' })
+    .then(r => r.json().catch(() => null))
+    .then(d => {
+      let arr = [];
+      if (d && d.ok && d.value) { try { const u = cloudUnwrap(d.value); arr = JSON.parse(u.d || '[]'); } catch (e) {} }
+      if (!Array.isArray(arr)) arr = [];
+      const set = new Set(arr);
+      batch.add.forEach(k => set.add(k));
+      batch.remove.forEach(k => set.delete(k));
+      const out = JSON.stringify(Array.from(set));
+      return fetch(MAIL_RELAY_URL + '/store', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: KV_INDEX_KEY, value: cloudWrap(out), secret: MAIL_RELAY_SECRET }), keepalive: true,
+      }).then(r => r.json().catch(() => null)).then(x => !!x && x.ok);
+    }).catch(() => {});
+}
+function kvIndexRead() {
+  if (!MAIL_RELAY_URL) return Promise.resolve([]);
+  return fetch(MAIL_RELAY_URL + '/store?key=' + encodeURIComponent(KV_INDEX_KEY), { method: 'GET' })
+    .then(r => r.json().catch(() => null))
+    .then(d => {
+      let arr = [];
+      if (d && d.ok && d.value) { try { const u = cloudUnwrap(d.value); arr = JSON.parse(u.d || '[]'); } catch (e) {} }
+      return Array.isArray(arr) ? arr : [];
+    }).catch(() => []);
+}
+/* Кэш чтения индекса (TTL 2с), чтобы не дёргать релей на каждый cloudListKeys
+   внутри одного цикла синхронизации (иначе много лишних запросов). */
+let kvIndexCache = null;
+function kvIndexReadCached() {
+  const now = Date.now();
+  if (kvIndexCache && now - kvIndexCache.ts < 2000) return Promise.resolve(kvIndexCache);
+  return kvIndexRead().then(arr => {
+    const c = { ts: Date.now(), set: new Set(arr) };
+    kvIndexCache = c;
+    return c;
+  }).catch(() => { const c = { ts: Date.now(), set: new Set() }; kvIndexCache = c; return c; });
+}
 function cloudListKeys(prefix) {
   if (!MAIL_RELAY_URL) return Promise.resolve([]);
-  const fsp = fsEnabled() ? fsList(prefix) : Promise.resolve([]);
-  const kp = fetch(MAIL_RELAY_URL + '/store/keys?prefix=' + encodeURIComponent(prefix))
-    .then(r => r.json().catch(() => ({ ok: false })))
-    .then(d => (d && d.ok && Array.isArray(d.keys)) ? d.keys : [])
-    .catch(() => []);
-  return Promise.all([fsp, kp]).then(([a, b]) => Array.from(new Set([...a, ...b])));
+  const fsp = fsEnabled()
+    ? Promise.race([fsList(prefix), new Promise(res => setTimeout(() => res([]), 4000))])
+    : Promise.resolve([]);
+  const kp = kvIndexReadCached().then(idx => {
+    return Array.from(idx.set).filter(k => k && k.startsWith(prefix));
+  }).catch(() => []);
+  return Promise.all([fsp, kp]).then(([a, b]) => {
+    const set = new Set(a); b.forEach(k => set.add(k));
+    const idx = kvIndexCache;
+    a.forEach(k => { if (!idx || !idx.set.has(k)) kvIndexQueue('add', k); });
+    return Array.from(set);
+  });
 }
 function cloudChatKey(chatId) { return CLOUD_CHAT_PREFIX + chatId; }
 function cloudMsgKey(chatId, msgId) { return CLOUD_MSG_PREFIX + chatId + ':' + msgId; }
