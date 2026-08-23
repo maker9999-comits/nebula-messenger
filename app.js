@@ -9836,33 +9836,9 @@ function bindVerifyModal() {
    ============================================================ */
 let avatarSel = 0;
 let avatarUpload = null;
-let avatarZoom = 1;
-let avatarRot = 0;
-let avatarPanX = 0;
-let avatarPanY = 0;
-let avatarImgDims = null;
-const AV_PREVIEW = 84;
-const AV_CANVAS = 320;
-function clampAvatarPan() {
-  if (!avatarImgDims) return;
-  const cover = Math.max(AV_PREVIEW / avatarImgDims.w, AV_PREVIEW / avatarImgDims.h);
-  const sc = cover * avatarZoom;
-  const w = avatarImgDims.w * sc;
-  const h = avatarImgDims.h * sc;
-  const swapped = (avatarRot % 180) === 90;
-  const limX = Math.max(0, ((swapped ? h : w) - AV_PREVIEW) / 2);
-  const limY = Math.max(0, ((swapped ? w : h) - AV_PREVIEW) / 2);
-  avatarPanX = Math.max(-limX, Math.min(limX, avatarPanX));
-  avatarPanY = Math.max(-limY, Math.min(limY, avatarPanY));
-}
 function openAvatarModal() {
   avatarSel = currentUser.avatar && currentUser.avatar.type === 'preset' ? currentUser.avatar.index : -1;
   avatarUpload = null;
-  avatarZoom = 1;
-  avatarRot = 0;
-  avatarPanX = 0;
-  avatarPanY = 0;
-  avatarImgDims = null;
   renderAvatarModal();
   $('#avatarModal').classList.add('open');
 }
@@ -9889,11 +9865,8 @@ function renderAvatarModal() {
     const reader = new FileReader();
     reader.onload = (e) => {
       avatarUpload = e.target.result;
-      avatarZoom = 1; avatarRot = 0; avatarPanX = 0; avatarPanY = 0;
-      const im = new Image();
-      im.onload = () => { avatarImgDims = { w: im.width, h: im.height }; clampAvatarPan(); renderAvatarModal(); updateAvatarPreview(); };
-      im.onerror = () => { avatarImgDims = null; renderAvatarModal(); updateAvatarPreview(); };
-      im.src = avatarUpload;
+      renderAvatarModal();
+      updateAvatarPreview();
     };
     reader.readAsDataURL(f);
   };
@@ -9901,85 +9874,21 @@ function renderAvatarModal() {
 }
 function updateAvatarPreview() {
   const p = $('#avatarPreview');
-  const editor = $('#avatarEditor');
   if (avatarUpload) {
-    clampAvatarPan();
-    let size = '';
-    if (avatarImgDims) {
-      const cover = Math.max(AV_PREVIEW / avatarImgDims.w, AV_PREVIEW / avatarImgDims.h);
-      const sc = cover * avatarZoom;
-      size = `width:${avatarImgDims.w * sc}px;height:${avatarImgDims.h * sc}px;`;
-    }
-    p.innerHTML = `<img src="${avatarUpload}" style="${size}transform:translate(-50%,-50%) translate(${avatarPanX}px,${avatarPanY}px) rotate(${avatarRot}deg);transform-origin:center">`;
-    p.style.background = '#1c1f26';
-    if (editor) editor.style.display = '';
+    p.innerHTML = `<img src="${avatarUpload}">`;
+    p.style.background = 'none';
   } else if (avatarSel >= 0) {
     const pr = PRESET_AVATARS[avatarSel];
     p.innerHTML = pr.g;
     p.style.background = `linear-gradient(135deg,${pr.c1},${pr.c2})`;
-    if (editor) editor.style.display = 'none';
   } else {
     p.innerHTML = '❔';
     p.style.background = 'rgba(255,255,255,.08)';
-    if (editor) editor.style.display = 'none';
   }
 }
 function bindAvatarModal() {
   $('#avatarClose').addEventListener('click', closeAvatarModal);
   $('#avatarModal').addEventListener('click', (e) => { if (e.target === $('#avatarModal')) closeAvatarModal(); });
-  const zoom = $('#avatarZoom');
-  if (zoom) zoom.addEventListener('input', (e) => { avatarZoom = parseFloat(e.target.value) || 1; clampAvatarPan(); updateAvatarPreview(); });
-  const rot = $('#avatarRotate');
-  if (rot) rot.addEventListener('click', () => { avatarRot = (avatarRot + 90) % 360; clampAvatarPan(); updateAvatarPreview(); });
-  const reset = $('#avatarReset');
-  if (reset) reset.addEventListener('click', () => {
-    avatarUpload = null; avatarZoom = 1; avatarRot = 0; avatarPanX = 0; avatarPanY = 0; avatarImgDims = null;
-    renderAvatarModal();
-  });
-  const preview = $('#avatarPreview');
-  if (preview) {
-    let dragging = false, sx = 0, sy = 0, spx = 0, spy = 0;
-    preview.addEventListener('pointerdown', (e) => {
-      if (!avatarUpload) return;
-      dragging = true; sx = e.clientX; sy = e.clientY; spx = avatarPanX; spy = avatarPanY;
-      try { preview.setPointerCapture(e.pointerId); } catch (_) {}
-      preview.classList.add('dragging');
-    });
-    preview.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      avatarPanX = spx + (e.clientX - sx);
-      avatarPanY = spy + (e.clientY - sy);
-      clampAvatarPan();
-      updateAvatarPreview();
-    });
-    const end = () => { dragging = false; preview.classList.remove('dragging'); };
-    preview.addEventListener('pointerup', end);
-    preview.addEventListener('pointercancel', end);
-  }
-}
-function bakeAvatar(src, pan, zoom, rot, cb) {
-  const img = new Image();
-  img.onload = () => {
-    try {
-      const S = AV_CANVAS;
-      const k = S / AV_PREVIEW;
-      const cover = Math.max(S / img.width, S / img.height);
-      const s = cover * zoom;
-      const c = document.createElement('canvas');
-      c.width = S; c.height = S;
-      const x = c.getContext('2d');
-      x.save();
-      x.translate(S / 2, S / 2);
-      x.translate(pan.x * k, pan.y * k);
-      x.rotate(rot * Math.PI / 180);
-      x.scale(s, s);
-      x.drawImage(img, -img.width / 2, -img.height / 2);
-      x.restore();
-      cb(c.toDataURL('image/jpeg', 0.85));
-    } catch (e) { cb(src); }
-  };
-  img.onerror = () => cb(src);
-  img.src = src;
 }
 function closeAvatarModal() {
   $('#avatarModal').classList.remove('open');
@@ -9991,11 +9900,9 @@ function closeAvatarModal() {
     toast('Аватар обновлён');
   };
   if (avatarUpload) {
-    bakeAvatar(avatarUpload, { x: avatarPanX, y: avatarPanY }, avatarZoom, avatarRot, (dataUrl) => {
-      currentUser.avatar = { type: 'upload', dataUrl };
-      persistCurrentUser();
-      finish();
-    });
+    currentUser.avatar = { type: 'upload', dataUrl: avatarUpload };
+    persistCurrentUser();
+    finish();
   } else if (avatarSel >= 0) {
     currentUser.avatar = { type: 'preset', index: avatarSel };
     persistCurrentUser();
