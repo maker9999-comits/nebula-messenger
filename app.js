@@ -836,7 +836,7 @@ function pushChatMeta(chat) {
     owner: chat.owner === 'me' ? currentUser.username : (chat.owner || currentUser.username),
     admins: (chat.admins || []).map(x => x === 'me' ? currentUser.username : x),
     members: (chat.members || []).map(x => x === 'me' ? currentUser.username : x),
-    userId: chat.type === 'private' ? chat.userId : undefined,
+    userId: chat.type === 'private' ? (privateOtherFromId(chat.id, currentUser.username) || chat.userId) : undefined,
     createdAt: chat.createdAt || Date.now(),
     users,
   };
@@ -859,6 +859,13 @@ function pushMsgToCloud(chat, msg) {
 }
 
 function privateChatId(a, b) { return 'p' + [a, b].sort().join('_'); }
+function privateOtherFromId(id, me) {
+  if (id && id.indexOf('p') === 0) {
+    const ps = id.slice(1).split('_');
+    if (ps.length === 2) return ps[0] === me ? ps[1] : (ps[1] === me ? ps[0] : null);
+  }
+  return null;
+}
 function msgTimeOfId(id) {
   const n = parseInt(String(id).replace(/^m/, ''), 10);
   return isNaN(n) ? 0 : n;
@@ -893,9 +900,23 @@ function syncCloudChats() {
           });
         }
         if (leftChats.includes(m.id)) return;
+        let otherSide = null;
+        if (m.type === 'private') {
+          /* участники приватного чата детерминированы его id: privateChatId(a,b)
+             = 'p'+[a,b].sort().join('_'). Берём их из id, чтобы сломанные
+             поля owner/userId (равные одному юзеру) не ломали доставку. */
+          const ps = m.id.indexOf('p') === 0 ? m.id.slice(1).split('_') : [];
+          if (ps.length === 2 && (ps[0] === me || ps[1] === me)) {
+            otherSide = (ps[0] === me ? ps[1] : ps[0]);
+          }
+          if (!otherSide) {
+            otherSide = (m.userId && m.userId !== me) ? m.userId
+              : (m.owner && m.owner !== me ? m.owner : null);
+          }
+        }
         const mine = m.type === 'private'
-          ? (m.members || []).includes(me) || m.userId === me || m.owner === me
-          : (m.members || []).includes(me) || m.owner === me;
+          ? (!!otherSide)
+          : ((m.members || []).includes(me) || m.owner === me);
         if (m.deleted) {
           const local = state.chats.find(c => c.id === m.id);
           if (local) {
@@ -908,9 +929,6 @@ function syncCloudChats() {
         if (!mine) return;
         const members = (m.members || []).map(x => x === me ? 'me' : x);
         const admins = (m.admins || []).map(x => x === me ? 'me' : x);
-        let otherSide = m.userId;
-        if (otherSide === 'me' || otherSide === me) otherSide = m.owner;
-        if (m.type === 'private' && (!otherSide || otherSide === me || otherSide === 'me')) return;
         if (m.type === 'private') {
           const dup = state.chats.find(c => c.type === 'private' && c.userId === otherSide && c.id !== m.id);
           if (dup) { dup.id = m.id; changed = true; }
@@ -922,6 +940,7 @@ function syncCloudChats() {
           local.handle = m.handle; local.access = m.access; local.whoCanInvite = m.whoCanInvite;
           if (m.avatar) local.avatar = m.avatar;
           local.owner = m.owner === me ? 'me' : m.owner;
+          if (m.type === 'private' && (!local.userId || local.userId === me)) local.userId = otherSide;
           if (((local.members || []).join(',') !== members.join(','))) { local.members = members; changed = true; }
           local.admins = admins;
         } else {
