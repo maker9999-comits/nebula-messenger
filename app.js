@@ -1369,6 +1369,14 @@ function folderHasOnlyDeleted(s) {
   const ids = new Set((s.chats || []).map(c => c.id));
   return (s.folders || []).every(f => !(f.chatIds || []).some(id => ids.has(id)));
 }
+/* Удаление служебных аккаунтов-заглушек, которые могли попасть в базу
+   (например, созданных вручную @news / @system). Вызывается при старте. */
+function pruneObsoleteAccounts() {
+  ['news', 'system'].forEach(un => {
+    if (!deletedUsers().includes(un)) markUserDeleted(un);
+    if (accountByUsername(un)) deleteAccountEverywhere(un);
+  });
+}
 function deleteChatEverywhere(chatId) {  let removed = false;
   accountsList().forEach(u => {
     const s = getStateFor(u.username);
@@ -9825,9 +9833,13 @@ function bindVerifyModal() {
    ============================================================ */
 let avatarSel = 0;
 let avatarUpload = null;
+let avatarZoom = 1;
+let avatarRot = 0;
 function openAvatarModal() {
   avatarSel = currentUser.avatar && currentUser.avatar.type === 'preset' ? currentUser.avatar.index : -1;
   avatarUpload = null;
+  avatarZoom = 1;
+  avatarRot = 0;
   renderAvatarModal();
   $('#avatarModal').classList.add('open');
 }
@@ -9863,36 +9875,79 @@ function renderAvatarModal() {
 }
 function updateAvatarPreview() {
   const p = $('#avatarPreview');
+  const editor = $('#avatarEditor');
   if (avatarUpload) {
-    p.innerHTML = `<img src="${avatarUpload}">`;
+    p.innerHTML = `<img src="${avatarUpload}" style="transform:rotate(${avatarRot}deg) scale(${avatarZoom})">`;
     p.style.background = 'none';
+    if (editor) editor.style.display = '';
   } else if (avatarSel >= 0) {
     const pr = PRESET_AVATARS[avatarSel];
     p.innerHTML = pr.g;
     p.style.background = `linear-gradient(135deg,${pr.c1},${pr.c2})`;
+    if (editor) editor.style.display = 'none';
   } else {
     p.innerHTML = '❔';
     p.style.background = 'rgba(255,255,255,.08)';
+    if (editor) editor.style.display = 'none';
   }
 }
 function bindAvatarModal() {
   $('#avatarClose').addEventListener('click', closeAvatarModal);
   $('#avatarModal').addEventListener('click', (e) => { if (e.target === $('#avatarModal')) closeAvatarModal(); });
+  const zoom = $('#avatarZoom');
+  if (zoom) zoom.addEventListener('input', (e) => { avatarZoom = parseFloat(e.target.value) || 1; updateAvatarPreview(); });
+  const rot = $('#avatarRotate');
+  if (rot) rot.addEventListener('click', () => { avatarRot = (avatarRot + 90) % 360; updateAvatarPreview(); });
+  const reset = $('#avatarReset');
+  if (reset) reset.addEventListener('click', () => {
+    avatarUpload = null; avatarZoom = 1; avatarRot = 0;
+    renderAvatarModal();
+  });
+}
+function bakeAvatar(src, zoom, rot, cb) {
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const S = 320;
+      const c = document.createElement('canvas');
+      c.width = S; c.height = S;
+      const x = c.getContext('2d');
+      x.save();
+      x.translate(S / 2, S / 2);
+      x.rotate(rot * Math.PI / 180);
+      const cover = Math.max(S / img.width, S / img.height);
+      const scale = cover * zoom;
+      x.scale(scale, scale);
+      x.drawImage(img, -img.width / 2, -img.height / 2);
+      x.restore();
+      cb(c.toDataURL('image/jpeg', 0.85));
+    } catch (e) { cb(src); }
+  };
+  img.onerror = () => cb(src);
+  img.src = src;
 }
 function closeAvatarModal() {
   $('#avatarModal').classList.remove('open');
+  const finish = () => {
+    updateProfileHeader();
+    renderChatList();
+    renderChat();
+    renderSettings('profile');
+    toast('Аватар обновлён');
+  };
   if (avatarUpload) {
-    currentUser.avatar = { type: 'upload', dataUrl: avatarUpload };
-    persistCurrentUser();
+    bakeAvatar(avatarUpload, avatarZoom, avatarRot, (dataUrl) => {
+      currentUser.avatar = { type: 'upload', dataUrl };
+      persistCurrentUser();
+      finish();
+    });
   } else if (avatarSel >= 0) {
     currentUser.avatar = { type: 'preset', index: avatarSel };
     persistCurrentUser();
+    finish();
+  } else {
+    finish();
   }
-  updateProfileHeader();
-  renderChatList();
-  renderChat();
-  renderSettings('profile');
-  toast('Аватар обновлён');
 }
 
 /* ============================================================
@@ -10149,6 +10204,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRipples();
   tryRestoreFromCloud();
   reconcileAccountsNow();
+  pruneObsoleteAccounts();
   initAuth();
   bindFilters();
   bindCreateModal();
